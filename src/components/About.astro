@@ -1,0 +1,84 @@
+---
+import ScrollReveal from '@components/animations/ScrollReveal.astro';
+import { getLangFromUrl, useTranslations } from '@i18n/utils';
+import type { Lang } from '@i18n/ui';
+
+interface Props {
+  lang?: Lang;
+}
+
+const lang = Astro.props.lang ?? getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const stats = lang === 'zh'
+  ? [
+      { value: '0', label: '真正会写的代码' },
+      { value: '100%', label: '靠 vibe coding' },
+      { value: '3+', label: '折腾中的项目' },
+    ]
+  : [
+      { value: '0', label: 'Real coding skill' },
+      { value: '100%', label: 'Vibe coded' },
+      { value: '3+', label: 'WIP projects' },
+    ];
+---
+
+<section id="about" class="golden-section">
+  <div class="container-px container-mx">
+    <ScrollReveal>
+      <p class="section-eyebrow">{t('about.eyebrow')}</p>
+    </ScrollReveal>
+
+    <div class="max-w-3xl">
+      <ScrollReveal delay={0.1}>
+        <div class="flex items-start gap-5 mb-[var(--space-phi-2)]">
+          <div class="relative shrink-0">
+            <img
+              src="/avatar.png"
+              alt="Qwara 头像"
+              class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl border border-default object-cover bg-[var(--bg-elev)] transition-transform duration-300 hover:scale-105 hover:rotate-[-3deg]"
+              loading="lazy"
+              width="96"
+              height="96"
+            />
+            <div class="absolute -bottom-1.5 -right-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold text-white shadow-sm" style="background: var(--accent);">
+              {t('about.badge')}
+            </div>
+          </div>
+          <div class="flex-1 min-w-0 pt-1">
+            <h2 class="section-title mb-3">{t('about.title')}</h2>
+            <div class="flex flex-wrap gap-x-5 gap-y-1.5 text-xs text-muted">
+              <span class="inline-flex items-center gap-1.5">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                {t('about.location')}
+              </span>
+              <span class="inline-flex items-center gap-1.5">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20"/></svg>
+                {t('about.interests')}
+              </span>
+            </div>
+          </div>
+        </div>
+      </ScrollReveal>
+
+      <ScrollReveal delay={0.2}>
+        <p class="text-base sm:text-lg leading-relaxed text-muted mb-4">{t('about.p1')}</p>
+      </ScrollReveal>
+
+      <ScrollReveal delay={0.3}>
+        <p class="text-base sm:text-lg leading-relaxed text-muted mb-[var(--space-phi-2)]">{t('about.p2')}</p>
+      </ScrollReveal>
+
+      <ScrollReveal delay={0.45}>
+        <div class="flex flex-wrap gap-3">
+          {stats.map((stat) => (
+            <div class="card px-5 py-3 inline-flex items-baseline gap-2">
+              <span class="text-xl sm:text-2xl font-bold tracking-tight">{stat.value}</span>
+              <span class="text-xs text-muted">{stat.label}</span>
+            </div>
+          ))}
+        </div>
+      </ScrollReveal>
+    </div>
+  </div>
+</section>

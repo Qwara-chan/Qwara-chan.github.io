@@ -1,0 +1,60 @@
+---
+import ScrollReveal from '@components/animations/ScrollReveal.astro';
+import { getLangFromUrl, useTranslations } from '@i18n/utils';
+import type { Lang } from '@i18n/ui';
+
+interface Props {
+  lang?: Lang;
+}
+
+const lang = Astro.props.lang ?? getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const timeline = lang === 'zh'
+  ? [
+      { year: '现在', title: '和 AI 一起搭这个小站', desc: '本站就是 vibe coding 的产物 —— 一边问 AI 一边改，能跑起来就已经很开心了。' },
+      { year: '最近', title: '开始写博客', desc: '试着把学到的小知识记下来，顺便强迫自己把东西想清楚。' },
+      { year: '几个月前', title: '第一次做出能跑的东西', desc: '跟 AI 折腾了一个简单的网页，看到它在浏览器里打开的那一刻超兴奋。' },
+      { year: '最初', title: '接触编程', desc: '在好奇心驱动下试着改了一个网页的样式，发现原来代码可以做东西。' },
+    ]
+  : [
+      { year: 'Now', title: 'Vibe-coded this very site', desc: 'This site is a vibe-coding product—asking an AI and tweaking until it runs. Already a win.' },
+      { year: 'Recently', title: 'Started writing blog posts', desc: 'Trying to jot down small things I have learned. Also a good excuse to think things through.' },
+      { year: 'A few months ago', title: 'First thing that actually ran', desc: 'Built a tiny webpage with help from an AI. Seeing it open in the browser felt amazing.' },
+      { year: 'The beginning', title: 'First time touching code', desc: 'Tweaked a webpage style out of curiosity, and realized code can actually make stuff.' },
+    ];
+---
+
+<section id="timeline" class="golden-section border-t border-default">
+  <div class="container-px container-mx">
+    <ScrollReveal>
+      <p class="section-eyebrow">{t('timeline.eyebrow')}</p>
+    </ScrollReveal>
+
+    <ScrollReveal delay={0.1}>
+      <h2 class="section-title mb-16">{t('timeline.title')}</h2>
+    </ScrollReveal>
+
+    <div class="relative max-w-2xl">
+      <div class="absolute left-[7px] sm:left-1/2 top-0 bottom-0 w-px bg-[var(--border)]" data-timeline-line></div>
+
+      <div class="space-y-12">
+        {timeline.map((item, i) => (
+          <ScrollReveal delay={i * 0.15} y={30}>
+            <div class:list={[
+              'relative flex items-start gap-6',
+              i % 2 === 0 ? 'sm:flex-row-reverse sm:text-right' : '',
+            ]}>
+              <div class="absolute left-0 sm:left-1/2 sm:-translate-x-1/2 w-4 h-4 rounded-full bg-[var(--bg)] border-2 border-[var(--accent)] z-10 mt-1" data-timeline-dot></div>
+              <div class:list={['pl-12 sm:pl-0 sm:w-1/2', i % 2 === 0 ? 'sm:pr-12' : 'sm:pl-12']}>
+                <span class="inline-block text-xs font-mono font-bold text-muted mb-2">{item.year}</span>
+                <h3 class="text-lg font-semibold mb-2">{item.title}</h3>
+                <p class="text-sm text-muted leading-relaxed">{item.desc}</p>
+              </div>
+            </div>
+          </ScrollReveal>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>

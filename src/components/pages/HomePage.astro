@@ -1,0 +1,76 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import Hero from '@components/Hero.astro';
+import About from '@components/About.astro';
+import Skills from '@components/Skills.astro';
+import Timeline from '@components/Timeline.astro';
+import StaggerGrid from '@components/animations/StaggerGrid.astro';
+import ScrollReveal from '@components/animations/ScrollReveal.astro';
+import BlogCard from '@components/BlogCard.astro';
+import ProjectCard from '@components/ProjectCard.astro';
+import { getLangFromUrl, useTranslations, getLocalizedPath } from '@i18n/utils';
+import { getPosts, getProjects } from '@utils/posts';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const posts = (await getPosts(lang)).slice(0, 3);
+const projects = (await getProjects(lang)).slice(0, 4);
+---
+
+<BaseLayout>
+  <Hero lang={lang} />
+<About lang={lang} />
+<Skills lang={lang} />
+<Timeline lang={lang} />
+
+{posts.length > 0 && (
+  <section class="golden-section border-t border-default">
+    <div class="container-px container-mx">
+      <ScrollReveal>
+        <div class="flex items-end justify-between mb-[var(--space-phi-2)]">
+          <div>
+            <p class="section-eyebrow">{t('blog.eyebrow')}</p>
+            <h2 class="section-title">{t('blog.title')}</h2>
+          </div>
+          <a href={getLocalizedPath('blog', lang)} class="text-sm font-medium link-underline whitespace-nowrap">
+            {t('projects.viewAll')}
+            <span class="ml-1">&rarr;</span>
+          </a>
+        </div>
+      </ScrollReveal>
+
+      <StaggerGrid class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {posts.map((post) => (
+          <BlogCard post={post} lang={lang} />
+        ))}
+      </StaggerGrid>
+    </div>
+  </section>
+)}
+
+{projects.length > 0 && (
+  <section class="golden-section border-t border-default">
+    <div class="container-px container-mx">
+      <ScrollReveal>
+        <div class="flex items-end justify-between mb-[var(--space-phi-2)]">
+          <div>
+            <p class="section-eyebrow">{t('projects.eyebrow')}</p>
+            <h2 class="section-title">{t('projects.title')}</h2>
+          </div>
+          <a href={getLocalizedPath('projects', lang)} class="text-sm font-medium link-underline whitespace-nowrap">
+            {t('projects.viewAll')}
+            <span class="ml-1">&rarr;</span>
+          </a>
+        </div>
+      </ScrollReveal>
+
+      <StaggerGrid class="grid sm:grid-cols-2 lg:grid-cols-2 gap-6">
+        {projects.map((project) => (
+          <ProjectCard project={project} lang={lang} />
+        ))}
+      </StaggerGrid>
+    </div>
+  </section>
+)}
+</BaseLayout>

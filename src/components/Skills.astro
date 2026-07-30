@@ -1,0 +1,100 @@
+---
+import ScrollReveal from '@components/animations/ScrollReveal.astro';
+import { getLangFromUrl, useTranslations } from '@i18n/utils';
+import type { Lang } from '@i18n/ui';
+
+interface Props {
+  lang?: Lang;
+}
+
+const lang = Astro.props.lang ?? getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const skillGroups = lang === 'zh'
+  ? [
+      { name: '前端', skills: [{ name: 'HTML / CSS', level: 45 }, { name: 'JavaScript', level: 30 }, { name: '跟着 AI 写 React', level: 25 }, { name: '复制粘贴 Tailwind', level: 40 }] },
+      { name: '工具', skills: [{ name: 'VS Code', level: 60 }, { name: 'Git（基本 add/commit）', level: 20 }, { name: '浏览器 DevTools', level: 35 }] },
+      { name: '其它', skills: [{ name: '跟 AI 聊聊', level: 95 }, { name: 'Ctrl + C / V', level: 99 }, { name: '耐心 debug', level: 50 }] },
+    ]
+  : [
+      { name: 'Frontend', skills: [{ name: 'HTML / CSS', level: 45 }, { name: 'JavaScript', level: 30 }, { name: 'React (with AI)', level: 25 }, { name: 'Tailwind (copy-paste)', level: 40 }] },
+      { name: 'Tools', skills: [{ name: 'VS Code', level: 60 }, { name: 'Git (basic add/commit)', level: 20 }, { name: 'Browser DevTools', level: 35 }] },
+      { name: 'Misc', skills: [{ name: 'Asking the AI', level: 95 }, { name: 'Ctrl + C / V', level: 99 }, { name: 'Debugging patience', level: 50 }] },
+    ];
+---
+
+<section id="skills" class="golden-section border-t border-default">
+  <div class="container-px container-mx">
+    <ScrollReveal>
+      <p class="section-eyebrow">{t('skills.eyebrow')}</p>
+    </ScrollReveal>
+
+    <ScrollReveal delay={0.1}>
+      <h2 class="section-title mb-3">{t('skills.title')}</h2>
+    </ScrollReveal>
+
+    <ScrollReveal delay={0.15}>
+      <p class="text-muted mb-12">{t('skills.subtitle')}</p>
+    </ScrollReveal>
+
+    <div class="grid md:grid-cols-3 gap-6">
+      {skillGroups.map((group, gi) => (
+        <ScrollReveal delay={0.2 + gi * 0.1} y={30}>
+          <div class="card p-6 h-full">
+            <h3 class="text-sm font-mono uppercase tracking-wider text-muted mb-6">{group.name}</h3>
+            <div class="space-y-5">
+              {group.skills.map((skill) => (
+                <div data-skill-bar>
+                  <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-medium">{skill.name}</span>
+                    <span class="text-xs font-mono text-muted">{skill.level}%</span>
+                  </div>
+                  <div class="h-1 rounded-full bg-[var(--border)] overflow-hidden">
+                    <div
+                      class="h-full rounded-full transition-none"
+                      data-skill-fill
+                      data-level={skill.level}
+                      style="width: 0%; background: linear-gradient(90deg, var(--color-accent-dark), var(--accent));"
+                    ></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </ScrollReveal>
+      ))}
+    </div>
+  </div>
+</section>
+
+<script>
+  import { gsap } from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  function initSkillBars() {
+    document.querySelectorAll('[data-skill-bar]').forEach((bar) => {
+      if ((bar as HTMLElement).dataset.initialized) return;
+      (bar as HTMLElement).dataset.initialized = 'true';
+
+      const fill = bar.querySelector('[data-skill-fill]');
+      if (!fill) return;
+      const level = parseInt(fill.getAttribute('data-level') || '0');
+
+      gsap.to(fill, {
+        width: `${level}%`,
+        duration: 1.2,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: bar,
+          start: 'top 85%',
+          toggleActions: 'play none none none',
+        },
+      });
+    });
+  }
+
+  initSkillBars();
+  document.addEventListener('astro:after-swap', initSkillBars);
+</script>

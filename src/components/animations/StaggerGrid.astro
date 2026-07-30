@@ -1,0 +1,63 @@
+---
+interface Props {
+  class?: string;
+  stagger?: number;
+  delay?: number;
+  itemSelector?: string;
+}
+
+const {
+  class: className = '',
+  stagger = 0.1,
+  delay = 0,
+  itemSelector = '[data-stagger-item]',
+} = Astro.props;
+---
+
+<div
+  class={className}
+  data-stagger-grid
+  data-stagger={stagger}
+  data-delay={delay}
+  data-item-selector={itemSelector}
+>
+  <slot />
+</div>
+
+<script>
+  import { gsap } from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  function initStaggerGrid() {
+    document.querySelectorAll('[data-stagger-grid]').forEach((grid) => {
+      if ((grid as HTMLElement).dataset.initialized) return;
+      (grid as HTMLElement).dataset.initialized = 'true';
+
+      const stagger = parseFloat((grid as HTMLElement).dataset.stagger || '0.1');
+      const delay = parseFloat((grid as HTMLElement).dataset.delay || '0');
+      const selector = (grid as HTMLElement).dataset.itemSelector || '[data-stagger-item]';
+      const items = grid.querySelectorAll(selector);
+
+      gsap.set(items, { opacity: 0, y: 30 });
+
+      gsap.to(items, {
+        opacity: 1,
+        y: 0,
+        duration: 0.6,
+        stagger,
+        delay,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: grid,
+          start: 'top 80%',
+          toggleActions: 'play none none none',
+        },
+      });
+    });
+  }
+
+  initStaggerGrid();
+  document.addEventListener('astro:after-swap', initStaggerGrid);
+</script>

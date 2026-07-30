@@ -1,0 +1,335 @@
+<script is:inline>
+  (function () {
+    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var coarsePointer = window.matchMedia('(pointer: coarse)').matches;
+
+    // ---------- console kitty banner (line-by-line so Firefox doesn't collapse it) ----------
+    if (typeof console !== 'undefined') {
+      var lineStyle = 'color: #6366f1; font-weight: 700; font-size: 13px; line-height: 1.2; font-family: ui-monospace, Menlo, Consolas, monospace;';
+      var bannerLines = [
+        '   /\\_____/\\',
+        '  /  o   o  \\',
+        ' ( ==  ^  == )',
+        '  )         (',
+        ' ( (  )   (  )',
+        '(__(__)___(__)__)',
+      ];
+      bannerLines.forEach(function (ln) { console.log('%c' + ln, lineStyle); });
+      console.log('%c hey curious cat ~ welcome to my tiny corner ', 'background:#6366f1;color:#fff;padding:2px 8px;border-radius:4px;');
+      console.log('%c psst… try typing “meow”, or the konami code ↑↑↓↓←→←→BA', 'color:#71717a;font-size:11px;');
+    }
+
+    // ---------- reverse-engineering easter eggs (for curious cats who read source/devtools) ----------
+    // The site exposes a tiny undocumented surface: window.__qwara, a global data-meow-rev attribute,
+    // and a hidden /secret-cat/ route. Nothing is required to enjoy the site — this layer is just for fun.
+    (function setupRevEgg () {
+      // Tier 1: a console hint that there is something to find, but only if devtools-ish patterns show up.
+      var hintStyle = 'color:#818cf8;font-weight:600;font-size:12px;font-family:ui-monospace,Menlo,Consolas,monospace;';
+      var dim = 'color:#71717a;font-size:11px;font-family:ui-monospace,Menlo,Consolas,monospace;';
+      // A flag that lives in the DOM (obfuscated-ish, base64) — readable by anyone who looks.
+      var FLAG_B64 = 'Y2F0LWZsYWc6IHRoZSBjYXQgaGlkZXMgaW4gcGxhaW4gc2lnaHQ='; // "cat-flag: the cat hides in plain sight"
+      var unCat = function (s) {
+        try { return typeof atob === 'function' ? atob(s) : s; } catch (e) { return s; }
+      };
+
+      // Tier 2: an undocumented console object. Curious cats who type `__qwara` get a mini REPL.
+      var unlocked = false;
+      var cmds = {
+        help: function () {
+          return [
+            '__qwara.cmds — a tiny console playground for reverse-cats',
+            '  help()                  list commands',
+            '  meow()                   a single meow',
+            '  rain([count])            paw rain (default 28)',
+            '  konami()                 trigger the super rain',
+            '  flag()                   decode the cat flag',
+            '  whoami()                 who is the cat, really?',
+            '  meowness()               how much meow has happened',
+            '  ping()                   pong~',
+          ].join('\n');
+        },
+        meow: function () { spawnMeow(window.innerWidth / 2, window.innerHeight / 2); return 'meow~'; },
+        rain: function (n) { pawRain({ count: n || 28, interval: 70 }); return 'raining cats…'; },
+        konami: function () { pawRain({ count: 60, interval: 35 }); setTimeout(function () { pawRain({ count: 40, interval: 45 }); }, 1600); return 'konami meow!!!'; },
+        flag: function () { return unCat(FLAG_B64); },
+        whoami: function () { return 'just a cat who read the source, like you 🐾'; },
+        meowness: function () { return 'meowness level: ' + (window.__meowCount || 0); },
+        ping: function () { return 'pong~ meow'; },
+      };
+
+      Object.defineProperty(window, '__qwara', {
+        configurable: false,
+        enumerable: false,
+        get: function () {
+          if (!unlocked) {
+            unlocked = true;
+            console.log('%c🐾 psst… you found window.__qwara', hintStyle);
+            console.log('%ctry: __qwara.help()', dim);
+          }
+          return cmds;
+        },
+      });
+
+      // Tier 3: global attribute — somewhere on the page an element carries data-meow-rev.
+      // Curious cats who run getComputedStyle or grep the DOM will spot it.
+      var revEl = document.querySelector('[data-meow-rev]');
+      if (revEl) {
+        var revHint = revEl.getAttribute('data-meow-rev') || '';
+        console.log('%c[data-meow-rev] found on <' + (revEl.tagName.toLowerCase()) + '>', dim);
+        console.log('%c' + revHint, dim);
+      }
+
+      // Tier 4: a developer-tools detect. Pretty heuristic, but fun: if someone opens the
+      // `__qwara` object (console auto-expand triggers getter), we already fired above.
+      // Also expose a hidden flag via a combo: Ctrl/Meta + Shift + M presses => unlock "meowness".
+      document.addEventListener('keydown', function (e) {
+        if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'M' || e.key === 'm')) {
+          console.log('%c🐱 reverse-cat detected. meowness unlocked.', hintStyle);
+          pawRain({ count: 20, interval: 60 });
+        }
+      });
+
+      // Tier 5: an ASCII flag in the source / available via the hidden route.
+      // See src/pages/secret-cat.astro for the in-page payoff.
+    })();
+
+    var MEOWS = ['喵~', '喵呜~', 'meow~', '=^.^=', 'nya~', '喵喵', '🐾', '🐱', '咪~'];
+    var RAIN_SET = ['🐾', '🐱', '😸', '😻', '=^.^=', '喵', 'nya~'];
+
+    function accent() {
+      return getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#6366f1';
+    }
+
+    function rand(min, max) { return min + Math.random() * (max - min); }
+
+    // ---------- floating meow text at a point ----------
+    var lastSpawn = 0;
+    function spawnMeow(x, y, label) {
+      var now = Date.now();
+      if (now - lastSpawn < 120) return;
+      lastSpawn = now;
+
+      var el = document.createElement('span');
+      el.textContent = label || MEOWS[Math.floor(Math.random() * MEOWS.length)];
+      Object.assign(el.style, {
+        position: 'fixed',
+        left: x + 'px',
+        top: y + 'px',
+        pointerEvents: 'none',
+        color: accent(),
+        fontSize: '14px',
+        fontWeight: '600',
+        fontFamily: 'var(--font-mono)',
+        zIndex: '9999',
+        transition: 'transform 1.2s ease-out, opacity 1.2s ease-out',
+        transform: 'translate(-50%, -50%)',
+        userSelect: 'none',
+        textShadow: '0 2px 6px rgba(99,102,241,0.3)',
+      });
+      document.body.appendChild(el);
+      requestAnimationFrame(function () {
+        el.style.transform = 'translate(-50%, -120%) scale(1.1)';
+        el.style.opacity = '0';
+      });
+      setTimeout(function () { el.remove(); }, 1300);
+    }
+
+    // ---------- long-press to spawn ----------
+    // Use pointer events so touch + mouse don't double-fire (legacy touchstart -> mousedown emulation).
+    var pressTimer;
+    var pressActive = false;
+    document.addEventListener('pointerdown', function (e) {
+      if (e.pointerType === 'keyboard') return;
+      pressActive = true;
+      var x = e.clientX, y = e.clientY;
+      pressTimer = setTimeout(function () { if (pressActive) spawnMeow(x, y); }, 500);
+    });
+    document.addEventListener('pointerup', function () { pressActive = false; clearTimeout(pressTimer); });
+    document.addEventListener('pointercancel', function () { pressActive = false; clearTimeout(pressTimer); });
+    document.addEventListener('pointerleave', function () { pressActive = false; clearTimeout(pressTimer); });
+
+    // ---------- subtle paw trail (skip on coarse pointers for perf) ----------
+    if (!coarsePointer && !reduceMotion) {
+      var pawLast = 0;
+      var PAW_INTERVAL = 220;
+      document.addEventListener('mousemove', function (e) {
+        var now = Date.now();
+        if (now - pawLast < PAW_INTERVAL) return;
+        pawLast = now;
+        var paw = document.createElement('span');
+        paw.textContent = '·';
+        var c = accent();
+        Object.assign(paw.style, {
+          position: 'fixed',
+          left: e.clientX + 'px',
+          top: (e.clientY + 14) + 'px',
+          pointerEvents: 'none',
+          color: c,
+          opacity: '0.5',
+          fontSize: '12px',
+          zIndex: '9998',
+          transition: 'opacity 1.2s ease-out, transform 1.2s ease-out',
+        });
+        document.body.appendChild(paw);
+        requestAnimationFrame(function () {
+          paw.style.opacity = '0';
+          paw.style.transform = 'translateY(10px)';
+        });
+        setTimeout(function () { paw.remove(); }, 1300);
+      });
+    }
+
+    // ---------- paw rain: shared engine ----------
+    function pawRain(opts) {
+      opts = opts || {};
+      var count = opts.count || 24;
+      var interval = opts.interval || 80;
+      var emojis = opts.emojis || RAIN_SET;
+      for (var i = 0; i < count; i++) {
+        (function (i) {
+          setTimeout(function () {
+            var x = Math.random() * window.innerWidth;
+            var y = window.innerHeight + 20;
+            var el = document.createElement('span');
+            el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+            Object.assign(el.style, {
+              position: 'fixed',
+              left: x + 'px',
+              top: y + 'px',
+              pointerEvents: 'none',
+              fontSize: (18 + Math.random() * 12) + 'px',
+              zIndex: '9999',
+              transition: 'transform 2s ease-in, opacity 2s ease-in',
+            });
+            document.body.appendChild(el);
+            requestAnimationFrame(function () {
+              el.style.transform = 'translate(' + ((Math.random() - 0.5) * 200) + 'px, -' + (window.innerHeight + 60) + 'px) rotate(' + ((Math.random() - 0.5) * 360) + 'deg)';
+              el.style.opacity = '0';
+            });
+            setTimeout(function () { el.remove(); }, 2100);
+          }, i * interval);
+        })(i);
+      }
+    }
+
+    // ---------- type a meow-word to rain ----------
+    var triggers = {
+      'meow': true,
+      'nya': true,
+      'meow~': true,
+      '喵': true,
+      '猫猫': true,
+      '猫': true,
+    };
+    var buf = '';
+    document.addEventListener('keydown', function (e) {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      buf = (buf + (e.key || '')).slice(-8).toLowerCase();
+      var hit = Object.keys(triggers).some(function (k) { return buf.endsWith(k); });
+      if (hit) {
+        pawRain({ count: 28, interval: 70 });
+        buf = '';
+      }
+    });
+
+    // ---------- Konami code -> super paw rain ----------
+    var KONAMI = ['arrowup', 'arrowup', 'arrowdown', 'arrowdown', 'arrowleft', 'arrowright', 'arrowleft', 'arrowright', 'b', 'a'];
+    var kbuf = [];
+    document.addEventListener('keydown', function (e) {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      var k = (e.key || '').toLowerCase();
+      if (!k) return;
+      kbuf.push(k);
+      if (kbuf.length > KONAMI.length) kbuf.shift();
+      if (kbuf.length === KONAMI.length && kbuf.every(function (v, i) { return v === KONAMI[i]; })) {
+        kbuf = [];
+        // super rain: two waves
+        pawRain({ count: 60, interval: 35 });
+        setTimeout(function () { pawRain({ count: 40, interval: 45 }); }, 1600);
+        // a friendly meow banner
+        spawnMeow(window.innerWidth / 2, window.innerHeight / 2, 'KONAMI MEOW!!!');
+      }
+    });
+
+    // ---------- double-click empty area -> local cat burst ----------
+    document.addEventListener('dblclick', function (e) {
+      var tgt = e.target;
+      if (tgt && (tgt.closest('a, button, input, textarea, select, [role="button"]'))) return;
+      if (reduceMotion) return;
+      for (var i = 0; i < 12; i++) {
+        (function (i) {
+          setTimeout(function () {
+            var ang = (Math.PI * 2 * i) / 12;
+            var dist = 60 + Math.random() * 40;
+            spawnMeow(e.clientX + Math.cos(ang) * dist, e.clientY + Math.sin(ang) * dist, RAIN_SET[i % RAIN_SET.length]);
+          }, i * 30);
+        })(i);
+      }
+    });
+
+    // ---------- selection meow ----------
+    if (!reduceMotion) {
+      var selTimer = null;
+      document.addEventListener('selectionchange', function () {
+        clearTimeout(selTimer);
+        selTimer = setTimeout(function () {
+          var sel = window.getSelection();
+          if (!sel || sel.isCollapsed || sel.toString().trim().length < 1) return;
+          var range = sel.getRangeAt(0);
+          if (!range) return;
+          var rect = range.getBoundingClientRect();
+          if (!rect || (rect.left === 0 && rect.top === 0 && rect.width === 0)) return;
+          spawnMeow(rect.left + rect.width / 2, rect.top);
+        }, 180);
+      });
+    }
+
+    // ---------- idle walker: a cat strolls across sometimes ----------
+    if (!reduceMotion) {
+      function spawnWalker() {
+        var dir = Math.random() < 0.5 ? 1 : -1;
+        var startY = rand(60, Math.max(80, window.innerHeight * 0.25));
+        var cat = document.createElement('span');
+        cat.textContent = Math.random() < 0.5 ? '🐱' : '🐈';
+        Object.assign(cat.style, {
+          position: 'fixed',
+          top: startY + 'px',
+          left: dir === 1 ? '-60px' : (window.innerWidth + 'px'),
+          fontSize: '24px',
+          pointerEvents: 'none',
+          zIndex: '9998',
+          transition: 'left 7s linear, transform 0.2s linear',
+          transform: dir === 1 ? 'scaleX(1)' : 'scaleX(-1)',
+          opacity: '0.85',
+        });
+        document.body.appendChild(cat);
+        // gentle bob
+        var bob = 0;
+        var bobTimer = setInterval(function () {
+          bob = 1 - bob;
+          cat.style.transform = (dir === 1 ? 'scaleX(1)' : 'scaleX(-1)') + ' translateY(' + (bob ? -3 : 0) + 'px)';
+        }, 220);
+        // Start the walk on the next frame so the browser registers the initial position
+        // before the transition kicks in (otherwise the 7s left-transition won't play).
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () {
+            cat.style.left = dir === 1 ? (window.innerWidth + 60) + 'px' : '-60px';
+          });
+        });
+        setTimeout(function () {
+          clearInterval(bobTimer);
+          cat.remove();
+        }, 7200);
+      }
+      function scheduleWalker() {
+        var delay = rand(45000, 120000);
+        setTimeout(function () {
+          spawnWalker();
+          scheduleWalker();
+        }, delay);
+      }
+      scheduleWalker();
+    }
+  })();
+</script>

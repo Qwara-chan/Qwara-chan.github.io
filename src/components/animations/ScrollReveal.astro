@@ -1,0 +1,83 @@
+---
+interface Props {
+  as?: string;
+  delay?: number;
+  y?: number;
+  x?: number;
+  scale?: number;
+  duration?: number;
+  class?: string;
+  once?: boolean;
+  id?: string;
+}
+
+const {
+  as: Tag = 'div',
+  delay = 0,
+  y = 24,
+  x = 0,
+  scale = 1,
+  duration = 0.7,
+  class: className = '',
+  once = true,
+  id,
+} = Astro.props;
+---
+
+<Tag
+  id={id}
+  class={className}
+  data-animate
+  data-scroll-reveal
+  data-delay={delay}
+  data-y={y}
+  data-x={x}
+  data-scale={scale}
+  data-duration={duration}
+  data-once={once}
+>
+  <slot />
+</Tag>
+
+<script>
+  import { gsap } from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  function initScrollReveal() {
+    const elements = document.querySelectorAll('[data-scroll-reveal]');
+    elements.forEach((el) => {
+      if ((el as HTMLElement).dataset.initialized) return;
+      (el as HTMLElement).dataset.initialized = 'true';
+
+      const data = (el as HTMLElement).dataset;
+      const delay = parseFloat(data.delay || '0');
+      const y = parseFloat(data.y || '24');
+      const x = parseFloat(data.x || '0');
+      const scale = parseFloat(data.scale || '1');
+      const duration = parseFloat(data.duration || '0.7');
+      const once = data.once !== 'false';
+
+      gsap.set(el, { opacity: 0, y, x, scale });
+
+      gsap.to(el, {
+        opacity: 1,
+        y: 0,
+        x: 0,
+        scale: 1,
+        duration,
+        delay,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: el,
+          start: 'top 85%',
+          toggleActions: once ? 'play none none none' : 'play none none reverse',
+        },
+      });
+    });
+  }
+
+  initScrollReveal();
+  document.addEventListener('astro:after-swap', initScrollReveal);
+</script>

@@ -1,0 +1,168 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import ScrollReveal from '@components/animations/ScrollReveal.astro';
+import { getLangFromUrl, useTranslations, formatDate, getReadingTime, getLocalizedPath } from '@i18n/utils';
+import { render } from 'astro:content';
+import type { Post } from '@utils/posts';
+import type { Lang } from '@i18n/ui';
+
+interface Props {
+  post: Post;
+  lang?: Lang;
+}
+
+const lang = Astro.props.lang ?? getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const { post } = Astro.props;
+
+const { Content, headings } = await render(post);
+const bodyText = post.body ?? '';
+const readingTime = getReadingTime(bodyText, lang);
+
+const tocItems = headings.filter((h) => h.depth >= 2 && h.depth <= 3);
+const blogHref = getLocalizedPath('blog', lang);
+
+const tags = post.data.tags;
+---
+
+<BaseLayout title={post.data.title} description={post.data.description}>
+  <article class="container-px container-mx py-12 sm:py-16">
+    <ScrollReveal y={20}>
+      <a href={blogHref} class="inline-flex items-center gap-1.5 text-sm text-muted hover:text-[var(--fg)] transition-colors duration-300 mb-8">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7M19 12H5" /></svg>
+        {t('blog.back')}
+      </a>
+    </ScrollReveal>
+
+    <div class="grid lg:grid-cols-[1.618fr_1fr] gap-12">
+      <div class="min-w-0">
+        <ScrollReveal y={30} delay={0.1}>
+          <div class="flex items-center gap-3 text-sm text-muted mb-4">
+            <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate, lang)}</time>
+            <span class="w-1 h-1 rounded-full bg-current opacity-30"></span>
+            <span>{readingTime} {t('blog.minRead')}</span>
+          </div>
+          <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight mb-6">
+            {post.data.title}
+          </h1>
+          <p class="text-lg text-muted leading-relaxed mb-6">{post.data.description}</p>
+
+          {tags.length > 0 && (
+            <div class="flex flex-wrap gap-2 mb-10">
+              {tags.map((tag) => (
+                <a href={`${getLocalizedPath('tags', lang)}/${tag}`} class="tag-chip">#{tag}</a>
+              ))}
+            </div>
+          )}
+
+          <div class="h-px bg-[var(--border)] mb-10"></div>
+        </ScrollReveal>
+
+        <div class="reading-progress-wrapper" data-reading-progress>
+          <div class="prose prose-lg max-w-none dark:prose-invert
+            prose-headings:scroll-mt-20 prose-headings:tracking-tight
+            prose-a:link-underline prose-code:before:hidden prose-code:after:hidden
+            prose-code:rounded prose-code:bg-[var(--ink-100)] dark:prose-code:bg-[var(--ink-800)]
+            prose-code:px-1.5 prose-code:py-0.5 prose-code:text-sm prose-code:font-mono
+            prose-pre:rounded-xl prose-pre:border prose-pre:border-default
+            prose-img:rounded-xl prose-blockquote:not-italic prose-blockquote:border-[var(--fg)]"
+          >
+            <Content />
+          </div>
+        </div>
+      </div>
+
+      {tocItems.length > 0 && (
+        <aside class="hidden lg:block">
+          <div class="sticky top-24">
+            <p class="text-xs font-mono uppercase tracking-wider text-muted mb-4">{t('blog.toc')}</p>
+            <nav class="space-y-2 text-sm">
+              {tocItems.map((heading) => (
+                <a
+                  href={`#${heading.slug}`}
+                  class:list={[
+                    'block text-muted hover:text-[var(--fg)] transition-colors duration-200 link-toc',
+                    heading.depth === 3 && 'pl-3',
+                  ]}
+                  data-toc-link={heading.slug}
+                >
+                  {heading.text}
+                </a>
+              ))}
+            </nav>
+          </div>
+        </aside>
+      )}
+    </div>
+  </article>
+
+  <div
+    class="fixed top-0 left-0 right-0 h-0.5 z-[60] bg-[var(--accent)] origin-left scale-x-0"
+    data-reading-bar
+  ></div>
+
+  <script>
+    function initReadingProgress() {
+      const bar = document.querySelector('[data-reading-bar]');
+      if (!bar) return;
+      if ((bar as HTMLElement).dataset.initialized) return;
+      (bar as HTMLElement).dataset.initialized = 'true';
+
+      function update() {
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = docHeight > 0 ? scrollTop / docHeight : 0;
+        (bar as HTMLElement).style.transform = `scaleX(${progress})`;
+      }
+
+      window.addEventListener('scroll', update, { passive: true });
+      update();
+
+      const tocLinks = document.querySelectorAll('[data-toc-link]');
+      if (tocLinks.length > 0) {
+        const headings = Array.from(tocLinks).map((link) => {
+          const slug = link.getAttribute('data-toc-link');
+          return { link, el: document.getElementById(slug!) };
+        });
+
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                tocLinks.forEach((l) => l.classList.remove('text-[var(--fg)]', 'font-medium'));
+                const activeLink = document.querySelector(`[data-toc-link="${entry.target.id}"]`);
+                activeLink?.classList.add('text-[var(--fg)]', 'font-medium');
+              }
+            });
+          },
+          { rootMargin: '-80px 0px -70% 0px' }
+        );
+
+        headings.forEach(({ el }) => {
+          if (el) observer.observe(el);
+        });
+      }
+
+      document.querySelectorAll('pre code').forEach((block) => {
+        const pre = block.parentElement;
+        if (!pre || pre.querySelector('.copy-btn')) return;
+
+        const btn = document.createElement('button');
+        btn.className = 'copy-btn absolute top-3 right-3 px-2 py-1 rounded-md text-xs font-mono bg-[var(--bg-elev)] border border-default text-muted hover:text-[var(--fg)] transition-colors opacity-0 group-hover:opacity-100';
+        btn.textContent = 'Copy';
+
+        pre.classList.add('relative', 'group');
+        pre.appendChild(btn);
+
+        btn.addEventListener('click', () => {
+          navigator.clipboard.writeText(block.textContent || '');
+          btn.textContent = 'Copied!';
+          setTimeout(() => (btn.textContent = 'Copy'), 2000);
+        });
+      });
+    }
+
+    initReadingProgress();
+    document.addEventListener('astro:after-swap', initReadingProgress);
+  </script>
+</BaseLayout>
