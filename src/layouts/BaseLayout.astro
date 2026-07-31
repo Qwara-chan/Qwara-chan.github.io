@@ -79,6 +79,19 @@ const enHref = getSwitchHref(Astro.url, 'en');
 
     <ClientRouter />
 
+    <noscript>
+      <style>
+        /* Content hidden by animation pre-states must be visible without JS. */
+        [data-animate] {
+          opacity: 1 !important;
+          transform: none !important;
+        }
+        [data-skill-fill] {
+          width: 100% !important;
+        }
+      </style>
+    </noscript>
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

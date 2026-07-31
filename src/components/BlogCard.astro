@@ -1,6 +1,6 @@
 ---
 import type { Post } from '@utils/posts';
-import { getLangFromUrl, useTranslations, formatDate, getReadingTime } from '@i18n/utils';
+import { getLangFromUrl, useTranslations, formatDate, getReadingTime, getLocalizedPath } from '@i18n/utils';
 import type { Lang } from '@i18n/ui';
 
 interface Props {
@@ -13,9 +13,7 @@ const lang = Astro.props.lang ?? getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 const { post, featured = false } = Astro.props;
 
-const href = lang === 'en'
-  ? `/en/blog/${post.id}`
-  : `/blog/${post.id}`;
+const href = getLocalizedPath(`blog/${post.id}`, lang);
 
 const bodyText = post.body ?? '';
 const readingTime = getReadingTime(bodyText, lang);

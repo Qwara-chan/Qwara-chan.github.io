@@ -35,7 +35,7 @@ A personal portfolio & blog built with Astro 7, featuring minimalist monochrome 
 |---|---|
 | Framework | [Astro 7.1.6](https://astro.build) |
 | Styling | [Tailwind CSS 4.3.3](https://tailwindcss.com) + `@tailwindcss/vite` |
-| Animation | [GSAP 3.15.0](https://gsap.com) + [motion 12.43.0](https://motion.dev) |
+| Animation | [GSAP 3.15.0](https://gsap.com) |
 | Content | Astro Content Layer API + MDX |
 | Search | Client-side filtering (zero-dependency) |
 | Deployment | GitHub Pages |

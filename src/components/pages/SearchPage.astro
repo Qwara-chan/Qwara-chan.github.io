@@ -41,7 +41,6 @@ const allPosts = await getPosts(lang);
         const tagsHay = post.data.tags.map((tag) => tag.toLowerCase()).join(',');
         return (
           <article
-            data-stagger-item
             data-search-key={haystack}
             data-search-title={titleHay}
             data-search-tags={tagsHay}

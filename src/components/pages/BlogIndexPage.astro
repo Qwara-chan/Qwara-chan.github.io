@@ -10,14 +10,15 @@ const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 
 const allPosts = await getPosts(lang);
-const allTags = await getAllTags(lang);
+const allTags = await getAllTags(allPosts);
 
 const pageSize = 9;
 const pages = paginate(allPosts, pageSize);
 const totalPages = pages.length;
 
-const urlPage = parseInt(Astro.url.searchParams.get('page') || '1');
-const currentPage = Math.min(Math.max(1, urlPage), totalPages);
+// Guard against `?page=abc` / `?page=0` / `?page=999`: fall back to a sane page.
+const urlPage = Number.parseInt(Astro.url.searchParams.get('page') ?? '1', 10);
+const currentPage = Number.isFinite(urlPage) ? Math.min(Math.max(1, urlPage), totalPages) : 1;
 const posts = pages[currentPage - 1] ?? [];
 
 const blogBase = getLocalizedPath('blog', lang);
@@ -39,7 +40,7 @@ const tagsBase = getLocalizedPath('tags', lang);
             {t('blog.allTags')}
           </a>
           {allTags.map(({ tag, count }) => (
-            <a href={`${tagsBase}/${tag}`} class="tag-chip">
+            <a href={`${tagsBase}/${encodeURIComponent(tag)}`} class="tag-chip">
               #{tag} <span class="opacity-50 ml-1">{count}</span>
             </a>
           ))}

@@ -26,8 +26,7 @@ export async function getProjects(_lang: Lang): Promise<Project[]> {
   });
 }
 
-export async function getAllTags(lang: Lang): Promise<{ tag: string; count: number }[]> {
-  const posts = await getPosts(lang);
+export async function getAllTags(posts: Post[]): Promise<{ tag: string; count: number }[]> {
   const tagMap = new Map<string, number>();
   for (const post of posts) {
     for (const tag of post.data.tags) {
@@ -37,13 +36,6 @@ export async function getAllTags(lang: Lang): Promise<{ tag: string; count: numb
   return [...tagMap.entries()]
     .map(([tag, count]) => ({ tag, count }))
     .sort((a, b) => b.count - a.count);
-}
-
-export async function getPostsByTag(tag: string, lang: Lang): Promise<Post[]> {
-  const posts = await getPosts(lang);
-  return posts.filter((p) =>
-    p.data.tags.some((t) => t.toLowerCase() === tag.toLowerCase())
-  );
 }
 
 export function paginate<T>(items: T[], pageSize: number): T[][] {

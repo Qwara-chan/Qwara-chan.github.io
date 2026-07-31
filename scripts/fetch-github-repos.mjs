@@ -78,9 +78,15 @@ async function main() {
 
 main().catch((err) => {
   console.error('[fetch-github-repos] Failed:', err.message);
-  if (!existsSync(OUTPUT_DIR)) {
-    mkdirSync(OUTPUT_DIR, { recursive: true });
+  // GitHub API is unauthenticated (60 req/hr). On rate-limit or network failure,
+  // keep the previous snapshot instead of wiping the portfolio to an empty list.
+  if (existsSync(OUTPUT_FILE)) {
+    console.warn(`[fetch-github-repos] Keeping existing ${OUTPUT_FILE} to avoid an empty projects page.`);
+  } else {
+    if (!existsSync(OUTPUT_DIR)) {
+      mkdirSync(OUTPUT_DIR, { recursive: true });
+    }
+    writeFileSync(OUTPUT_FILE, '[]\n', 'utf8');
   }
-  writeFileSync(OUTPUT_FILE, '[]\n', 'utf8');
   process.exit(0);
 });

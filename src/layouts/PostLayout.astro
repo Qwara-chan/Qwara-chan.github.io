@@ -50,7 +50,7 @@ const tags = post.data.tags;
           {tags.length > 0 && (
             <div class="flex flex-wrap gap-2 mb-phi-2">
               {tags.map((tag) => (
-                <a href={`${getLocalizedPath('tags', lang)}/${tag}`} class="tag-chip">#{tag}</a>
+                <a href={`${getLocalizedPath('tags', lang)}/${encodeURIComponent(tag)}`} class="tag-chip">#{tag}</a>
               ))}
             </div>
           )}
@@ -106,11 +106,18 @@ const tags = post.data.tags;
     // <pre> blocks). Without aborting prior listeners, the scroll handler
     // would compound N copies after N visits.
     let postAbort: AbortController | null = null;
+    let tocObserver: IntersectionObserver | null = null;
 
     function initReadingProgress() {
       postAbort?.abort();
       postAbort = new AbortController();
       const { signal } = postAbort;
+
+      // Tear down the previous pass's observer: an IntersectionObserver keeps
+      // references to the elements it observes, so after N navigations the old
+      // (detached) headings would never be garbage-collected.
+      tocObserver?.disconnect();
+      tocObserver = null;
 
       const bar = document.querySelector('[data-reading-bar]');
       if (!bar) return;
@@ -144,6 +151,7 @@ const tags = post.data.tags;
           },
           { rootMargin: '-80px 0px -70% 0px' }
         );
+        tocObserver = observer;
 
         headings.forEach(({ el }) => {
           if (el) observer.observe(el);
