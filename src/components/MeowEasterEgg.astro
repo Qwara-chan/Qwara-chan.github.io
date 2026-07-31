@@ -331,5 +331,53 @@
       }
       scheduleWalker();
     }
+
+    // ---------- poke the navbar avatar 5 times -> hidden achievement ----------
+    var pokeCount = 0;
+    var pokeTimer = null;
+    document.addEventListener('click', function (e) {
+      var el = e.target && e.target.closest ? e.target.closest('[data-meow-rev]') : null;
+      if (!el) return;
+      pokeCount += 1;
+      clearTimeout(pokeTimer);
+      pokeTimer = setTimeout(function () { pokeCount = 0; }, 1200);
+      if (pokeCount === 5) {
+        pokeCount = 0;
+        console.log('%c🐾 成就解锁: Avatar Poke Master — 你戳了猫猫五次', 'color:#818cf8;font-weight:600;');
+        pawRain({ count: 30, interval: 60 });
+        spawnMeow(window.innerWidth / 2, window.innerHeight / 2, '喵呜！！！');
+      }
+    });
+
+    // ---------- footer meow: the paw that wags the tail ----------
+    document.addEventListener('click', function (e) {
+      var paw = e.target && e.target.closest ? e.target.closest('[data-footer-meow]') : null;
+      if (!paw) return;
+      var r = paw.getBoundingClientRect();
+      spawnMeow(r.left + r.width / 2, r.top, '喵~');
+      pawRain({ count: 12, interval: 55 });
+      var ft = document.querySelector('footer');
+      if (ft) {
+        ft.classList.remove('tail-wag');
+        void ft.offsetWidth; // restart the animation
+        ft.classList.add('tail-wag');
+      }
+    });
+
+    // ---------- tab away -> the cat calls you back ----------
+    var titleBackup = null;
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) {
+        if (titleBackup === null) titleBackup = document.title;
+        document.title = '喵？不要走… 🐾';
+      } else if (titleBackup !== null) {
+        document.title = titleBackup;
+        titleBackup = null;
+      }
+    });
+    // keep the backup in sync across view-transition navigations
+    document.addEventListener('astro:after-swap', function () {
+      if (titleBackup !== null) titleBackup = document.title;
+    });
   })();
 </script>
