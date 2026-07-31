@@ -1,0 +1,12 @@
+@import "katex/dist/katex.min.css";
+
+/* KaTeX: inherit text color so math follows theme, and it doesn't overflow on small screens */
+.katex {
+  color: var(--fg);
+  font-size: 1.05em;
+}
+.katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: var(--space-phi-sm, 0.618rem) 0;
+}

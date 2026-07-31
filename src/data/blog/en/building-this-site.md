@@ -1,8 +1,8 @@
 ---
 title: "Building a Personal Site from Scratch: Astro 7 + Tailwind CSS v4 + Minimalist Monochrome"
-description: "A complete log of building this site, covering Astro 7 Content Layer API, Tailwind CSS v4 CSS-first configuration, GSAP scroll animation system, and astro:i18n bilingual routing."
+description: "A complete log of building this site, covering Astro 7 Content Layer API, Tailwind CSS v4 CSS-first configuration, dependency-free scroll animations, and astro:i18n bilingual routing."
 pubDate: 2026-07-31
-tags: ["Astro", "Tailwind CSS", "GSAP", "i18n", "Frontend"]
+tags: ["Astro", "Tailwind CSS", "i18n", "Frontend"]
 lang: "en"
 ---
 
@@ -71,22 +71,20 @@ Combined with `localStorage` persistence and the View Transitions API, you get s
 
 This site's animation system is built on two layers:
 
-### GSAP ScrollTrigger
+### Scroll-triggered animations (zero dependencies)
 
-For scroll-triggered entrance animations. By wrapping a generic `ScrollReveal` component, any element gains scroll entrance effects by adding the `data-scroll-reveal` attribute:
+For scroll-triggered entrance animations. By wrapping a generic `ScrollReveal` component, any element gains scroll entrance effects by adding the `data-scroll-reveal` attribute. The implementation toggles an `.is-revealed` class via IntersectionObserver and lets CSS transitions do the animation — no animation library needed:
 
 ```ts
-gsap.to(el, {
-  opacity: 1,
-  y: 0,
-  duration: 0.7,
-  ease: 'power3.out',
-  scrollTrigger: {
-    trigger: el,
-    start: 'top 85%',
-    toggleActions: 'play none none none',
-  },
+const io = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (entry.isIntersecting) {
+      el.classList.add('is-revealed');
+      io.unobserve(el);
+    }
+  });
 });
+io.observe(el);
 ```
 
 ### View Transitions API
@@ -150,6 +148,6 @@ This project demonstrates how to build a fully-featured, animation-rich, high-pe
 
 1. Astro 7's Content Layer API is the right way to manage content
 2. Tailwind v4's CSS-first configuration is more intuitive and powerful
-3. GSAP + View Transitions enable smooth animation experiences
+3. CSS animations + View Transitions enable smooth animation experiences
 4. astro:i18n makes bilingual sites simple
 5. Match the search solution to the site's scale — a small blog is fine with pure client-side filtering

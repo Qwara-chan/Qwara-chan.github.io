@@ -1,5 +1,8 @@
 <script is:inline>
+  // Deferred to idle time so this ~15KB easter-egg script never blocks first
+  // paint / parsing. Everything inside boot() is identical to before.
   (function () {
+    function boot() {
     var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var coarsePointer = window.matchMedia('(pointer: coarse)').matches;
 
@@ -379,5 +382,14 @@
     document.addEventListener('astro:after-swap', function () {
       if (titleBackup !== null) titleBackup = document.title;
     });
+    } // end boot()
+
+    if (window.requestIdleCallback) {
+      window.requestIdleCallback(boot, { timeout: 3000 });
+    } else if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', boot, { once: true });
+    } else {
+      setTimeout(boot, 0);
+    }
   })();
 </script>

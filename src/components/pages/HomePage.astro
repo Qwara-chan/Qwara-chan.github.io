@@ -33,7 +33,7 @@ const projects = (await getProjects(lang)).slice(0, 4);
             <p class="section-eyebrow">{t('blog.eyebrow')}</p>
             <h2 class="section-title">{t('blog.title')}</h2>
           </div>
-          <a href={getLocalizedPath('blog', lang)} class="text-sm font-medium link-underline whitespace-nowrap">
+          <a href={getLocalizedPath('blog', lang)} class="text-sm link-underline whitespace-nowrap">
             {t('projects.viewAll')}
             <span class="ml-1">&rarr;</span>
           </a>
@@ -58,7 +58,7 @@ const projects = (await getProjects(lang)).slice(0, 4);
             <p class="section-eyebrow">{t('projects.eyebrow')}</p>
             <h2 class="section-title">{t('projects.title')}</h2>
           </div>
-          <a href={getLocalizedPath('projects', lang)} class="text-sm font-medium link-underline whitespace-nowrap">
+          <a href={getLocalizedPath('projects', lang)} class="text-sm link-underline whitespace-nowrap">
             {t('projects.viewAll')}
             <span class="ml-1">&rarr;</span>
           </a>

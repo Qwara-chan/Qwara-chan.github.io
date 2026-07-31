@@ -164,7 +164,16 @@ const allPosts = await getPosts(lang);
     );
 
     render((input.value || '').trim().toLowerCase());
-    if (document.activeElement !== input) {
+    // Pre-fill from ?q= (e.g. coming from the 404 search box)
+    const qParam = new URLSearchParams(window.location.search).get('q');
+    if (qParam && !input.value) {
+      input.value = qParam;
+      render(qParam.trim().toLowerCase());
+    }
+    // Focus the input, except on touch devices where that would pop the
+    // soft keyboard immediately (unless we already have a ?q= to act on).
+    const isCoarsePointer = window.matchMedia('(pointer: coarse)').matches;
+    if ((!isCoarsePointer || qParam) && document.activeElement !== input) {
       setTimeout(() => input.focus(), 100);
     }
   }

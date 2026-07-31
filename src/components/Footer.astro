@@ -6,12 +6,15 @@ import pkg from '../../package.json' with { type: 'json' };
 
 interface Props {
   lang?: Lang;
+  totalPosts?: number;
+  totalWords?: number;
 }
 
 const lang = Astro.props.lang ?? getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 const year = new Date().getFullYear();
 const version = pkg.version;
+const { totalPosts = 0, totalWords = 0 } = Astro.props;
 
 const socials = [
   { label: 'GitHub', href: 'https://github.com/Qwara-chan', icon: 'github' },
@@ -66,6 +69,12 @@ const socials = [
         aria-label="meow~"
         title="meow~"
       >🐾</button>
+      {totalPosts > 0 && (
+        <>
+          <span class="mx-2 opacity-30">|</span>
+          <span>{totalPosts} {t('footer.totalPosts')} · {totalWords.toLocaleString()} {t('footer.totalWords')}</span>
+        </>
+      )}
     </div>
   </div>
 </footer>

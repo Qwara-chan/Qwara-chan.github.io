@@ -1,28 +1,36 @@
 ---
 import BaseLayout from './BaseLayout.astro';
 import ScrollReveal from '@components/animations/ScrollReveal.astro';
-import { getLangFromUrl, useTranslations, formatDate, getReadingTime, getLocalizedPath } from '@i18n/utils';
+import Mermaid from '@components/Mermaid.astro';
+import '@styles/katex.css';
+import { getLangFromUrl, useTranslations, formatDate, getReadingTime, getWordCount, getLocalizedPath } from '@i18n/utils';
 import { render } from 'astro:content';
 import type { Post } from '@utils/posts';
 import type { Lang } from '@i18n/ui';
 
 interface Props {
   post: Post;
+  prevPost?: Post | null;
+  nextPost?: Post | null;
   lang?: Lang;
 }
 
 const lang = Astro.props.lang ?? getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
-const { post } = Astro.props;
+const { post, prevPost = null, nextPost = null } = Astro.props;
 
 const { Content, headings } = await render(post);
 const bodyText = post.body ?? '';
 const readingTime = getReadingTime(bodyText, lang);
+const wordCount = getWordCount(bodyText, lang);
 
 const tocItems = headings.filter((h) => h.depth >= 2 && h.depth <= 3);
 const blogHref = getLocalizedPath('blog', lang);
 
 const tags = post.data.tags;
+
+const prevHref = prevPost ? getLocalizedPath(`blog/${prevPost.id}`, lang) : null;
+const nextHref = nextPost ? getLocalizedPath(`blog/${nextPost.id}`, lang) : null;
 ---
 
 <BaseLayout title={post.data.title} description={post.data.description}>
@@ -37,23 +45,46 @@ const tags = post.data.tags;
     <div class="grid lg:grid-cols-[1.618fr_1fr] gap-phi-3">
       <div class="min-w-0">
         <ScrollReveal y={30} delay={0.1}>
-          <div class="flex items-center gap-3 text-sm text-muted mb-4">
+          <div class="flex flex-wrap items-center gap-3 text-sm text-muted mb-4">
             <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate, lang)}</time>
+            {post.data.updatedDate && post.data.updatedDate.getTime() !== post.data.pubDate.getTime() && (
+              <>
+                <span class="w-1 h-1 rounded-full bg-current opacity-30"></span>
+                <span class="text-[var(--accent)]">
+                  {t('blog.updatedOn')} {formatDate(post.data.updatedDate, lang)}
+                </span>
+              </>
+            )}
             <span class="w-1 h-1 rounded-full bg-current opacity-30"></span>
             <span>{readingTime} {t('blog.minRead')}</span>
+            <span class="w-1 h-1 rounded-full bg-current opacity-30"></span>
+            <span>{wordCount.toLocaleString()} {t('common.words')}</span>
           </div>
           <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight mb-phi-1">
             {post.data.title}
           </h1>
           <p class="text-lg text-muted leading-relaxed mb-phi-1">{post.data.description}</p>
 
-          {tags.length > 0 && (
-            <div class="flex flex-wrap gap-2 mb-phi-2">
-              {tags.map((tag) => (
-                <a href={`${getLocalizedPath('tags', lang)}/${encodeURIComponent(tag)}`} class="tag-chip">#{tag}</a>
-              ))}
-            </div>
-          )}
+          <div class="flex flex-wrap items-center gap-2 mb-phi-2">
+            {tags.length > 0 && tags.map((tag) => (
+              <a href={`${getLocalizedPath('tags', lang)}/${encodeURIComponent(tag)}`} class="tag-chip">#{tag}</a>
+            ))}
+
+            <!-- Share / copy link -->
+            <button
+              type="button"
+              class="tag-chip cursor-pointer inline-flex items-center gap-1.5 ml-auto"
+              data-share-btn
+              aria-label={t('common.share')}
+              title={t('common.share')}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+              </svg>
+              <span data-share-label>{t('common.share')}</span>
+            </button>
+          </div>
 
           <div class="h-px bg-[var(--border)] mb-phi-2"></div>
         </ScrollReveal>
@@ -65,11 +96,40 @@ const tags = post.data.tags;
             prose-code:rounded prose-code:bg-[var(--ink-100)] dark:prose-code:bg-[var(--ink-800)]
             prose-code:px-1.5 prose-code:py-0.5 prose-code:text-sm prose-code:font-mono
             prose-pre:rounded-xl prose-pre:border prose-pre:border-default
-            prose-img:rounded-xl prose-blockquote:not-italic prose-blockquote:border-[var(--fg)]"
+            prose-img:rounded-xl prose-img:cursor-zoom-in
+            prose-blockquote:not-italic prose-blockquote:border-[var(--fg)]"
           >
             <Content />
           </div>
         </div>
+
+        <!-- Prev / Next post navigation -->
+        {(prevPost || nextPost) && (
+          <nav class="mt-phi-3 pt-phi-2 border-t border-default grid gap-4" style={`grid-template-columns: ${prevPost && nextPost ? '1fr 1fr' : '1fr'}`}>
+            {prevPost && (
+              <a
+                href={prevHref!}
+                class="card card-hover block p-phi-1 group"
+              >
+                <span class="text-xs font-mono uppercase tracking-wider text-muted mb-2 block">{t('blog.prevPost')}</span>
+                <span class="font-semibold tracking-tight group-hover:text-[var(--accent)] transition-colors duration-300 line-clamp-2">
+                  &larr; {prevPost.data.title}
+                </span>
+              </a>
+            )}
+            {nextPost && (
+              <a
+                href={nextHref!}
+                class:list={['card card-hover block p-phi-1 group text-right', !prevPost && 'sm:col-start-2']}
+              >
+                <span class="text-xs font-mono uppercase tracking-wider text-muted mb-2 block">{t('blog.nextPost')}</span>
+                <span class="font-semibold tracking-tight group-hover:text-[var(--accent)] transition-colors duration-300 line-clamp-2">
+                  {nextPost.data.title} &rarr;
+                </span>
+              </a>
+            )}
+          </nav>
+        )}
       </div>
 
       {tocItems.length > 0 && (
@@ -96,15 +156,29 @@ const tags = post.data.tags;
     </div>
   </article>
 
+  <Mermaid />
+
+  <!-- Reading progress bar -->
   <div
     class="fixed top-0 left-0 right-0 h-0.5 z-[60] bg-[var(--accent)] origin-left scale-x-0"
     data-reading-bar
   ></div>
 
+  <!-- Image lightbox overlay -->
+  <div
+    class="fixed inset-0 z-[70] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4
+      opacity-0 pointer-events-none transition-opacity duration-300 cursor-zoom-out"
+    data-lightbox
+  >
+    <img
+      src=""
+      alt=""
+      class="max-w-full max-h-[90vh] rounded-xl shadow-2xl transition-transform duration-300 scale-95"
+      data-lightbox-img
+    />
+  </div>
+
   <script>
-    // Each navigation produces a fresh [data-reading-bar] element (and fresh
-    // <pre> blocks). Without aborting prior listeners, the scroll handler
-    // would compound N copies after N visits.
     let postAbort: AbortController | null = null;
     let tocObserver: IntersectionObserver | null = null;
 
@@ -113,25 +187,23 @@ const tags = post.data.tags;
       postAbort = new AbortController();
       const { signal } = postAbort;
 
-      // Tear down the previous pass's observer: an IntersectionObserver keeps
-      // references to the elements it observes, so after N navigations the old
-      // (detached) headings would never be garbage-collected.
       tocObserver?.disconnect();
       tocObserver = null;
 
+      // --- Reading progress bar ---
       const bar = document.querySelector('[data-reading-bar]');
-      if (!bar) return;
-
-      function update() {
-        const scrollTop = window.scrollY;
-        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-        const progress = docHeight > 0 ? scrollTop / docHeight : 0;
-        (bar as HTMLElement).style.transform = `scaleX(${progress})`;
+      if (bar) {
+        function update() {
+          const scrollTop = window.scrollY;
+          const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+          const progress = docHeight > 0 ? scrollTop / docHeight : 0;
+          (bar as HTMLElement).style.transform = `scaleX(${progress})`;
+        }
+        window.addEventListener('scroll', update, { passive: true, signal });
+        update();
       }
 
-      window.addEventListener('scroll', update, { passive: true, signal });
-      update();
-
+      // --- TOC active heading highlight ---
       const tocLinks = document.querySelectorAll('[data-toc-link]');
       if (tocLinks.length > 0) {
         const headings = Array.from(tocLinks).map((link) => {
@@ -143,9 +215,9 @@ const tags = post.data.tags;
           (entries) => {
             entries.forEach((entry) => {
               if (entry.isIntersecting) {
-                tocLinks.forEach((l) => l.classList.remove('text-[var(--fg)]', 'font-medium'));
+                tocLinks.forEach((l) => l.classList.remove('text-[var(--fg)]', 'font-semibold'));
                 const activeLink = document.querySelector(`[data-toc-link="${entry.target.id}"]`);
-                activeLink?.classList.add('text-[var(--fg)]', 'font-medium');
+                activeLink?.classList.add('text-[var(--fg)]', 'font-semibold');
               }
             });
           },
@@ -158,6 +230,7 @@ const tags = post.data.tags;
         });
       }
 
+      // --- Code block copy buttons ---
       document.querySelectorAll('pre code').forEach((block) => {
         const pre = block.parentElement;
         if (!pre || pre.querySelector('.copy-btn')) return;
@@ -175,6 +248,92 @@ const tags = post.data.tags;
           setTimeout(() => (btn.textContent = 'Copy'), 2000);
         });
       });
+
+      // --- Share / copy link button ---
+      const shareBtn = document.querySelector('[data-share-btn]');
+      const shareLabel = document.querySelector('[data-share-label]');
+      if (shareBtn && shareLabel) {
+        const originalText = shareLabel.textContent;
+        shareBtn.addEventListener('click', async () => {
+          const url = window.location.href;
+          // Try native share first (mobile), fall back to clipboard
+          if (navigator.share) {
+            try {
+              await navigator.share({ title: document.title, url });
+              return;
+            } catch { /* user cancelled — fall through to copy */ }
+          }
+          try {
+            await navigator.clipboard.writeText(url);
+            shareLabel.textContent = '✓ ' + (originalText === '分享' ? '已复制' : 'Copied');
+            setTimeout(() => { shareLabel.textContent = originalText; }, 2000);
+          } catch {
+            shareLabel.textContent = url;
+          }
+        }, { signal });
+      }
+
+      // --- External link indicator ---
+      const proseRoot = document.querySelector('.prose');
+      if (proseRoot) {
+        const siteHost = window.location.hostname;
+        proseRoot.querySelectorAll('a[href^="http"]').forEach((a) => {
+          const link = a as HTMLAnchorElement;
+          try {
+            const u = new URL(link.href);
+            if (u.hostname !== siteHost && !link.querySelector('[data-ext-icon]')) {
+              link.target = '_blank';
+              link.rel = 'noopener noreferrer';
+              const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+              icon.setAttribute('data-ext-icon', '');
+              icon.setAttribute('width', '12');
+              icon.setAttribute('height', '12');
+              icon.setAttribute('viewBox', '0 0 24 24');
+              icon.setAttribute('fill', 'none');
+              icon.setAttribute('stroke', 'currentColor');
+              icon.setAttribute('stroke-width', '2.5');
+              icon.setAttribute('stroke-linecap', 'round');
+              icon.setAttribute('stroke-linejoin', 'round');
+              icon.style.cssText = 'display:inline-block;vertical-align:baseline;margin-inline-start:0.2em;opacity:0.6;';
+              const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+              p.setAttribute('d', 'M7 17 17 7M7 7h10v10');
+              icon.appendChild(p);
+              link.appendChild(icon);
+            }
+          } catch { /* invalid URL — skip */ }
+        });
+      }
+
+      // --- Image lightbox ---
+      const lightbox = document.querySelector('[data-lightbox]');
+      const lightboxImg = document.querySelector('[data-lightbox-img]') as HTMLImageElement | null;
+      if (lightbox && lightboxImg) {
+        const proseImgs = document.querySelectorAll('.prose img');
+        proseImgs.forEach((img) => {
+          img.addEventListener('click', () => {
+            lightboxImg.src = (img as HTMLImageElement).src;
+            lightboxImg.alt = (img as HTMLImageElement).alt;
+            lightbox.classList.remove('opacity-0', 'pointer-events-none');
+            lightbox.classList.add('opacity-100');
+            lightboxImg.classList.remove('scale-95');
+            lightboxImg.classList.add('scale-100');
+            document.body.classList.add('overflow-hidden');
+          }, { signal });
+        });
+
+        function closeLightbox() {
+          lightbox!.classList.add('opacity-0', 'pointer-events-none');
+          lightbox!.classList.remove('opacity-100');
+          lightboxImg!.classList.add('scale-95');
+          lightboxImg!.classList.remove('scale-100');
+          document.body.classList.remove('overflow-hidden');
+        }
+
+        lightbox.addEventListener('click', closeLightbox, { signal });
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') closeLightbox();
+        }, { signal });
+      }
     }
 
     initReadingProgress();

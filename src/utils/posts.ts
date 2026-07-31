@@ -74,7 +74,15 @@ export async function getTagStaticPaths(lang: Lang) {
  */
 export async function getPostStaticPaths(lang: Lang) {
   const posts = await getCollection(lang === 'en' ? 'blog/en' : 'blog/zh');
-  return posts
+  const sorted = posts
     .filter((p) => !p.data.draft)
-    .map((post) => ({ params: { slug: post.id }, props: { post } }));
+    .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
+  return sorted.map((post, i) => ({
+    params: { slug: post.id },
+    props: {
+      post,
+      prevPost: sorted[i + 1] ?? null,
+      nextPost: sorted[i - 1] ?? null,
+    },
+  }));
 }

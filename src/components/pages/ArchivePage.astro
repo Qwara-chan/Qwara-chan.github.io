@@ -1,0 +1,85 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import ScrollReveal from '@components/animations/ScrollReveal.astro';
+import { getLangFromUrl, useTranslations, formatDate, getLocalizedPath } from '@i18n/utils';
+import { getPosts } from '@utils/posts';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const allPosts = await getPosts(lang);
+
+// Group posts by year (descending)
+const byYear = new Map<number, typeof allPosts>();
+for (const post of allPosts) {
+  const year = post.data.pubDate.getFullYear();
+  const list = byYear.get(year);
+  if (list) list.push(post);
+  else byYear.set(year, [post]);
+}
+const years = [...byYear.entries()].sort((a, b) => b[0] - a[0]);
+---
+
+<BaseLayout title={t('archive.title')} description={t('archive.subtitle')}>
+  <div class="container-px container-mx golden-section">
+    <ScrollReveal>
+      <p class="section-eyebrow">{t('archive.eyebrow')}</p>
+      <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight mb-3">{t('archive.title')}</h1>
+      <p class="text-muted mb-phi-2">
+        {t('archive.subtitle')}
+        <span class="ml-2 font-mono text-sm text-[var(--accent)]">
+          {t('archive.postsIn')} {allPosts.length} {t('archive.postsUnit')}
+        </span>
+      </p>
+    </ScrollReveal>
+
+    <div class="relative">
+      {years.map(([year, posts], yi) => (
+        <section class="relative mb-phi-2 last:mb-0">
+          {/* Year marker */}
+          <ScrollReveal delay={yi * 0.05}>
+            <div class="flex items-center gap-4 mb-phi-1">
+              <h2 class="text-2xl sm:text-3xl font-extrabold font-mono tracking-tight text-[var(--accent)]">
+                {year}
+              </h2>
+              <span class="tag-chip">{posts.length} {t('archive.postsUnit')}</span>
+              <div class="flex-1 h-px bg-[var(--border)]"></div>
+            </div>
+          </ScrollReveal>
+
+          {/* Posts list */}
+          <ol class="relative border-l border-default ml-2 space-y-1">
+            {posts.map((post) => (
+              <li class="relative pl-phi-1">
+                {/* Timeline dot */}
+                <span class="absolute -left-[5px] top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-[var(--bg)] border-2 border-[var(--accent)] transition-all duration-300"></span>
+
+                <a
+                  href={getLocalizedPath(`blog/${post.id}`, lang)}
+                  class="group flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-4 py-2.5 px-3 -mx-3 rounded-xl transition-colors duration-200 hover:bg-[var(--accent-soft)]"
+                >
+                  <time
+                    datetime={post.data.pubDate.toISOString()}
+                    class="font-mono text-xs text-muted shrink-0 tabular-nums group-hover:text-[var(--accent)] transition-colors duration-200"
+                  >
+                    {formatDate(post.data.pubDate, lang)}
+                  </time>
+                  <span class="tracking-tight group-hover:text-[var(--accent)] transition-colors duration-200">
+                    {post.data.title}
+                  </span>
+                  {post.data.tags.length > 0 && (
+                    <span class="hidden md:flex items-center gap-1.5 ml-auto shrink-0">
+                      {post.data.tags.slice(0, 2).map((tag) => (
+                        <span class="text-[10px] font-mono text-muted opacity-60">#{tag}</span>
+                      ))}
+                    </span>
+                  )}
+                </a>
+              </li>
+            ))}
+          </ol>
+        </section>
+      ))}
+    </div>
+  </div>
+</BaseLayout>

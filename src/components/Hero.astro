@@ -10,7 +10,7 @@ const lang = Astro.props.lang ?? getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 ---
 
-<section class="relative min-h-[calc(100vh-4rem)] flex items-center overflow-hidden" id="hero">
+<section class="relative min-h-[calc(100vh-4rem)] supports-[min-height:100dvh]:min-h-[calc(100dvh-4rem)] flex items-center overflow-hidden" id="hero">
   <div class="absolute inset-0 pointer-events-none" data-hero-bg>
     <div class="absolute inset-0 opacity-[0.03] dark:opacity-[0.05]"
       style="background-image: linear-gradient(var(--fg) 1px, transparent 1px), linear-gradient(90deg, var(--fg) 1px, transparent 1px); background-size: 64px 64px;">
@@ -20,24 +20,24 @@ const t = useTranslations(lang);
 
   <div class="container-px container-mx relative z-10 w-full py-20">
     <div class="max-w-3xl">
-      <p class="section-eyebrow mb-6" data-hero-eyebrow>
+      <p class="section-eyebrow mb-6 hero-fade" style="--hero-y: 10px; --hero-dur: 0.6s; --hero-delay: 0s" data-hero-eyebrow>
         <span class="inline-block w-8 h-px bg-current align-middle mr-2"></span>
         {t('hero.greeting')}
       </p>
 
-      <h1 class="type-phi-name tracking-tighter mb-phi-1" data-hero-name>
+      <h1 class="type-phi-name tracking-tighter mb-phi-1 hero-fade" style="--hero-y: 30px; --hero-dur: 0.8s; --hero-delay: 0.3s" data-hero-name>
         {t('hero.name')}<span class="text-[var(--accent)]">.</span>
       </h1>
 
-      <p class="type-phi-title text-muted mb-phi-1" data-hero-title>
+      <p class="type-phi-title text-muted mb-phi-1 hero-fade" style="--hero-y: 20px; --hero-dur: 0.6s; --hero-delay: 0.7s" data-hero-title>
         {t('hero.title')}
       </p>
 
-      <p class="type-phi-subtitle text-muted max-w-xl mb-phi-2" data-hero-subtitle>
+      <p class="type-phi-subtitle text-muted max-w-xl mb-phi-2 hero-fade" style="--hero-y: 20px; --hero-dur: 0.6s; --hero-delay: 1s" data-hero-subtitle>
         {t('hero.subtitle')}
       </p>
 
-      <div class="flex flex-wrap items-center gap-3" data-hero-cta>
+      <div class="flex flex-wrap items-center gap-3 hero-fade" style="--hero-y: 20px; --hero-dur: 0.6s; --hero-delay: 1.3s" data-hero-cta>
         <a href={getLocalizedPath('blog', lang)} class="btn btn-primary">
           {t('hero.cta.primary')}
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
@@ -49,7 +49,7 @@ const t = useTranslations(lang);
     </div>
   </div>
 
-  <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-muted" data-hero-scroll>
+  <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-muted hero-fade" style="--hero-y: 10px; --hero-dur: 0.6s; --hero-delay: 1.5s" data-hero-scroll>
     <span class="text-xs font-mono uppercase tracking-[0.2em]">{t('hero.scroll')}</span>
     <div class="w-px h-12 bg-current opacity-30 overflow-hidden relative">
       <span class="absolute top-0 left-0 w-full h-1/2 bg-[var(--accent)] animate-[scroll-indicator_2s_ease-in-out_infinite]"></span>
@@ -65,10 +65,8 @@ const t = useTranslations(lang);
 </style>
 
 <script>
-  import { gsap } from 'gsap';
-
-  // Drop the previous pass's window mousemove listener on re-init so the
-  // glow doesn't get N parallel gsap.to() per frame after N navigations.
+  // The entrance choreography is pure CSS (.hero-fade keyframes in
+  // global.css). This script only handles the mouse-parallax glow.
   let heroAbort: AbortController | null = null;
 
   function initHero() {
@@ -76,39 +74,40 @@ const t = useTranslations(lang);
     heroAbort = new AbortController();
     const { signal } = heroAbort;
 
+    const glow = document.querySelector('[data-hero-glow]') as HTMLElement | null;
+    if (!glow) return;
+
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (reduceMotion) return;
 
-    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+    // Smooth-follow parallax with an exponential lerp on rAF — no per-move
+    // style writes, the loop idles out once the glow settles.
+    let targetX = 0;
+    let targetY = 0;
+    let curX = 0;
+    let curY = 0;
+    let raf = 0;
 
-    tl.from('[data-hero-eyebrow]', { opacity: 0, y: 10, duration: 0.6 })
-      .from('[data-hero-name]', { opacity: 0, y: 30, duration: 0.8 }, '-=0.3')
-      .from('[data-hero-title]', { opacity: 0, y: 20, duration: 0.6 }, '-=0.4')
-      .from('[data-hero-subtitle]', { opacity: 0, y: 20, duration: 0.6 }, '-=0.3')
-      .from('[data-hero-cta]', { opacity: 0, y: 20, duration: 0.6 }, '-=0.3')
-      .from('[data-hero-scroll]', { opacity: 0, y: 10, duration: 0.6 }, '-=0.2');
+    const loop = () => {
+      curX += (targetX - curX) * 0.1;
+      curY += (targetY - curY) * 0.1;
+      glow.style.transform = `translate(${curX.toFixed(2)}px, ${curY.toFixed(2)}px)`;
+      raf = Math.abs(targetX - curX) > 0.05 || Math.abs(targetY - curY) > 0.05
+        ? requestAnimationFrame(loop)
+        : 0;
+    };
 
-    const glow = document.querySelector('[data-hero-glow]');
-    if (glow) {
-      let mx = 0.5, my = 0.5, ticking = false;
-      const update = () => {
-        ticking = false;
-        gsap.to(glow, {
-          x: (mx - 0.5) * 100,
-          y: (my - 0.5) * 100,
-          duration: 1,
-          ease: 'power2.out',
-        });
-      };
-      window.addEventListener('mousemove', (e) => {
-        mx = e.clientX / window.innerWidth;
-        my = e.clientY / window.innerHeight;
-        if (!ticking) {
-          ticking = true;
-          requestAnimationFrame(update);
-        }
-      }, { passive: true, signal });
-    }
+    window.addEventListener('mousemove', (e) => {
+      targetX = (e.clientX / window.innerWidth - 0.5) * 100;
+      targetY = (e.clientY / window.innerHeight - 0.5) * 100;
+      if (!raf) raf = requestAnimationFrame(loop);
+    }, { passive: true, signal });
+
+    // Stop the loop when the page is swapped out.
+    signal.addEventListener('abort', () => {
+      if (raf) cancelAnimationFrame(raf);
+      raf = 0;
+    });
   }
 
   initHero();

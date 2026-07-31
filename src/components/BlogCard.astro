@@ -1,6 +1,6 @@
 ---
 import type { Post } from '@utils/posts';
-import { getLangFromUrl, useTranslations, formatDate, getReadingTime, getLocalizedPath } from '@i18n/utils';
+import { getLangFromUrl, useTranslations, formatDate, getReadingTime, getWordCount, getLocalizedPath } from '@i18n/utils';
 import type { Lang } from '@i18n/ui';
 
 interface Props {
@@ -17,6 +17,7 @@ const href = getLocalizedPath(`blog/${post.id}`, lang);
 
 const bodyText = post.body ?? '';
 const readingTime = getReadingTime(bodyText, lang);
+const wordCount = getWordCount(bodyText, lang);
 ---
 
 <article data-stagger-item>
@@ -36,6 +37,8 @@ const readingTime = getReadingTime(bodyText, lang);
         <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate, lang)}</time>
         <span class="w-1 h-1 rounded-full bg-current opacity-30"></span>
         <span>{readingTime} {t('blog.minRead')}</span>
+        <span class="w-1 h-1 rounded-full bg-current opacity-30"></span>
+        <span>{wordCount.toLocaleString()} {t('common.words')}</span>
       </div>
 
       <h3 class:list={['font-bold tracking-tight mb-2 transition-colors duration-300', featured ? 'text-2xl' : 'text-lg', 'group-hover:text-[var(--fg)]']}>

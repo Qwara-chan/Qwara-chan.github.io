@@ -25,11 +25,8 @@ const {
 </div>
 
 <script>
-  import { gsap } from 'gsap';
-  import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-  gsap.registerPlugin(ScrollTrigger);
-
+  // Staggered reveal via IntersectionObserver + CSS transitions (global.css
+  // holds the hidden pre-state and the .is-revealed transition).
   function initStaggerGrid() {
     document.querySelectorAll('[data-stagger-grid]').forEach((grid) => {
       if ((grid as HTMLElement).dataset.initialized) return;
@@ -39,22 +36,24 @@ const {
       const delay = parseFloat((grid as HTMLElement).dataset.delay || '0');
       const selector = (grid as HTMLElement).dataset.itemSelector || '[data-stagger-item]';
       const items = grid.querySelectorAll(selector);
+      if (!items.length) return;
 
-      gsap.set(items, { opacity: 0, y: 30 });
-
-      gsap.to(items, {
-        opacity: 1,
-        y: 0,
-        duration: 0.6,
-        stagger,
-        delay,
-        ease: 'power3.out',
-        scrollTrigger: {
-          trigger: grid,
-          start: 'top 80%',
-          toggleActions: 'play none none none',
-        },
+      items.forEach((item, i) => {
+        (item as HTMLElement).style.setProperty('--stagger-delay', `${delay + i * stagger}s`);
       });
+
+      const io = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              items.forEach((item) => item.classList.add('is-revealed'));
+              io.disconnect();
+            }
+          });
+        },
+        { rootMargin: '0px 0px -20% 0px' },
+      );
+      io.observe(grid);
     });
   }
 

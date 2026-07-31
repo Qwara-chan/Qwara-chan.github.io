@@ -46,12 +46,12 @@ const skillGroups = lang === 'zh'
               {group.skills.map((skill) => (
                 <div data-skill-bar>
                   <div class="flex items-center justify-between mb-2">
-                    <span class="text-sm font-medium">{skill.name}</span>
+                    <span class="text-sm">{skill.name}</span>
                     <span class="text-xs font-mono text-muted">{skill.level}%</span>
                   </div>
                   <div class="h-1 rounded-full bg-[var(--border)] overflow-hidden">
                     <div
-                      class="h-full rounded-full transition-none"
+                      class="h-full rounded-full"
                       data-skill-fill
                       data-level={skill.level}
                       style="width: 0%; background: linear-gradient(90deg, var(--color-accent-dark), var(--accent));"
@@ -68,30 +68,29 @@ const skillGroups = lang === 'zh'
 </section>
 
 <script>
-  import { gsap } from 'gsap';
-  import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-  gsap.registerPlugin(ScrollTrigger);
-
+  // Skill bars fill on scroll via IntersectionObserver; the width transition
+  // itself lives in global.css ([data-skill-fill]).
   function initSkillBars() {
     document.querySelectorAll('[data-skill-bar]').forEach((bar) => {
       if ((bar as HTMLElement).dataset.initialized) return;
       (bar as HTMLElement).dataset.initialized = 'true';
 
-      const fill = bar.querySelector('[data-skill-fill]');
+      const fill = bar.querySelector<HTMLElement>('[data-skill-fill]');
       if (!fill) return;
-      const level = parseInt(fill.getAttribute('data-level') || '0');
+      const level = parseInt(fill.getAttribute('data-level') || '0', 10);
 
-      gsap.to(fill, {
-        width: `${level}%`,
-        duration: 1.2,
-        ease: 'power3.out',
-        scrollTrigger: {
-          trigger: bar,
-          start: 'top 85%',
-          toggleActions: 'play none none none',
+      const io = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              fill.style.width = `${level}%`;
+              io.disconnect();
+            }
+          });
         },
-      });
+        { rootMargin: '0px 0px -15% 0px' },
+      );
+      io.observe(bar);
     });
   }
 

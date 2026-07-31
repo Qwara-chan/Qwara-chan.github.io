@@ -1,8 +1,8 @@
 ---
 title: "从零搭建个人主页：Astro 7 + Tailwind CSS v4 + 极简黑白风格"
-description: "记录本站点的完整搭建过程，涵盖 Astro 7 Content Layer API、Tailwind CSS v4 CSS-first 配置、GSAP 滚动动效系统、astro:i18n 双语路由等关键技术实践。"
+description: "记录本站点的完整搭建过程，涵盖 Astro 7 Content Layer API、Tailwind CSS v4 CSS-first 配置、零依赖滚动动效系统、astro:i18n 双语路由等关键技术实践。"
 pubDate: 2026-07-31
-tags: ["Astro", "Tailwind CSS", "GSAP", "i18n", "前端工程"]
+tags: ["Astro", "Tailwind CSS", "i18n", "前端工程"]
 lang: "zh"
 ---
 
@@ -71,22 +71,20 @@ Tailwind v4 中暗色模式的配置也发生了变化。通过 `@custom-variant
 
 本站的动效系统基于两层架构：
 
-### GSAP ScrollTrigger
+### 滚动入场动画（零依赖）
 
-用于滚动触发的入场动画。通过封装通用的 `ScrollReveal` 组件，任何元素只需添加 `data-scroll-reveal` 属性即可获得滚动入场效果：
+用于滚动触发的入场动画。通过封装通用的 `ScrollReveal` 组件，任何元素只需添加 `data-scroll-reveal` 属性即可获得滚动入场效果。实现上用 IntersectionObserver 切换 `.is-revealed` 类、配合 CSS transition 完成动画，不引入任何动画库：
 
 ```ts
-gsap.to(el, {
-  opacity: 1,
-  y: 0,
-  duration: 0.7,
-  ease: 'power3.out',
-  scrollTrigger: {
-    trigger: el,
-    start: 'top 85%',
-    toggleActions: 'play none none none',
-  },
+const io = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (entry.isIntersecting) {
+      el.classList.add('is-revealed');
+      io.unobserve(el);
+    }
+  });
 });
+io.observe(el);
 ```
 
 ### View Transitions API
@@ -150,6 +148,6 @@ export default defineConfig({
 
 1. Astro 7 的 Content Layer API 是内容管理的正确方式
 2. Tailwind v4 的 CSS-first 配置更直观、更强大
-3. GSAP + View Transitions 可以实现流畅的动效体验
+3. CSS 动效 + View Transitions 可以实现流畅的动效体验
 4. astro:i18n 让双语站点变得简单
 5. 搜索方案要匹配站点体量——小规模博客用纯客户端过滤就够了

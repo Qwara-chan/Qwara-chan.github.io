@@ -4,7 +4,9 @@
 
 - **Astro 7** + Content Layer API (collections in `src/content.config.ts`)
 - **Tailwind CSS v4** (CSS-first, no `tailwind.config.js`; `@theme` in `src/styles/global.css`)
-- **GSAP 3** + **motion** for animations
+- **No animation library** — CSS transitions/keyframes + IntersectionObserver (`ScrollReveal.astro`, `StaggerGrid.astro`, `Skills.astro`, `Hero.astro`); GSAP was removed in 2026-07 for performance
+- **KaTeX** — `remark-math` + `rehype-katex` wired via `markdown.processor: unified({...})` in `astro.config.mjs` (Astro 7 style; `remarkPlugins`/`rehypePlugins` top-level keys are deprecated); katex CSS lives in `src/styles/katex.css`, imported **only** by `PostLayout.astro` (keeps ~30KB out of the global CSS on non-post pages)
+- **Mermaid** — `Mermaid.astro` in `PostLayout`; renders `pre[data-language="mermaid"]` (Astro 7 Shiki marks language there, NOT `code.language-mermaid`) lazily via IntersectionObserver + dynamic `import('mermaid')`; re-renders on theme flip via MutationObserver; styles in `global.css` (`.mermaid-figure`, `.mermaid-fallback`)
 - **TypeScript 6** + `@astrojs/check` for type checking
 - **Client-side search** (zero-dependency filtering in `SearchPage.astro`; no search index library)
 - **GitHub Pages** deployment via `.github/workflows/deploy.yml`
@@ -38,6 +40,7 @@ Content collections: `'blog/zh'` and `'blog/en'` (separate loader per locale).
 ## Content notes
 
 - Blog posts live in `src/data/blog/{zh,en}/` as `.md` or `.mdx`
+- `/now` page content lives in `src/data/now/{zh,en}.mdx` (collections `'now/zh'`, `'now/en'`; frontmatter `title`/`updatedDate`/`lang`)
 - Projects are auto-fetched from GitHub API at build time to `src/data/projects/_github.json`; **do not edit by hand**
 - Frontmatter schema: `title`, `description`, `pubDate`, `tags`, `cover`, `draft`, `lang` (Zod-validated)
 - No `src/content/` directory — Astro 7 Content Layer with `glob()` and `file()` loaders
@@ -58,7 +61,9 @@ Content collections: `'blog/zh'` and `'blog/en'` (separate loader per locale).
 | `/projects` or `/en/projects` | `src/pages/projects.astro` |
 | `/tags/[tag]` | `src/pages/tags/[tag].astro` |
 | `/search` or `/en/search` | `src/pages/search.astro` (client-side filtering, works in dev and prod) |
+| `/now` or `/en/now` | `src/pages/now.astro` (renders `src/components/pages/NowPage.astro` from `data/now/{zh,en}.mdx`) |
 | `/rss.xml` | `src/pages/rss.xml.ts` (zh-only RSS) |
+| `/en/rss.xml` | `src/pages/en/rss.xml.ts` (en-only RSS) |
 
 ## Design tokens
 

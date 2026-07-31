@@ -38,6 +38,20 @@ export function formatDate(date: Date, lang: Lang): string {
   }).format(date);
 }
 
+export function getWordCount(content: string, lang: Lang): number {
+  let text = content
+    .replace(/^---[\s\S]*?---/, '')
+    .replace(/```[\s\S]*?```/g, '')
+    .replace(/`[^`]*`/g, '')
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/[#*_>~|-]/g, ' ');
+
+  return lang === 'zh'
+    ? text.replace(/\s+/g, '').length
+    : text.split(/\s+/).filter(Boolean).length;
+}
+
 export function getReadingTime(content: string, lang: Lang): number {
   // Strip frontmatter, fenced code blocks, inline code, and common markdown syntax
   // so the word/char count reflects prose rather than source noise.

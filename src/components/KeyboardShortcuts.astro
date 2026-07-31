@@ -1,0 +1,155 @@
+---
+import { getLangFromUrl, useTranslations, getLocalizedPath } from '@i18n/utils';
+import type { Lang } from '@i18n/ui';
+
+interface Props {
+  lang?: Lang;
+}
+
+const lang = Astro.props.lang ?? getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const searchHref = getLocalizedPath('search', lang);
+---
+
+{/* Shortcuts help modal */}
+<div
+  class="fixed inset-0 z-[80] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4
+    opacity-0 pointer-events-none transition-opacity duration-200"
+  data-shortcuts-overlay
+  data-search-href={searchHref}
+>
+  <div
+    class="card w-full max-w-sm p-phi-2 scale-95 transition-transform duration-200"
+    data-shortcuts-panel
+    role="dialog"
+    aria-modal="true"
+    aria-label={t('shortcuts.title')}
+  >
+    <div class="flex items-center justify-between mb-phi-1">
+      <h2 class="font-bold tracking-tight flex items-center gap-2">
+        <svg class="w-4 h-4 text-[var(--accent)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M6 12h.01M18 12h.01M8 16h8" /></svg>
+        {t('shortcuts.title')}
+      </h2>
+      <button
+        type="button"
+        class="w-8 h-8 flex items-center justify-center rounded-full text-muted hover:text-[var(--fg)] hover:bg-[var(--accent-soft)] transition-colors"
+        data-shortcuts-close
+        aria-label={t('shortcuts.close')}
+      >
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+      </button>
+    </div>
+    <dl class="space-y-2.5 text-sm">
+      {[
+        { keys: '/', label: t('shortcuts.search') },
+        { keys: 'D', label: t('shortcuts.theme') },
+        { keys: 'T', label: t('shortcuts.top') },
+        { keys: '?', label: t('shortcuts.help') },
+      ].map((item) => (
+        <div class="flex items-center justify-between">
+          <dt class="text-muted">{item.label}</dt>
+          <dd>
+            <kbd class="px-2 py-0.5 rounded-md bg-[var(--bg-elev)] border border-default font-mono text-xs text-[var(--fg)] shadow-sm">
+              {item.keys}
+            </kbd>
+          </dd>
+        </div>
+      ))}
+    </dl>
+  </div>
+</div>
+
+<script>
+  // Hoisted (bundled) script: runs once, re-inits on every view-transition
+  // swap via astro:after-swap. The AbortController tears down the previous
+  // pass's listeners so the document-level keydown handler never stacks
+  // (which would make `d` toggle the theme N times and cancel out).
+  let ksAbort: AbortController | null = null;
+
+  function initShortcuts() {
+    ksAbort?.abort();
+    ksAbort = new AbortController();
+    const { signal } = ksAbort;
+
+    // Re-query on every pass: the DOM nodes are replaced by each swap, so
+    // closure-capturing them once (as an inline script would) goes stale.
+    const overlay = document.querySelector<HTMLElement>('[data-shortcuts-overlay]');
+    const panel = document.querySelector<HTMLElement>('[data-shortcuts-panel]');
+    const closeBtn = document.querySelector('[data-shortcuts-close]');
+    if (!overlay || !panel) return;
+    const searchHref = overlay.dataset.searchHref || '/search';
+
+    function isTyping() {
+      const el = document.activeElement;
+      if (!el) return false;
+      const tag = el.tagName;
+      return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (el as HTMLElement).isContentEditable;
+    }
+
+    function openHelp() {
+      overlay!.classList.remove('opacity-0', 'pointer-events-none');
+      overlay!.classList.add('opacity-100');
+      panel!.classList.remove('scale-95');
+      panel!.classList.add('scale-100');
+    }
+
+    function closeHelp() {
+      overlay!.classList.add('opacity-0', 'pointer-events-none');
+      overlay!.classList.remove('opacity-100');
+      panel!.classList.add('scale-95');
+      panel!.classList.remove('scale-100');
+    }
+
+    function toggleTheme() {
+      const btn = document.querySelector<HTMLButtonElement>('.theme-toggle');
+      btn?.click();
+    }
+
+    function goSearch() {
+      const input = document.getElementById('search-input') as HTMLInputElement | null;
+      if (input) {
+        input.focus();
+        return;
+      }
+      window.location.href = searchHref;
+    }
+
+    function goTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeHelp();
+        return;
+      }
+      if (isTyping() || e.ctrlKey || e.metaKey || e.altKey) return;
+
+      switch (e.key) {
+        case '/':
+          e.preventDefault();
+          goSearch();
+          break;
+        case 'd':
+        case 'D':
+          toggleTheme();
+          break;
+        case 't':
+        case 'T':
+          goTop();
+          break;
+        case '?':
+          openHelp();
+          break;
+      }
+    }, { signal });
+
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeHelp();
+    }, { signal });
+    closeBtn?.addEventListener('click', closeHelp, { signal });
+  }
+
+  initShortcuts();
+  document.addEventListener('astro:after-swap', initShortcuts);
+</script>

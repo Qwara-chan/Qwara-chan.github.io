@@ -3,7 +3,10 @@ import { ClientRouter } from 'astro:transitions';
 import Navbar from '@components/Navbar.astro';
 import Footer from '@components/Footer.astro';
 import MeowEasterEgg from '@components/MeowEasterEgg.astro';
-import { getLangFromUrl, getSwitchHref } from '@i18n/utils';
+import BackToTop from '@components/BackToTop.astro';
+import KeyboardShortcuts from '@components/KeyboardShortcuts.astro';
+import { getLangFromUrl, getSwitchHref, getWordCount } from '@i18n/utils';
+import { getPosts } from '@utils/posts';
 import '../styles/global.css';
 
 interface Props {
@@ -29,6 +32,12 @@ const ogImage = new URL(image, Astro.site).toString();
 
 const zhHref = getSwitchHref(Astro.url, 'zh');
 const enHref = getSwitchHref(Astro.url, 'en');
+
+// Site-wide stats for the footer (getCollection is cached by Astro, so this
+// is cheap even though BaseLayout renders on every page).
+const allPosts = await getPosts(lang);
+const totalPosts = allPosts.length;
+const totalWords = allPosts.reduce((sum, p) => sum + getWordCount(p.body ?? '', lang), 0);
 ---
 
 <!--
@@ -82,7 +91,9 @@ const enHref = getSwitchHref(Astro.url, 'en');
     <noscript>
       <style>
         /* Content hidden by animation pre-states must be visible without JS. */
-        [data-animate] {
+        [data-animate],
+        [data-stagger-grid] [data-stagger-item],
+        .hero-fade {
           opacity: 1 !important;
           transform: none !important;
         }
@@ -92,13 +103,13 @@ const enHref = getSwitchHref(Astro.url, 'en');
       </style>
     </noscript>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap"
-      rel="stylesheet"
-    />
     <link rel="preload" href="/fonts/HarmonyOS_Sans_SC_Regular_Latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/HarmonyOS_Sans_SC_Bold_Latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/JetBrainsMono_Latin.woff2" as="font" type="font/woff2" crossorigin />
+    {lang === 'zh' && (
+      <link rel="preload" href="/fonts/HarmonyOS_Sans_SC_Regular_CJK.woff2" as="font" type="font/woff2" crossorigin />
+      <link rel="preload" href="/fonts/HarmonyOS_Sans_SC_Bold_CJK.woff2" as="font" type="font/woff2" crossorigin />
+    )}
 
     <script is:inline>
       (function () {
@@ -127,18 +138,6 @@ const enHref = getSwitchHref(Astro.url, 'en');
         } catch (e) {}
       }
       document.addEventListener('astro:after-swap', reapplyTheme);
-
-      // Kill all GSAP ScrollTriggers before swapping the DOM so ScrollTrigger
-      // doesn't keep refreshing against detached triggers. The dynamic import
-      // shares the cached module already loaded by hero/scroll-reveal/stagger.
-      document.addEventListener('astro:before-swap', async () => {
-        try {
-          const { ScrollTrigger } = await import('gsap/ScrollTrigger');
-          ScrollTrigger.getAll().forEach((t) => t.kill());
-        } catch (e) {
-          /* GSAP not on this page — nothing to clean up */
-        }
-      });
     </script>
   </head>
   <body>
@@ -146,7 +145,9 @@ const enHref = getSwitchHref(Astro.url, 'en');
     <main>
       <slot />
     </main>
-    <Footer lang={lang} />
+    <Footer lang={lang} totalPosts={totalPosts} totalWords={totalWords} />
+    <BackToTop lang={lang} />
+    <KeyboardShortcuts lang={lang} />
     <MeowEasterEgg />
   </body>
 </html>

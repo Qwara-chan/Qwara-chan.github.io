@@ -47,4 +47,26 @@ const projects = defineCollection({
   schema: projectsSchema,
 });
 
-export const collections = { 'blog/zh': blogZh, 'blog/en': blogEn, projects };
+const nowSchema = z.object({
+  title: z.string(),
+  updatedDate: z.coerce.date(),
+  lang: z.enum(['zh', 'en']).default('zh'),
+});
+
+const nowZh = defineCollection({
+  loader: glob({ pattern: 'zh.mdx', base: './src/data/now' }),
+  schema: nowSchema,
+});
+
+const nowEn = defineCollection({
+  loader: glob({ pattern: 'en.mdx', base: './src/data/now' }),
+  schema: nowSchema,
+});
+
+export const collections = {
+  'blog/zh': blogZh,
+  'blog/en': blogEn,
+  'now/zh': nowZh,
+  'now/en': nowEn,
+  projects,
+};

@@ -1,0 +1,95 @@
+---
+---
+
+<script>
+  let mermaidAbort: AbortController | null = null;
+  let themeObserver: MutationObserver | null = null;
+  let idCounter = 0;
+
+  function currentTheme(): 'dark' | 'default' {
+    return document.documentElement.classList.contains('dark') ? 'dark' : 'default';
+  }
+
+  async function renderDiagram(pre: HTMLElement, code: string, theme: 'dark' | 'default') {
+    const { default: mermaid } = await import('mermaid');
+    mermaid.initialize({
+      startOnLoad: false,
+      theme,
+      securityLevel: 'strict',
+      suppressErrorRendering: true,
+      fontFamily: 'inherit',
+    });
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'mermaid-figure';
+    wrapper.dataset.code = code;
+    wrapper.dataset.theme = theme;
+    wrapper.dataset.mermaidDone = 'true';
+
+    try {
+      const id = `mermaid-${++idCounter}`;
+      const { svg } = await mermaid.render(id, code);
+      wrapper.innerHTML = svg;
+    } catch (err) {
+      console.warn('[mermaid] render failed, showing source instead:', err);
+      const fallback = document.createElement('pre');
+      fallback.className = 'mermaid-fallback';
+      fallback.textContent = code;
+      wrapper.appendChild(fallback);
+    }
+
+    pre.replaceWith(wrapper);
+    return wrapper;
+  }
+
+  function initMermaid() {
+    mermaidAbort?.abort();
+    mermaidAbort = new AbortController();
+    themeObserver?.disconnect();
+    themeObserver = null;
+
+    // Astro 7's Shiki marks the language on `pre[data-language]`; also accept
+    // hand-written `code.language-mermaid` / `code.mermaid` blocks (e.g. in MDX).
+    const pres = new Set<HTMLElement>();
+    document.querySelectorAll<HTMLElement>('pre[data-language="mermaid"]').forEach((p) => pres.add(p));
+    document
+      .querySelectorAll<HTMLElement>('pre code.language-mermaid, pre code.mermaid')
+      .forEach((codeEl) => {
+        const pre = codeEl.parentElement;
+        if (pre && pre.tagName === 'PRE') pres.add(pre);
+      });
+    if (pres.size === 0) return;
+
+    for (const pre of pres) {
+      if (pre.dataset.mermaidDone === 'true') continue;
+
+      const code = pre.querySelector('code')?.textContent ?? '';
+      pre.dataset.mermaidDone = 'true';
+
+      const io = new IntersectionObserver(
+        async (entries, obs) => {
+          if (!entries.some((e) => e.isIntersecting)) return;
+          obs.disconnect();
+          await renderDiagram(pre, code, currentTheme());
+        },
+        { rootMargin: '200px 0px' }
+      );
+      io.observe(pre);
+    }
+
+    // Re-render diagrams when the theme flips so colors stay consistent.
+    themeObserver = new MutationObserver(() => {
+      const theme = currentTheme();
+      document.querySelectorAll<HTMLElement>('[data-mermaid-done]').forEach((wrapper) => {
+        if (wrapper.dataset.theme === theme) return;
+        wrapper.dataset.theme = theme;
+        const code = wrapper.dataset.code;
+        if (code != null) void renderDiagram(wrapper, code, theme);
+      });
+    });
+    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+  }
+
+  initMermaid();
+  document.addEventListener('astro:after-swap', initMermaid);
+</script>

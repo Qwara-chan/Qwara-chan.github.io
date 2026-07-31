@@ -12,7 +12,10 @@ const t = useTranslations(lang);
 const navItems = [
   { key: 'nav.home' as const, href: getLocalizedPath('', lang) },
   { key: 'nav.blog' as const, href: getLocalizedPath('blog', lang) },
+  { key: 'nav.archive' as const, href: getLocalizedPath('archive', lang) },
+  { key: 'nav.now' as const, href: getLocalizedPath('now', lang), className: 'hidden lg:inline-flex' },
   { key: 'nav.projects' as const, href: getLocalizedPath('projects', lang) },
+  { key: 'nav.friends' as const, href: getLocalizedPath('friends', lang) },
   { key: 'nav.about' as const, href: getLocalizedPath('', lang) + '#about', hash: 'about' },
 ];
 
@@ -53,7 +56,8 @@ const currentHash = Astro.url.hash.replace(/^#/, '');
             <a
               href={item.href}
               class:list={[
-                'px-4 py-2 text-sm font-medium rounded-full transition-all duration-300',
+                item.className,
+                'px-4 py-2 text-sm rounded-full transition-all duration-300',
                 isActive ? 'text-[var(--accent)]' : 'text-muted hover:text-[var(--fg)]',
               ]}
             >

@@ -4,7 +4,7 @@ import { getPostStaticPaths } from '@utils/posts';
 
 export const getStaticPaths = () => getPostStaticPaths('zh');
 
-const { post } = Astro.props;
+const { post, prevPost, nextPost } = Astro.props;
 ---
 
-<PostLayout post={post} />
+<PostLayout post={post} prevPost={prevPost} nextPost={nextPost} />
