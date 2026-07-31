@@ -31,14 +31,14 @@ const projects = await getProjects(lang);
         </a>
       </div>
       <p class="text-muted mb-2">{t('projects.subtitle')}</p>
-      <p class="text-xs font-mono text-muted mb-12 inline-flex items-center gap-1.5">
+      <p class="text-xs font-mono text-muted mb-phi-2 inline-flex items-center gap-1.5">
         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
         {t('projects.syncedFromGithub')} · {projects.length} {t('projects.repoCount')}
       </p>
     </ScrollReveal>
 
     {projects.length > 0 ? (
-      <StaggerGrid class="grid sm:grid-cols-2 gap-6">
+      <StaggerGrid class="grid sm:grid-cols-2 gap-phi-1">
         {projects.map((project) => (
           <ProjectCard project={project} lang={lang} />
         ))}

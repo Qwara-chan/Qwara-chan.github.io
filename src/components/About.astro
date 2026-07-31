@@ -31,7 +31,7 @@ const stats = lang === 'zh'
 
     <div class="max-w-3xl">
       <ScrollReveal delay={0.1}>
-        <div class="flex items-start gap-5 mb-[var(--space-phi-2)]">
+        <div class="flex items-start gap-phi-1 mb-[var(--space-phi-2)]">
           <div class="relative shrink-0">
             <img
               src="/avatar.png"
@@ -72,7 +72,7 @@ const stats = lang === 'zh'
       <ScrollReveal delay={0.45}>
         <div class="flex flex-wrap gap-3">
           {stats.map((stat) => (
-            <div class="card px-5 py-3 inline-flex items-baseline gap-2">
+            <div class="card px-phi-1 py-3 inline-flex items-baseline gap-2">
               <span class="text-xl sm:text-2xl font-bold tracking-tight">{stat.value}</span>
               <span class="text-xs text-muted">{stat.label}</span>
             </div>

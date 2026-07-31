@@ -34,15 +34,15 @@ const skillGroups = lang === 'zh'
     </ScrollReveal>
 
     <ScrollReveal delay={0.15}>
-      <p class="text-muted mb-12">{t('skills.subtitle')}</p>
+      <p class="text-muted mb-phi-2">{t('skills.subtitle')}</p>
     </ScrollReveal>
 
-    <div class="grid md:grid-cols-3 gap-6">
+    <div class="grid md:grid-cols-3 gap-phi-1">
       {skillGroups.map((group, gi) => (
         <ScrollReveal delay={0.2 + gi * 0.1} y={30}>
-          <div class="card p-6 h-full">
-            <h3 class="text-sm font-mono uppercase tracking-wider text-muted mb-6">{group.name}</h3>
-            <div class="space-y-5">
+          <div class="card p-phi-1 h-full">
+            <h3 class="text-sm font-mono uppercase tracking-wider text-muted mb-phi-1">{group.name}</h3>
+            <div class="space-y-phi-1">
               {group.skills.map((skill) => (
                 <div data-skill-bar>
                   <div class="flex items-center justify-between mb-2">

@@ -4,7 +4,7 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-sans: "Inter", "Noto Sans SC", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-sans: "HarmonyOS Sans SC", ui-sans-serif, system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace;
 
   --color-ink-50: #fafafa;
@@ -34,6 +34,26 @@
   --space-phi-3: 4.236rem;
   --space-phi-4: 6.854rem;
 
+  /* Golden-ratio spacing scale → generates p-phi-*, gap-phi-*, mb-phi-*, space-y-phi-* … */
+  --spacing-phi-1: 1.618rem;
+  --spacing-phi-2: 2.618rem;
+  --spacing-phi-3: 4.236rem;
+  --spacing-phi-4: 6.854rem;
+
+  /* Golden-ratio type scale → generates text-phi-* (each step × φ) */
+  --text-phi-xs: 0.618rem;
+  --text-phi-xs--line-height: 1.618;
+  --text-phi-sm: 1rem;
+  --text-phi-sm--line-height: 1.618;
+  --text-phi-md: 1.618rem;
+  --text-phi-md--line-height: 1.382;
+  --text-phi-lg: 2.618rem;
+  --text-phi-lg--line-height: 1.236;
+  --text-phi-xl: 4.236rem;
+  --text-phi-xl--line-height: 1.146;
+  --text-phi-2xl: 6.854rem;
+  --text-phi-2xl--line-height: 1;
+
   --radius-phi-sm: 0.618rem;
   --radius-phi-md: 1rem;
   --radius-phi-lg: 1.618rem;
@@ -49,6 +69,55 @@
 
   --radius-xl: 1rem;
   --radius-2xl: 1.25rem;
+}
+
+@font-face {
+  font-family: "HarmonyOS Sans SC";
+  src: url("/fonts/HarmonyOS_Sans_SC_Regular_Latin.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0020-007E, U+00A0-00FF, U+2000-206F, U+2070-209F, U+20A0-20CF, U+2100-214F, U+2190-21FF, U+2200-22FF, U+2500-257F, U+25A0-25FF, U+2600-26FF, U+3000-303F, U+FF00-FFEF;
+}
+@font-face {
+  font-family: "HarmonyOS Sans SC";
+  src: url("/fonts/HarmonyOS_Sans_SC_Regular_CJK.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+4E00-9FFF;
+}
+@font-face {
+  font-family: "HarmonyOS Sans SC";
+  src: url("/fonts/HarmonyOS_Sans_SC_Medium_Latin.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0020-007E, U+00A0-00FF, U+2000-206F, U+2070-209F, U+20A0-20CF, U+2100-214F, U+2190-21FF, U+2200-22FF, U+2500-257F, U+25A0-25FF, U+2600-26FF, U+3000-303F, U+FF00-FFEF;
+}
+@font-face {
+  font-family: "HarmonyOS Sans SC";
+  src: url("/fonts/HarmonyOS_Sans_SC_Medium_CJK.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+4E00-9FFF;
+}
+@font-face {
+  font-family: "HarmonyOS Sans SC";
+  src: url("/fonts/HarmonyOS_Sans_SC_Bold_Latin.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0020-007E, U+00A0-00FF, U+2000-206F, U+2070-209F, U+20A0-20CF, U+2100-214F, U+2190-21FF, U+2200-22FF, U+2500-257F, U+25A0-25FF, U+2600-26FF, U+3000-303F, U+FF00-FFEF;
+}
+@font-face {
+  font-family: "HarmonyOS Sans SC";
+  src: url("/fonts/HarmonyOS_Sans_SC_Bold_CJK.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+4E00-9FFF;
 }
 
 @layer base {
@@ -145,7 +214,7 @@
   .card {
     background-color: var(--bg-elev);
     border: 1px solid var(--border);
-    border-radius: var(--radius-2xl);
+    border-radius: var(--radius-phi-lg);
     transition: border-color 0.3s var(--ease-smooth), transform 0.3s var(--ease-spring), box-shadow 0.3s var(--ease-smooth);
   }
   .card-hover:hover {
@@ -158,7 +227,7 @@
   }
 
   .btn {
-    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300;
+    @apply inline-flex items-center justify-center gap-2 px-phi-1 py-2.5 rounded-full text-sm font-medium transition-all duration-300;
     transition-timing-function: var(--ease-spring);
   }
   .btn-primary {
@@ -197,7 +266,7 @@
   }
 
   .section-title {
-    @apply text-2xl sm:text-3xl font-bold tracking-tight;
+    @apply text-phi-md sm:text-phi-lg font-bold tracking-tight;
   }
   .section-eyebrow {
     @apply text-xs font-mono uppercase tracking-[0.2em] mb-3;
@@ -302,7 +371,12 @@ footer:hover .footer-meow {
 }
 
 .golden-section {
-  padding-block: var(--space-phi-3);
+  padding-block: var(--space-phi-2);
+}
+@media (min-width: 640px) {
+  .golden-section {
+    padding-block: var(--space-phi-3);
+  }
 }
 
 .golden-divider {

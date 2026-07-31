@@ -82,16 +82,24 @@ const t = useTranslations(lang);
 
     const glow = document.querySelector('[data-hero-glow]');
     if (glow) {
-      window.addEventListener('mousemove', (e) => {
-        const x = e.clientX / window.innerWidth;
-        const y = e.clientY / window.innerHeight;
+      let mx = 0.5, my = 0.5, ticking = false;
+      const update = () => {
+        ticking = false;
         gsap.to(glow, {
-          x: (x - 0.5) * 100,
-          y: (y - 0.5) * 100,
+          x: (mx - 0.5) * 100,
+          y: (my - 0.5) * 100,
           duration: 1,
           ease: 'power2.out',
         });
-      });
+      };
+      window.addEventListener('mousemove', (e) => {
+        mx = e.clientX / window.innerWidth;
+        my = e.clientY / window.innerHeight;
+        if (!ticking) {
+          ticking = true;
+          requestAnimationFrame(update);
+        }
+      }, { passive: true });
     }
   }
 

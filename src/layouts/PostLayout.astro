@@ -26,7 +26,7 @@ const tags = post.data.tags;
 ---
 
 <BaseLayout title={post.data.title} description={post.data.description}>
-  <article class="container-px container-mx py-12 sm:py-16">
+  <article class="container-px container-mx py-phi-2 sm:py-phi-3">
     <ScrollReveal y={20}>
       <a href={blogHref} class="inline-flex items-center gap-1.5 text-sm text-muted hover:text-[var(--fg)] transition-colors duration-300 mb-8">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7M19 12H5" /></svg>
@@ -34,7 +34,7 @@ const tags = post.data.tags;
       </a>
     </ScrollReveal>
 
-    <div class="grid lg:grid-cols-[1.618fr_1fr] gap-12">
+    <div class="grid lg:grid-cols-[1.618fr_1fr] gap-phi-3">
       <div class="min-w-0">
         <ScrollReveal y={30} delay={0.1}>
           <div class="flex items-center gap-3 text-sm text-muted mb-4">
@@ -42,20 +42,20 @@ const tags = post.data.tags;
             <span class="w-1 h-1 rounded-full bg-current opacity-30"></span>
             <span>{readingTime} {t('blog.minRead')}</span>
           </div>
-          <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight mb-6">
+          <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight mb-phi-1">
             {post.data.title}
           </h1>
-          <p class="text-lg text-muted leading-relaxed mb-6">{post.data.description}</p>
+          <p class="text-lg text-muted leading-relaxed mb-phi-1">{post.data.description}</p>
 
           {tags.length > 0 && (
-            <div class="flex flex-wrap gap-2 mb-10">
+            <div class="flex flex-wrap gap-2 mb-phi-2">
               {tags.map((tag) => (
                 <a href={`${getLocalizedPath('tags', lang)}/${tag}`} class="tag-chip">#{tag}</a>
               ))}
             </div>
           )}
 
-          <div class="h-px bg-[var(--border)] mb-10"></div>
+          <div class="h-px bg-[var(--border)] mb-phi-2"></div>
         </ScrollReveal>
 
         <div class="reading-progress-wrapper" data-reading-progress>

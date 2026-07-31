@@ -32,17 +32,17 @@ const timeline = lang === 'zh'
     </ScrollReveal>
 
     <ScrollReveal delay={0.1}>
-      <h2 class="section-title mb-16">{t('timeline.title')}</h2>
+      <h2 class="section-title mb-phi-3">{t('timeline.title')}</h2>
     </ScrollReveal>
 
     <div class="relative max-w-2xl">
       <div class="absolute left-[7px] sm:left-1/2 top-0 bottom-0 w-px bg-[var(--border)]" data-timeline-line></div>
 
-      <div class="space-y-12">
+      <div class="space-y-phi-2">
         {timeline.map((item, i) => (
           <ScrollReveal delay={i * 0.15} y={30}>
             <div class:list={[
-              'relative flex items-start gap-6',
+              'relative flex items-start gap-phi-1',
               i % 2 === 0 ? 'sm:flex-row-reverse sm:text-right' : '',
             ]}>
               <div class="absolute left-0 sm:left-1/2 sm:-translate-x-1/2 w-4 h-4 rounded-full bg-[var(--bg)] border-2 border-[var(--accent)] z-10 mt-1" data-timeline-dot></div>

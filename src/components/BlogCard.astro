@@ -33,7 +33,7 @@ const readingTime = getReadingTime(bodyText, lang);
       )}
     </div>
 
-    <div class:list={['p-5 sm:p-6', featured ? 'sm:w-1/2' : '']}>
+    <div class:list={['p-phi-1', featured ? 'sm:w-1/2' : '']}>
       <div class="flex items-center gap-3 text-xs text-muted mb-3">
         <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate, lang)}</time>
         <span class="w-1 h-1 rounded-full bg-current opacity-30"></span>
