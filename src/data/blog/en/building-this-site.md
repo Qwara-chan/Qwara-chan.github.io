@@ -122,14 +122,15 @@ export default defineConfig({
 
 The default language has no path prefix, while the secondary language uses `/en/` prefix. Content collections are organized by language directory, and UI strings are maintained through a dictionary object.
 
-## Pagefind Full-text Search
+## Client-side Search
 
-Why Pagefind over Fuse.js:
+The site is small and has few posts, so instead of pulling in a search index library, search is implemented with pure client-side filtering:
 
-- **Build-time indexing**: Run `pagefind --site dist` after `astro build` to auto-scan HTML and generate the index
-- **Lazy loading**: Index is chunked, loading only relevant shards during search
-- **Native multilingual support**: Automatically detects Chinese and English content
-- **Zero-config UI**: Provides a ready-to-use Web Component
+- **Zero dependencies**: At build time each post's title, description and tags are written into `data-*` attributes; the search page filters them with plain JS, no extra requests needed
+- **Instant response**: Search-as-you-type, scored and ranked by title / tags / keyword matches, with no network latency
+- **Same in dev and prod**: It doesn't depend on build output, so local development behaves exactly like production
+
+For a blog of this size, this is simpler and more direct than a build-time index. Once there are enough posts to warrant real full-text search over body content, swapping in something like Pagefind is easy enough.
 
 ## Deploying to GitHub Pages
 
@@ -151,4 +152,4 @@ This project demonstrates how to build a fully-featured, animation-rich, high-pe
 2. Tailwind v4's CSS-first configuration is more intuitive and powerful
 3. GSAP + View Transitions enable smooth animation experiences
 4. astro:i18n makes bilingual sites simple
-5. Pagefind is the best choice for static site search
+5. Match the search solution to the site's scale — a small blog is fine with pure client-side filtering

@@ -37,7 +37,7 @@ A personal portfolio & blog built with Astro 7, featuring minimalist monochrome 
 | Styling | [Tailwind CSS 4.3.3](https://tailwindcss.com) + `@tailwindcss/vite` |
 | Animation | [GSAP 3.15.0](https://gsap.com) + [motion 12.43.0](https://motion.dev) |
 | Content | Astro Content Layer API + MDX |
-| Search | [Pagefind 1.5.2](https://pagefind.app) |
+| Search | Client-side filtering (zero-dependency) |
 | Deployment | GitHub Pages |
 
 ## 📁 Project Structure
@@ -101,7 +101,7 @@ npm run preview
 | Command | Description |
 |---|---|
 | `npm run dev` | Start dev server (fetches GitHub repos first) |
-| `npm run build` | Build + Pagefind index |
+| `npm run build` | Build the site |
 | `npm run preview` | Preview production build |
 | `npm run check` | Astro type check |
 | `npm run fetch:github` | Manually refresh GitHub repos |

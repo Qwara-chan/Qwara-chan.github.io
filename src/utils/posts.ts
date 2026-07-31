@@ -5,13 +5,7 @@ export type Post = CollectionEntry<'blog/zh'> | CollectionEntry<'blog/en'>;
 export type Project = CollectionEntry<'projects'>;
 
 export async function getPosts(lang: Lang): Promise<Post[]> {
-  if (lang === 'en') {
-    const posts = await getCollection('blog/en');
-    return posts
-      .filter((p) => !p.data.draft)
-      .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
-  }
-  const posts = await getCollection('blog/zh');
+  const posts = await getCollection(lang === 'en' ? 'blog/en' : 'blog/zh');
   return posts
     .filter((p) => !p.data.draft)
     .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());

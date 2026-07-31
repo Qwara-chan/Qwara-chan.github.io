@@ -35,7 +35,7 @@ const tagsBase = getLocalizedPath('tags', lang);
     {allTags.length > 0 && (
       <ScrollReveal delay={0.1}>
         <div class="flex flex-wrap gap-2 mb-12">
-          <a href={blogBase} class:list={['tag-chip', !Astro.url.searchParams.get('tag') && 'tag-chip-active']}>
+          <a href={blogBase} class="tag-chip tag-chip-active">
             {t('blog.allTags')}
           </a>
           {allTags.map(({ tag, count }) => (

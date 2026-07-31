@@ -4,14 +4,13 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "npm run fetch:github && npm run pagefind:dev && astro dev",
+    "dev": "npm run fetch:github && astro dev",
     "prebuild": "node scripts/fetch-github-repos.mjs",
-    "build": "astro build && pagefind --site dist",
+    "build": "astro build",
     "preview": "astro preview",
     "check": "astro check",
     "astro": "astro",
-    "fetch:github": "node scripts/fetch-github-repos.mjs",
-    "pagefind:dev": "pagefind --site dist || true"
+    "fetch:github": "node scripts/fetch-github-repos.mjs"
   },
   "dependencies": {
     "@astrojs/mdx": "^7.0.5",
@@ -26,7 +25,6 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
-    "pagefind": "^1.5.2",
     "sharp": "^0.34.0",
     "typescript": "^6.0.3"
   }
