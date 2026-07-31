@@ -53,3 +53,36 @@ export function paginate<T>(items: T[], pageSize: number): T[][] {
   }
   return pages.length ? pages : [[]];
 }
+
+/**
+ * Build getStaticPaths() entries for /tags/[tag] from a single collection
+ * load. The previous implementation called getPostsByTag() per tag, which
+ * triggered one getCollection() per tag (~N+1 fetches at build time).
+ */
+export async function getTagStaticPaths(lang: Lang) {
+  const posts = await getPosts(lang);
+  const grouped = new Map<string, Post[]>();
+  for (const post of posts) {
+    for (const tag of post.data.tags) {
+      const list = grouped.get(tag);
+      if (list) list.push(post);
+      else grouped.set(tag, [post]);
+    }
+  }
+  return [...grouped.entries()].map(([tag, posts]) => ({
+    params: { tag },
+    props: { tag, posts },
+  }));
+}
+
+/**
+ * Build getStaticPaths() for /blog/[...slug]. Both the zh and en routes
+ * were identical except for the collection name; this keeps the dispatch
+ * logic in one place.
+ */
+export async function getPostStaticPaths(lang: Lang) {
+  const posts = await getCollection(lang === 'en' ? 'blog/en' : 'blog/zh');
+  return posts
+    .filter((p) => !p.data.draft)
+    .map((post) => ({ params: { slug: post.id }, props: { post } }));
+}

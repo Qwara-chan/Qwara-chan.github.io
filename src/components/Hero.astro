@@ -25,15 +25,15 @@ const t = useTranslations(lang);
         {t('hero.greeting')}
       </p>
 
-      <h1 class="type-phi-name tracking-tighter mb-[var(--phi-1)]" data-hero-name>
+      <h1 class="type-phi-name tracking-tighter mb-phi-1" data-hero-name>
         {t('hero.name')}<span class="text-[var(--accent)]">.</span>
       </h1>
 
-      <p class="type-phi-title text-muted mb-[var(--phi-1)]" data-hero-title>
+      <p class="type-phi-title text-muted mb-phi-1" data-hero-title>
         {t('hero.title')}
       </p>
 
-      <p class="type-phi-subtitle text-muted max-w-xl mb-[var(--phi-2)]" data-hero-subtitle>
+      <p class="type-phi-subtitle text-muted max-w-xl mb-phi-2" data-hero-subtitle>
         {t('hero.subtitle')}
       </p>
 
@@ -67,7 +67,15 @@ const t = useTranslations(lang);
 <script>
   import { gsap } from 'gsap';
 
+  // Drop the previous pass's window mousemove listener on re-init so the
+  // glow doesn't get N parallel gsap.to() per frame after N navigations.
+  let heroAbort: AbortController | null = null;
+
   function initHero() {
+    heroAbort?.abort();
+    heroAbort = new AbortController();
+    const { signal } = heroAbort;
+
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (reduceMotion) return;
 
@@ -99,7 +107,7 @@ const t = useTranslations(lang);
           ticking = true;
           requestAnimationFrame(update);
         }
-      }, { passive: true });
+      }, { passive: true, signal });
     }
   }
 

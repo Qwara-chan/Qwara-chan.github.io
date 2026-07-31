@@ -36,7 +36,7 @@ const timeline = lang === 'zh'
     </ScrollReveal>
 
     <div class="relative max-w-2xl">
-      <div class="absolute left-[7px] sm:left-1/2 top-0 bottom-0 w-px bg-[var(--border)]" data-timeline-line></div>
+      <div class="absolute left-[7px] sm:left-1/2 top-0 bottom-0 w-px bg-[var(--border)]"></div>
 
       <div class="space-y-phi-2">
         {timeline.map((item, i) => (
@@ -45,7 +45,7 @@ const timeline = lang === 'zh'
               'relative flex items-start gap-phi-1',
               i % 2 === 0 ? 'sm:flex-row-reverse sm:text-right' : '',
             ]}>
-              <div class="absolute left-0 sm:left-1/2 sm:-translate-x-1/2 w-4 h-4 rounded-full bg-[var(--bg)] border-2 border-[var(--accent)] z-10 mt-1" data-timeline-dot></div>
+              <div class="absolute left-0 sm:left-1/2 sm:-translate-x-1/2 w-4 h-4 rounded-full bg-[var(--bg)] border-2 border-[var(--accent)] z-10 mt-1"></div>
               <div class:list={['pl-12 sm:pl-0 sm:w-1/2', i % 2 === 0 ? 'sm:pr-12' : 'sm:pl-12']}>
                 <span class="inline-block text-xs font-mono font-bold text-muted mb-2">{item.year}</span>
                 <h3 class="text-lg font-semibold mb-2">{item.title}</h3>

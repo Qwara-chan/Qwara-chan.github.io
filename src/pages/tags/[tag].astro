@@ -1,16 +1,8 @@
 ---
 import TagPage from '@components/pages/TagPage.astro';
-import { getAllTags, getPostsByTag } from '@utils/posts';
+import { getTagStaticPaths } from '@utils/posts';
 
-export async function getStaticPaths() {
-  const tags = await getAllTags('zh');
-  const paths = [];
-  for (const { tag } of tags) {
-    const posts = await getPostsByTag(tag, 'zh');
-    paths.push({ params: { tag }, props: { tag, posts } });
-  }
-  return paths;
-}
+export const getStaticPaths = () => getTagStaticPaths('zh');
 
 const { tag, posts } = Astro.props;
 ---

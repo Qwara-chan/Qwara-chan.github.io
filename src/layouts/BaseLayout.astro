@@ -100,21 +100,32 @@ const enHref = getSwitchHref(Astro.url, 'en');
     </script>
 
     <script>
-      // Re-apply theme after Astro View Transitions swap
+      // Re-apply theme after Astro View Transitions swap. We do this once
+      // on `after-swap` only — running on `before-swap` mutates the *outgoing*
+      // document and is discarded. The inline boot script already painted the
+      // first page correctly, so the only thing to keep in sync is the
+      // newly-swapped document.
       function reapplyTheme() {
         try {
           const theme = localStorage.getItem('theme');
           const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
           const isDark = theme === 'dark' || (!theme && prefersDark);
-          if (isDark) {
-            document.documentElement.classList.add('dark');
-          } else {
-            document.documentElement.classList.remove('dark');
-          }
+          document.documentElement.classList.toggle('dark', isDark);
         } catch (e) {}
       }
-      document.addEventListener('astro:before-swap', reapplyTheme);
       document.addEventListener('astro:after-swap', reapplyTheme);
+
+      // Kill all GSAP ScrollTriggers before swapping the DOM so ScrollTrigger
+      // doesn't keep refreshing against detached triggers. The dynamic import
+      // shares the cached module already loaded by hero/scroll-reveal/stagger.
+      document.addEventListener('astro:before-swap', async () => {
+        try {
+          const { ScrollTrigger } = await import('gsap/ScrollTrigger');
+          ScrollTrigger.getAll().forEach((t) => t.kill());
+        } catch (e) {
+          /* GSAP not on this page — nothing to clean up */
+        }
+      });
     </script>
   </head>
   <body>

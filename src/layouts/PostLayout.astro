@@ -81,7 +81,7 @@ const tags = post.data.tags;
                 <a
                   href={`#${heading.slug}`}
                   class:list={[
-                    'block text-muted hover:text-[var(--fg)] transition-colors duration-200 link-toc',
+                    'block text-muted hover:text-[var(--fg)] transition-colors duration-200',
                     heading.depth === 3 && 'pl-3',
                   ]}
                   data-toc-link={heading.slug}
@@ -102,11 +102,18 @@ const tags = post.data.tags;
   ></div>
 
   <script>
+    // Each navigation produces a fresh [data-reading-bar] element (and fresh
+    // <pre> blocks). Without aborting prior listeners, the scroll handler
+    // would compound N copies after N visits.
+    let postAbort: AbortController | null = null;
+
     function initReadingProgress() {
+      postAbort?.abort();
+      postAbort = new AbortController();
+      const { signal } = postAbort;
+
       const bar = document.querySelector('[data-reading-bar]');
       if (!bar) return;
-      if ((bar as HTMLElement).dataset.initialized) return;
-      (bar as HTMLElement).dataset.initialized = 'true';
 
       function update() {
         const scrollTop = window.scrollY;
@@ -115,7 +122,7 @@ const tags = post.data.tags;
         (bar as HTMLElement).style.transform = `scaleX(${progress})`;
       }
 
-      window.addEventListener('scroll', update, { passive: true });
+      window.addEventListener('scroll', update, { passive: true, signal });
       update();
 
       const tocLinks = document.querySelectorAll('[data-toc-link]');

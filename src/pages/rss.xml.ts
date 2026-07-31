@@ -8,11 +8,12 @@ export async function GET(context: APIContext) {
     title: 'Qwara - 博客',
     description: '技术笔记、学习心得与项目记录',
     site: context.site!,
+    trailingSlash: false,
     items: posts.map((post) => ({
       title: post.data.title,
       description: post.data.description,
       pubDate: post.data.pubDate,
-      link: `/blog/${post.id}/`,
+      link: `/blog/${post.id}`,
       categories: post.data.tags,
     })),
   });

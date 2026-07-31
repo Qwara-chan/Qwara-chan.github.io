@@ -25,14 +25,6 @@
   --color-accent-dark: #4f46e5;
 
   --phi: 1.618;
-  --phi-1: calc(1rem * var(--phi));
-  --phi-2: calc(1rem * var(--phi) * var(--phi));
-  --phi-3: calc(1rem * var(--phi) * var(--phi) * var(--phi));
-
-  --space-phi-1: 1.618rem;
-  --space-phi-2: 2.618rem;
-  --space-phi-3: 4.236rem;
-  --space-phi-4: 6.854rem;
 
   /* Golden-ratio spacing scale → generates p-phi-*, gap-phi-*, mb-phi-*, space-y-phi-* … */
   --spacing-phi-1: 1.618rem;
@@ -371,11 +363,11 @@ footer:hover .footer-meow {
 }
 
 .golden-section {
-  padding-block: var(--space-phi-2);
+  padding-block: var(--spacing-phi-2);
 }
 @media (min-width: 640px) {
   .golden-section {
-    padding-block: var(--space-phi-3);
+    padding-block: var(--spacing-phi-3);
   }
 }
 
@@ -383,7 +375,7 @@ footer:hover .footer-meow {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  margin-block: var(--space-phi-2);
+  margin-block: var(--spacing-phi-2);
 }
 
 .golden-divider::before,

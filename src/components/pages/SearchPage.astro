@@ -60,7 +60,17 @@ const allPosts = await getPosts(lang);
 </BaseLayout>
 
 <script>
+  // Per-init AbortController: the [data-search-key] elements differ across
+  // navigations, so we re-collect them and tear down any old listeners.
+  // The input handler also coalesces via rAF so fast typing does not run
+  // score() against every post on every keystroke.
+  let searchAbort: AbortController | null = null;
+
   function initSearch() {
+    searchAbort?.abort();
+    searchAbort = new AbortController();
+    const { signal } = searchAbort;
+
     const input = document.getElementById('search-input') as HTMLInputElement;
     const results = document.getElementById('search-results') as HTMLElement;
     const empty = document.getElementById('search-empty') as HTMLElement;
@@ -93,9 +103,18 @@ const allPosts = await getPosts(lang);
       items.forEach((el) => { el.hidden = false; el.style.order = ''; });
     }
 
-    function update() {
-      const q = (input.value || '').trim().toLowerCase();
+    // rAF-coalesce: at most one run per animation frame. Subsequent input events
+    // bump `pendingQuery` and let the next frame pick it up.
+    let pendingQuery: string | null = null;
+    let frameQueued = false;
+    const runUpdate = () => {
+      frameQueued = false;
+      const q = pendingQuery ?? '';
+      pendingQuery = null;
+      render(q);
+    };
 
+    function render(q: string) {
       if (!q) {
         clearGrid();
         results.classList.remove('hidden');
@@ -125,8 +144,27 @@ const allPosts = await getPosts(lang);
       }
     }
 
-    input.addEventListener('input', update);
-    update();
+    input.addEventListener(
+      'input',
+      () => {
+        const q = (input.value || '').trim().toLowerCase();
+        // Empty query is already trivial — render synchronously so the grid
+        // returns immediately when the user clears the field.
+        if (!q) {
+          pendingQuery = null;
+          render('');
+          return;
+        }
+        pendingQuery = q;
+        if (!frameQueued) {
+          frameQueued = true;
+          requestAnimationFrame(runUpdate);
+        }
+      },
+      { signal }
+    );
+
+    render((input.value || '').trim().toLowerCase());
     if (document.activeElement !== input) {
       setTimeout(() => input.focus(), 100);
     }

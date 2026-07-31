@@ -1,6 +1,7 @@
 ---
 import { getLangFromUrl, useTranslations, getLocalizedPath } from '@i18n/utils';
 import type { Lang } from '@i18n/ui';
+import pkg from '../../package.json' with { type: 'json' };
 
 interface Props {
   lang?: Lang;
@@ -9,6 +10,7 @@ interface Props {
 const lang = Astro.props.lang ?? getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 const year = new Date().getFullYear();
+const version = pkg.version;
 
 const socials = [
   { label: 'GitHub', href: 'https://github.com/Qwara-chan', icon: 'github' },
@@ -30,7 +32,7 @@ const socials = [
         <div class="text-sm">
           <span class="font-semibold">Qwara</span>
           <span class="text-muted ml-2">&copy; {year} {t('footer.rights')}</span>
-          <span class="text-muted ml-2 font-mono" style="opacity: 0.35;">v{String(year).slice(2)}.7.31</span>
+          <span class="text-muted ml-2 font-mono" style="opacity: 0.35;">v{version}</span>
         </div>
       </div>
 

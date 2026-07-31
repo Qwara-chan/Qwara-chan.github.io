@@ -156,7 +156,17 @@ const currentHash = Astro.url.hash.replace(/^#/, '');
 <div class="h-16"></div>
 
 <script>
+  // Module-scoped AbortController: every init pass aborts the previous pass's
+  // listeners. Without this, every view-transition would stack another click
+  // listener on each `.theme-toggle` button — after 1 swap, two toggles fire per
+  // click and cancel out (theme button looks dead).
+  let navbarAbort: AbortController | null = null;
+
   function initNavbar() {
+    navbarAbort?.abort();
+    navbarAbort = new AbortController();
+    const { signal } = navbarAbort;
+
     const navbar = document.querySelector('[data-navbar]');
     const navInner = document.querySelector('[data-nav-inner]');
     const navBg = document.querySelector('[data-navbar-bg]');
@@ -189,7 +199,7 @@ const currentHash = Astro.url.hash.replace(/^#/, '');
       updateScrolled();
     }
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('scroll', handleScroll, { passive: true, signal });
     handleScroll();
 
     function toggleMenu(open: boolean) {
@@ -209,8 +219,8 @@ const currentHash = Astro.url.hash.replace(/^#/, '');
       updateScrolled();
     }
 
-    menuToggle?.addEventListener('click', () => toggleMenu(!menuOpenState));
-    menuLinks?.forEach((link) => link.addEventListener('click', () => toggleMenu(false)));
+    menuToggle?.addEventListener('click', () => toggleMenu(!menuOpenState), { signal });
+    menuLinks?.forEach((link) => link.addEventListener('click', () => toggleMenu(false), { signal }));
 
     const themeToggle = document.querySelectorAll('.theme-toggle');
     themeToggle.forEach((btn) => {
@@ -228,7 +238,7 @@ const currentHash = Astro.url.hash.replace(/^#/, '');
           document.documentElement.classList.toggle('dark');
           localStorage.setItem('theme', newTheme);
         });
-      });
+      }, { signal });
     });
   }
 

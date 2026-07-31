@@ -89,7 +89,7 @@ export const ui = {
     'nav.projects': 'Projects',
     'nav.about': 'About',
     'nav.search': 'Search',
-'hero.greeting': 'Hi, I am',
+    'hero.greeting': 'Hi, I am',
     'hero.name': 'Qwara',
     'hero.title': 'Mostly Vibes',
     'hero.subtitle': 'Someone who, honestly, doesn\u2019t really know how to code — only how to vibe code. This is where I keep the small things I have stacked together with AI.',
