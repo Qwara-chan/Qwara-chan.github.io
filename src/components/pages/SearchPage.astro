@@ -102,6 +102,24 @@ const allPosts = await getPosts(lang);
       items.forEach((el) => { el.hidden = false; el.style.order = ''; });
     }
 
+    // Highlight matched keywords in titles and descriptions
+    function highlight(el: HTMLElement | null, q: string) {
+      if (!el) return;
+      if (!el.dataset.original) el.dataset.original = el.textContent || '';
+      const text = el.dataset.original;
+      if (!q) {
+        el.textContent = text;
+        return;
+      }
+      const tokens = q.split(/\s+/).filter(Boolean).map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+      if (tokens.length === 0) {
+        el.textContent = text;
+        return;
+      }
+      const re = new RegExp(`(${tokens.join('|')})`, 'gi');
+      el.innerHTML = text.replace(re, '<mark class="search-mark">$1</mark>');
+    }
+
     // rAF-coalesce: at most one run per animation frame. Subsequent input events
     // bump `pendingQuery` and let the next frame pick it up.
     let pendingQuery: string | null = null;
@@ -116,6 +134,10 @@ const allPosts = await getPosts(lang);
     function render(q: string) {
       if (!q) {
         clearGrid();
+        items.forEach((el) => {
+          highlight(el.querySelector('h3'), '');
+          highlight(el.querySelector('p.line-clamp-2'), '');
+        });
         results.classList.remove('hidden');
         empty.classList.add('hidden');
         status.classList.add('hidden');
@@ -127,7 +149,11 @@ const allPosts = await getPosts(lang);
         .filter((x) => x.s > 0)
         .sort((a, b) => b.s - a.s);
       const matched = new Set(scored.map((x) => x.el));
-      items.forEach((el) => { el.hidden = !matched.has(el); });
+      items.forEach((el) => {
+        el.hidden = !matched.has(el);
+        highlight(el.querySelector('h3'), q);
+        highlight(el.querySelector('p.line-clamp-2'), q);
+      });
       scored.forEach((x, i) => { x.el.style.order = String(i); });
 
       if (scored.length === 0) {

@@ -271,6 +271,32 @@
     border-color: var(--accent);
   }
 
+  .nav-link {
+    position: relative;
+  }
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: var(--accent);
+    border-radius: 9999px;
+    transform: translateX(-50%);
+    transition: width 0.3s var(--ease-spring);
+  }
+  .nav-link.nav-active::after {
+    width: 50%;
+  }
+
+  .search-mark {
+    background-color: var(--accent-soft);
+    color: var(--accent);
+    border-radius: 2px;
+    padding: 0 1px;
+  }
+
   .section-title {
     @apply text-phi-md sm:text-phi-lg font-bold tracking-tight;
   }
@@ -387,6 +413,12 @@
 }
 ::view-transition-new(root) {
   z-index: 2;
+}
+
+/* Theme toggle: circular reveal - JS drives the clip-path, disable CSS fade */
+html.theme-transition::view-transition-old(root),
+html.theme-transition::view-transition-new(root) {
+  animation: none;
 }
 
 .theme-transition-circle {
@@ -506,4 +538,53 @@ footer:hover .footer-meow {
   color: var(--fg);
   text-align: left;
   overflow-x: auto;
+}
+
+/* Print styles - clean article output without chrome */
+@media print {
+  #navbar,
+  [data-mobile-menu],
+  [data-back-to-top],
+  [data-shortcuts-overlay],
+  [data-g-hint],
+  [data-reading-bar],
+  [data-lightbox],
+  [data-mobile-toc],
+  footer,
+  aside {
+    display: none !important;
+  }
+
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  .prose {
+    max-width: 100% !important;
+    color: #000 !important;
+  }
+
+  .prose pre,
+  .prose code {
+    color: #000 !important;
+    background: transparent !important;
+    border-color: #ccc !important;
+  }
+
+  .prose a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.85em;
+    color: #555;
+    text-decoration: none;
+  }
+
+  .card {
+    border-color: #ccc !important;
+    box-shadow: none !important;
+  }
+
+  .golden-section {
+    padding-block: 1rem !important;
+  }
 }

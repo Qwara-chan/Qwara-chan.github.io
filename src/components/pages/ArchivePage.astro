@@ -48,7 +48,8 @@ const years = [...byYear.entries()].sort((a, b) => b[0] - a[0]);
           </ScrollReveal>
 
           {/* Posts list */}
-          <ol class="relative border-l border-default ml-2 space-y-1">
+          <ol class="relative border-l border-default ml-2 space-y-1" data-archive-list>
+            <div class="absolute -left-px top-0 bottom-0 w-px bg-[var(--accent)] origin-top" style="transform: scaleY(0);" data-archive-line></div>
             {posts.map((post) => (
               <li class="relative pl-phi-1">
                 {/* Timeline dot */}
@@ -83,3 +84,30 @@ const years = [...byYear.entries()].sort((a, b) => b[0] - a[0]);
     </div>
   </div>
 </BaseLayout>
+
+<script>
+  // Draw each year's accent line when the list scrolls into view.
+  function initArchiveLines() {
+    document.querySelectorAll('[data-archive-line]').forEach((line) => {
+      if ((line as HTMLElement).dataset.initialized) return;
+      (line as HTMLElement).dataset.initialized = 'true';
+
+      const io = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              (entry.target as HTMLElement).style.transform = 'scaleY(1)';
+              (entry.target as HTMLElement).style.transition = 'transform 1.2s var(--ease-spring)';
+              io.disconnect();
+            }
+          });
+        },
+        { rootMargin: '0px 0px -30% 0px' },
+      );
+      io.observe(line);
+    });
+  }
+
+  initArchiveLines();
+  document.addEventListener('astro:after-swap', initArchiveLines);
+</script>

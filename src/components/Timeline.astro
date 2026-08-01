@@ -36,7 +36,9 @@ const timeline = lang === 'zh'
     </ScrollReveal>
 
     <div class="relative max-w-2xl">
-      <div class="absolute left-[7px] sm:left-1/2 top-0 bottom-0 w-px bg-[var(--border)]"></div>
+      <div class="absolute left-[7px] sm:left-1/2 top-0 bottom-0 w-px bg-[var(--border)] overflow-hidden">
+        <div class="absolute inset-0 bg-[var(--accent)] origin-top" style="transform: scaleY(0);" data-timeline-line></div>
+      </div>
 
       <div class="space-y-phi-2">
         {timeline.map((item, i) => (
@@ -58,3 +60,30 @@ const timeline = lang === 'zh'
     </div>
   </div>
 </section>
+
+<script>
+  // Draw the accent timeline line top-to-bottom when it scrolls into view.
+  function initTimelineLine() {
+    document.querySelectorAll('[data-timeline-line]').forEach((line) => {
+      if ((line as HTMLElement).dataset.initialized) return;
+      (line as HTMLElement).dataset.initialized = 'true';
+
+      const io = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              (entry.target as HTMLElement).style.transform = 'scaleY(1)';
+              (entry.target as HTMLElement).style.transition = 'transform 1.5s var(--ease-spring)';
+              io.disconnect();
+            }
+          });
+        },
+        { rootMargin: '0px 0px -25% 0px' },
+      );
+      io.observe(line);
+    });
+  }
+
+  initTimelineLine();
+  document.addEventListener('astro:after-swap', initTimelineLine);
+</script>

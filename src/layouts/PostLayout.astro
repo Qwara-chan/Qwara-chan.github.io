@@ -5,7 +5,7 @@ import Mermaid from '@components/Mermaid.astro';
 import '@styles/katex.css';
 import { getLangFromUrl, useTranslations, formatDate, getReadingTime, getWordCount, getLocalizedPath } from '@i18n/utils';
 import { render } from 'astro:content';
-import type { Post } from '@utils/posts';
+import { getPosts, type Post } from '@utils/posts';
 import type { Lang } from '@i18n/ui';
 
 interface Props {
@@ -31,9 +31,19 @@ const tags = post.data.tags;
 
 const prevHref = prevPost ? getLocalizedPath(`blog/${prevPost.id}`, lang) : null;
 const nextHref = nextPost ? getLocalizedPath(`blog/${nextPost.id}`, lang) : null;
+
+// Related posts: ranked by shared tags, then by recency.
+const allPosts = await getPosts(lang);
+const related = allPosts
+  .filter((p) => p.id !== post.id)
+  .map((p) => ({ post: p, score: p.data.tags.filter((tag) => tags.includes(tag)).length }))
+  .filter((x) => x.score > 0)
+  .sort((a, b) => b.score - a.score || b.post.data.pubDate.getTime() - a.post.data.pubDate.getTime())
+  .slice(0, 3)
+  .map((x) => x.post);
 ---
 
-<BaseLayout title={post.data.title} description={post.data.description}>
+<BaseLayout title={post.data.title} description={post.data.description} image={getLocalizedPath(`og/${post.id}`, lang) + '.png'}>
   <article class="container-px container-mx py-phi-2 sm:py-phi-3">
     <ScrollReveal y={20}>
       <a href={blogHref} class="inline-flex items-center gap-1.5 text-sm text-muted hover:text-[var(--fg)] transition-colors duration-300 mb-8">
@@ -89,6 +99,25 @@ const nextHref = nextPost ? getLocalizedPath(`blog/${nextPost.id}`, lang) : null
           <div class="h-px bg-[var(--border)] mb-phi-2"></div>
         </ScrollReveal>
 
+        {tocItems.length > 0 && (
+          <details class="lg:hidden card p-4 mb-phi-1" data-mobile-toc>
+            <summary class="text-xs font-mono uppercase tracking-wider text-muted cursor-pointer select-none flex items-center gap-2">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+              {t('blog.toc')}
+            </summary>
+            <nav class="mt-4 space-y-2 text-sm">
+              {tocItems.map((heading) => (
+                <a
+                  href={`#${heading.slug}`}
+                  class:list={['block text-muted hover:text-[var(--fg)] transition-colors duration-200', heading.depth === 3 && 'pl-3']}
+                >
+                  {heading.text}
+                </a>
+              ))}
+            </nav>
+          </details>
+        )}
+
         <div class="reading-progress-wrapper" data-reading-progress>
           <div class="prose prose-lg max-w-none dark:prose-invert
             prose-headings:scroll-mt-20 prose-headings:tracking-tight
@@ -129,6 +158,20 @@ const nextHref = nextPost ? getLocalizedPath(`blog/${nextPost.id}`, lang) : null
               </a>
             )}
           </nav>
+        )}
+
+        {related.length > 0 && (
+          <section class="mt-phi-2">
+            <h2 class="text-xs font-mono uppercase tracking-wider text-muted mb-phi-1">{t('blog.related')}</h2>
+            <div class="grid sm:grid-cols-3 gap-4">
+              {related.map((rp) => (
+                <a href={getLocalizedPath(`blog/${rp.id}`, lang)} class="card card-hover p-4 group">
+                  <span class="text-xs font-mono text-muted block mb-2">{formatDate(rp.data.pubDate, lang)}</span>
+                  <span class="font-semibold tracking-tight text-sm group-hover:text-[var(--accent)] transition-colors duration-300 line-clamp-2">{rp.data.title}</span>
+                </a>
+              ))}
+            </div>
+          </section>
         )}
       </div>
 
@@ -201,6 +244,34 @@ const nextHref = nextPost ? getLocalizedPath(`blog/${nextPost.id}`, lang) : null
         }
         window.addEventListener('scroll', update, { passive: true, signal });
         update();
+
+        // --- Reading position memory (restored on back/forward via bfcache) ---
+        const posKey = 'qwara:scroll:' + window.location.pathname;
+        let saveTimer: number | undefined;
+        window.addEventListener('scroll', () => {
+          clearTimeout(saveTimer);
+          saveTimer = window.setTimeout(() => {
+            try { sessionStorage.setItem(posKey, String(window.scrollY)); } catch {}
+          }, 200);
+        }, { passive: true, signal });
+        window.addEventListener('pageshow', (e) => {
+          if (e.persisted) {
+            const saved = parseInt(sessionStorage.getItem(posKey) || '0', 10);
+            if (saved > 300) {
+              requestAnimationFrame(() => window.scrollTo(0, saved));
+            }
+          }
+        }, { signal });
+
+        // --- Mobile TOC: close on link click ---
+        const mobileToc = document.querySelector('[data-mobile-toc]');
+        if (mobileToc) {
+          mobileToc.querySelectorAll('a').forEach((a) => {
+            a.addEventListener('click', () => {
+              (mobileToc as HTMLDetailsElement).open = false;
+            }, { signal });
+          });
+        }
       }
 
       // --- TOC active heading highlight ---
@@ -234,6 +305,16 @@ const nextHref = nextPost ? getLocalizedPath(`blog/${nextPost.id}`, lang) : null
       document.querySelectorAll('pre code').forEach((block) => {
         const pre = block.parentElement;
         if (!pre || pre.querySelector('.copy-btn')) return;
+
+        // Language label (top-left) - Astro 7 Shiki uses pre[data-language]
+        const langMatch = pre.getAttribute('data-language') || (block.className.match(/language-(\w+)/) || [])[1];
+        if (langMatch && langMatch !== 'plaintext') {
+          const label = document.createElement('span');
+          label.className = 'code-lang-label absolute top-3 left-3 text-xs font-mono select-none pointer-events-none';
+          label.style.opacity = '0.4';
+          label.textContent = langMatch;
+          pre.appendChild(label);
+        }
 
         const btn = document.createElement('button');
         btn.className = 'copy-btn absolute top-3 right-3 px-2 py-1 rounded-md text-xs font-mono bg-[var(--bg-elev)] border border-default text-muted hover:text-[var(--fg)] transition-colors opacity-0 group-hover:opacity-100';

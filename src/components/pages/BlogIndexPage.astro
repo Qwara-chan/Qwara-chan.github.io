@@ -35,7 +35,7 @@ const tagsBase = getLocalizedPath('tags', lang);
 
     {allTags.length > 0 && (
       <ScrollReveal delay={0.1}>
-        <div class="flex flex-wrap gap-2 mb-phi-2">
+        <div class="flex flex-wrap gap-2 mb-phi-2 items-center">
           <a href={blogBase} class="tag-chip tag-chip-active">
             {t('blog.allTags')}
           </a>
@@ -44,6 +44,9 @@ const tagsBase = getLocalizedPath('tags', lang);
               #{tag} <span class="opacity-50 ml-1">{count}</span>
             </a>
           ))}
+          <a href={tagsBase} class="tag-chip ml-auto whitespace-nowrap">
+            ☁ {t('tagsCloud.title')}
+          </a>
         </div>
       </ScrollReveal>
     )}

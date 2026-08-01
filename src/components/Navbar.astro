@@ -57,8 +57,8 @@ const currentHash = Astro.url.hash.replace(/^#/, '');
               href={item.href}
               class:list={[
                 item.className,
-                'px-4 py-2 text-sm rounded-full transition-all duration-300',
-                isActive ? 'text-[var(--accent)]' : 'text-muted hover:text-[var(--fg)]',
+                'nav-link px-4 py-2 text-sm rounded-full transition-all duration-300',
+                isActive ? 'nav-active text-[var(--accent)]' : 'text-muted hover:text-[var(--fg)]',
               ]}
             >
               {t(item.key)}
@@ -228,9 +228,19 @@ const currentHash = Astro.url.hash.replace(/^#/, '');
 
     const themeToggle = document.querySelectorAll('.theme-toggle');
     themeToggle.forEach((btn) => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', (e: Event) => {
         const isDark = document.documentElement.classList.contains('dark');
         const newTheme = isDark ? 'light' : 'dark';
+
+        // Circular reveal from the click point - falls back to plain toggle
+        // when the View Transition API is unavailable.
+        const me = e as MouseEvent;
+        const x = me.clientX;
+        const y = me.clientY;
+        const endRadius = Math.hypot(
+          Math.max(x, window.innerWidth - x),
+          Math.max(y, window.innerHeight - y),
+        );
 
         if (!document.startViewTransition) {
           document.documentElement.classList.toggle('dark');
@@ -238,9 +248,28 @@ const currentHash = Astro.url.hash.replace(/^#/, '');
           return;
         }
 
-        document.startViewTransition(() => {
+        document.documentElement.classList.add('theme-transition');
+        const transition = document.startViewTransition(() => {
           document.documentElement.classList.toggle('dark');
           localStorage.setItem('theme', newTheme);
+        });
+        transition.ready.then(() => {
+          document.documentElement.animate(
+            {
+              clipPath: [
+                `circle(0px at ${x}px ${y}px)`,
+                `circle(${endRadius}px at ${x}px ${y}px)`,
+              ],
+            },
+            {
+              duration: 500,
+              easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
+              pseudoElement: '::view-transition-new(root)',
+            },
+          );
+        });
+        transition.finished.finally(() => {
+          document.documentElement.classList.remove('theme-transition');
         });
       }, { signal });
     });

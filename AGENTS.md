@@ -42,12 +42,13 @@ Content collections: `'blog/zh'` and `'blog/en'` (separate loader per locale).
 - Blog posts live in `src/data/blog/{zh,en}/` as `.md` or `.mdx`
 - `/now` page content lives in `src/data/now/{zh,en}.mdx` (collections `'now/zh'`, `'now/en'`; frontmatter `title`/`updatedDate`/`lang`)
 - Projects are auto-fetched from GitHub API at build time to `src/data/projects/_github.json`; **do not edit by hand**
-- Frontmatter schema: `title`, `description`, `pubDate`, `tags`, `cover`, `draft`, `lang` (Zod-validated)
+- Frontmatter schema: `title`, `description`, `pubDate`, `updatedDate?`, `tags`, `cover?`, `draft`, `lang` (Zod-validated in `src/content.config.ts`)
 - No `src/content/` directory — Astro 7 Content Layer with `glob()` and `file()` loaders
 
 ## Dev server quirks
 
 - Search is pure client-side filtering over `data-*` attributes — it works identically in dev and production, no build-time index needed
+- `trailingSlash: 'never'` and `prefetch: { prefetchAll: true }` are set globally in `astro.config.mjs`
 - `.astro/` directory is generated at build time; contains type stubs — **do not commit** (in `.gitignore`)
 - `sharp` is a devDependency (required by Astro for image optimization in production)
 
@@ -62,8 +63,14 @@ Content collections: `'blog/zh'` and `'blog/en'` (separate loader per locale).
 | `/tags/[tag]` | `src/pages/tags/[tag].astro` |
 | `/search` or `/en/search` | `src/pages/search.astro` (client-side filtering, works in dev and prod) |
 | `/now` or `/en/now` | `src/pages/now.astro` (renders `src/components/pages/NowPage.astro` from `data/now/{zh,en}.mdx`) |
+| `/archive` or `/en/archive` | `src/pages/archive.astro` |
+| `/friends` or `/en/friends` | `src/pages/friends.astro` |
+| `/secret-cat` or `/en/secret-cat` | `src/pages/secret-cat.astro` (hidden cat easter-egg page; linked from `MeowEasterEgg.astro`) |
+| `/404` | `src/pages/404.astro` |
 | `/rss.xml` | `src/pages/rss.xml.ts` (zh-only RSS) |
 | `/en/rss.xml` | `src/pages/en/rss.xml.ts` (en-only RSS) |
+
+Route stubs in `src/pages/` (and mirrored `src/pages/en/`) are 2–5 line files delegating to shared components in `src/components/pages/`. Page-specific animation components live in `src/components/animations/` (`ScrollReveal.astro`, `StaggerGrid.astro`).
 
 ## Design tokens
 

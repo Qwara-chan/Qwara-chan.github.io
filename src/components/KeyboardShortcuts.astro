@@ -45,6 +45,12 @@ const searchHref = getLocalizedPath('search', lang);
         { keys: 'D', label: t('shortcuts.theme') },
         { keys: 'T', label: t('shortcuts.top') },
         { keys: '?', label: t('shortcuts.help') },
+        { keys: 'g h', label: t('shortcuts.goHome') },
+        { keys: 'g b', label: t('shortcuts.goBlog') },
+        { keys: 'g p', label: t('shortcuts.goProjects') },
+        { keys: 'g a', label: t('shortcuts.goArchive') },
+        { keys: 'g f', label: t('shortcuts.goFriends') },
+        { keys: 'g n', label: t('shortcuts.goNow') },
       ].map((item) => (
         <div class="flex items-center justify-between">
           <dt class="text-muted">{item.label}</dt>
@@ -57,6 +63,15 @@ const searchHref = getLocalizedPath('search', lang);
       ))}
     </dl>
   </div>
+</div>
+
+{/* Two-key "g" prefix hint */}
+<div
+  class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[85] px-4 py-2 rounded-full bg-[var(--fg)] text-[var(--bg)] text-sm font-mono opacity-0 pointer-events-none transition-opacity duration-200"
+  data-g-hint
+>
+  <span style="color: var(--accent);">g</span>_ 
+  <span class="text-xs ml-1" style="opacity: 0.6;">…</span>
 </div>
 
 <script>
@@ -118,12 +133,57 @@ const searchHref = getLocalizedPath('search', lang);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    // --- two-key "g" prefix navigation (vim-style) ---
+    let gPending = false;
+    let gTimer: number | undefined;
+    const gHint = document.querySelector('[data-g-hint]');
+
+    function isEn() {
+      return window.location.pathname.startsWith('/en');
+    }
+    function lp(path: string) {
+      if (!path) return isEn() ? '/en' : '/';
+      return isEn() ? `/en/${path}` : `/${path}`;
+    }
+    function showGHint() {
+      gHint?.classList.remove('opacity-0');
+      gHint?.classList.add('opacity-100');
+    }
+    function hideGHint() {
+      gHint?.classList.add('opacity-0');
+      gHint?.classList.remove('opacity-100');
+    }
+
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         closeHelp();
+        gPending = false;
+        hideGHint();
         return;
       }
       if (isTyping() || e.ctrlKey || e.metaKey || e.altKey) return;
+
+      // Two-key "g" navigation: press g, then h/b/p/a/f/n/s
+      if (gPending) {
+        gPending = false;
+        clearTimeout(gTimer);
+        hideGHint();
+        const key = e.key.toLowerCase();
+        const navMap: Record<string, string> = {
+          h: lp(''),
+          b: lp('blog'),
+          p: lp('projects'),
+          a: lp('archive'),
+          f: lp('friends'),
+          n: lp('now'),
+          s: lp('search'),
+        };
+        if (navMap[key]) {
+          e.preventDefault();
+          window.location.href = navMap[key];
+        }
+        return;
+      }
 
       switch (e.key) {
         case '/':
@@ -137,6 +197,15 @@ const searchHref = getLocalizedPath('search', lang);
         case 't':
         case 'T':
           goTop();
+          break;
+        case 'g':
+          e.preventDefault();
+          gPending = true;
+          showGHint();
+          gTimer = window.setTimeout(() => {
+            gPending = false;
+            hideGHint();
+          }, 1500);
           break;
         case '?':
           openHelp();

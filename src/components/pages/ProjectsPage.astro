@@ -10,6 +10,9 @@ import { getProjects } from '@utils/posts';
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 const projects = await getProjects(lang);
+
+// Unique languages for the filter toolbar
+const languages = [...new Set(projects.map((p) => p.data.language).filter(Boolean))] as string[];
 ---
 
 <BaseLayout title={t('projects.title')} description={t('projects.subtitle')}>
@@ -39,11 +42,45 @@ const projects = await getProjects(lang);
     </ScrollReveal>
 
     {projects.length > 0 ? (
-      <StaggerGrid class="grid sm:grid-cols-2 gap-phi-1">
-        {projects.map((project) => (
-          <ProjectCard project={project} lang={lang} />
-        ))}
-      </StaggerGrid>
+      <div data-project-container>
+        <div class="flex flex-wrap items-center gap-3 mb-phi-2" data-project-toolbar>
+          <div class="flex flex-wrap gap-2" data-project-langs>
+            <button class="tag-chip tag-chip-active" data-lang-filter="">
+              {t('projects.allLangs')}
+            </button>
+            {languages.map((l) => (
+              <button class="tag-chip" data-lang-filter={l}>
+                {l}
+              </button>
+            ))}
+          </div>
+          <div class="flex flex-wrap gap-2 sm:ml-auto" data-project-sort>
+            <button class="tag-chip tag-chip-active" data-sort="updated">
+              {t('projects.sortUpdated')}
+            </button>
+            <button class="tag-chip" data-sort="stars">
+              {t('projects.sortStars')}
+            </button>
+            <button class="tag-chip" data-sort="forks">
+              {t('projects.sortForks')}
+            </button>
+          </div>
+        </div>
+
+        <StaggerGrid class="grid sm:grid-cols-2 gap-phi-1">
+          {projects.map((project) => (
+            <div
+              data-project-item
+              data-lang={project.data.language ?? ''}
+              data-stars={project.data.stars}
+              data-forks={project.data.forks}
+              data-updated={new Date(project.data.pushedAt ?? project.data.updatedAt ?? 0).getTime()}
+            >
+              <ProjectCard project={project} lang={lang} />
+            </div>
+          ))}
+        </StaggerGrid>
+      </div>
     ) : (
       <div class="text-center py-20 text-muted">
         <p class="text-lg">{t('blog.noPosts')}</p>
@@ -51,3 +88,61 @@ const projects = await getProjects(lang);
     )}
   </div>
 </BaseLayout>
+
+<script>
+  // Client-side language filter + sort for the projects grid. Each card is
+  // wrapped with data attributes so we can reorder via CSS `order` without
+  // touching the DOM tree (keeps the stagger animation intact).
+  let projAbort: AbortController | null = null;
+
+  function initProjects() {
+    projAbort?.abort();
+    projAbort = new AbortController();
+    const { signal } = projAbort;
+
+    const toolbar = document.querySelector('[data-project-toolbar]');
+    const items = Array.from(document.querySelectorAll<HTMLElement>('[data-project-item]'));
+    if (!toolbar || !items.length) return;
+    const langBtns = Array.from(toolbar.querySelectorAll<HTMLButtonElement>('[data-lang-filter]'));
+    const sortBtns = Array.from(toolbar.querySelectorAll<HTMLButtonElement>('[data-sort]'));
+    if (!items.length) return;
+
+    let activeLang = '';
+    let activeSort = 'updated';
+
+    function apply() {
+      const visible = items.filter((el) => {
+        const lang = el.dataset.lang || '';
+        return !activeLang || lang === activeLang;
+      });
+      const visibleSet = new Set(visible);
+      items.forEach((el) => { el.hidden = !visibleSet.has(el); });
+
+      visible.sort((a, b) => {
+        if (activeSort === 'stars') return parseInt(b.dataset.stars || '0') - parseInt(a.dataset.stars || '0');
+        if (activeSort === 'forks') return parseInt(b.dataset.forks || '0') - parseInt(a.dataset.forks || '0');
+        return parseInt(b.dataset.updated || '0') - parseInt(a.dataset.updated || '0');
+      });
+      visible.forEach((el, i) => { el.style.order = String(i); });
+    }
+
+    langBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        activeLang = btn.dataset.langFilter || '';
+        langBtns.forEach((b) => b.classList.toggle('tag-chip-active', b === btn));
+        apply();
+      }, { signal });
+    });
+
+    sortBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        activeSort = btn.dataset.sort || 'updated';
+        sortBtns.forEach((b) => b.classList.toggle('tag-chip-active', b === btn));
+        apply();
+      }, { signal });
+    });
+  }
+
+  initProjects();
+  document.addEventListener('astro:after-swap', initProjects);
+</script>

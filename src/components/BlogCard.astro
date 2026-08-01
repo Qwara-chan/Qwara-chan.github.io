@@ -18,6 +18,17 @@ const href = getLocalizedPath(`blog/${post.id}`, lang);
 const bodyText = post.body ?? '';
 const readingTime = getReadingTime(bodyText, lang);
 const wordCount = getWordCount(bodyText, lang);
+
+// Stable hue from the title so each post gets a consistent gradient cover.
+const titleHash = (str: string) => {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) {
+    h = (h << 5) - h + str.charCodeAt(i);
+    h |= 0;
+  }
+  return Math.abs(h);
+};
+const coverHue = titleHash(post.data.title) % 360;
 ---
 
 <article data-stagger-item>
@@ -26,8 +37,10 @@ const wordCount = getWordCount(bodyText, lang);
       {post.data.cover ? (
         <img src={post.data.cover} alt={post.data.title} class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" />
       ) : (
-        <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-[var(--ink-100)] to-[var(--ink-200)] dark:from-[var(--ink-800)] dark:to-[var(--ink-900)]">
-          <span class="text-4xl font-mono font-bold text-muted opacity-40">{post.data.title.charAt(0)}</span>
+        <div class="w-full h-full flex items-center justify-center relative overflow-hidden"
+          style={`background: linear-gradient(135deg, hsl(${coverHue} 65% 58%), hsl(${(coverHue + 45) % 360} 68% 42%));`}>
+          <div class="absolute inset-0 opacity-25" style="background-image: radial-gradient(circle at 20% 80%, rgba(255,255,255,0.4) 0%, transparent 55%);"></div>
+          <span class="relative text-5xl font-mono font-black text-white/30 select-none">{post.data.title.charAt(0)}</span>
         </div>
       )}
     </div>

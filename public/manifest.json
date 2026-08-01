@@ -1,0 +1,18 @@
+{
+  "name": "Qwara",
+  "short_name": "Qwara",
+  "description": "Qwara 的个人主页 — 技术博客、项目作品集与个人介绍",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#09090b",
+  "theme_color": "#6366f1",
+  "categories": ["blog", "portfolio", "personal"],
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "/favicon-64.png", "sizes": "64x64", "type": "image/png" },
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "/avatar.png", "sizes": "420x420", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
