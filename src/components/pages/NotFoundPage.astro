@@ -1,0 +1,92 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import { getLangFromUrl, useTranslations, getLocalizedPath } from '@i18n/utils';
+
+// The static 404.html is built once (zh, via the root route). Unknown /en/*
+// paths get the same file, so the language is switched client-side from the
+// pathname. The /en/404 mirror renders the same component with lang=en at build.
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const tEn = useTranslations('en');
+const searchHref = getLocalizedPath('search', lang);
+
+const en404 = {
+  title: tEn('404.title'),
+  desc: tEn('404.desc'),
+  searchHint: tEn('404.searchHint'),
+  searchPlaceholder: tEn('blog.search'),
+  home: tEn('404.home'),
+};
+---
+
+<BaseLayout title="404">
+  <div class="container-px container-mx py-24 sm:py-32 text-center relative" data-section-reveal>
+    {/* HUD corner marks */}
+    <span class="absolute top-10 left-6 sm:left-12 w-6 h-6 border-t-2 border-l-2 border-[var(--accent)] opacity-50" aria-hidden="true"></span>
+    <span class="absolute top-10 right-6 sm:right-12 w-6 h-6 border-t-2 border-r-2 border-[var(--accent)] opacity-50" aria-hidden="true"></span>
+    <span class="absolute bottom-10 left-6 sm:left-12 w-6 h-6 border-b-2 border-l-2 border-[var(--accent)] opacity-50" aria-hidden="true"></span>
+    <span class="absolute bottom-10 right-6 sm:right-12 w-6 h-6 border-b-2 border-r-2 border-[var(--accent)] opacity-50" aria-hidden="true"></span>
+
+    <pre class="font-mono text-[var(--accent)] leading-tight text-xs sm:text-sm mb-6 select-none" aria-hidden="true">{`  /\\_/\\
+ ( o.o )  404?  meow…
+  > ^ <`}</pre>
+    <p class="text-8xl sm:text-9xl font-extrabold font-mono text-muted opacity-20 mb-4">404</p>
+    <h1 class="text-2xl font-bold tracking-tight mb-3" data-i18n-title>{t('404.title')}</h1>
+    <p class="text-muted mb-8" data-i18n-desc>{t('404.desc')}</p>
+
+    {/* Inline search to help recover */}
+    <form action={searchHref} method="get" class="max-w-md mx-auto mb-8" data-i18n-form>
+      <label class="block text-xs font-mono uppercase tracking-wider text-muted mb-2" data-i18n-search-hint>
+        {t('404.searchHint')}
+      </label>
+      <div class="relative">
+        <svg class="absolute left-4 top-1/2 -translate-y-1/2 text-muted pointer-events-none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
+        <input
+          type="search"
+          name="q"
+          placeholder={t('blog.search')}
+          class="w-full pl-11 pr-4 py-3 rounded-[4px] bg-[var(--bg-elev)] border border-default text-sm focus:outline-none focus:border-[var(--accent)] transition-colors"
+          autocomplete="off"
+          data-i18n-ph
+        />
+      </div>
+    </form>
+
+    <a href={getLocalizedPath('', lang)} class="btn btn-primary" data-i18n-home>
+      <span data-i18n-home-label>{t('404.home')}</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>
+    </a>
+  </div>
+</BaseLayout>
+
+<script is:inline define:vars={{ en404 }}>
+  // The built 404.html is zh (single static fallback for every unknown path).
+  // English visitors land here two ways: directly at an unknown /en/* URL, or
+  // via the /en/404 → /404 fallback redirect stub (Astro does not honor a
+  // src/pages/en/404.astro route, so that stub redirects with the /en/ URL
+  // preserved as a same-origin referrer). Detect both and swap to English.
+  (function () {
+    var isEn = location.pathname.startsWith('/en');
+    if (!isEn && document.referrer) {
+      try {
+        var ref = new URL(document.referrer);
+        if (ref.origin === location.origin && ref.pathname.startsWith('/en')) isEn = true;
+      } catch (e) {}
+    }
+    if (!isEn) return;
+    var swap = function (selector, key) {
+      var el = document.querySelector(selector);
+      if (el && en404[key] != null) el.textContent = en404[key];
+    };
+    swap('[data-i18n-title]', 'title');
+    swap('[data-i18n-desc]', 'desc');
+    swap('[data-i18n-search-hint]', 'searchHint');
+    var ph = document.querySelector('[data-i18n-ph]');
+    if (ph) ph.setAttribute('placeholder', en404.searchPlaceholder);
+    var form = document.querySelector('[data-i18n-form]');
+    if (form) form.setAttribute('action', '/en/search');
+    var home = document.querySelector('[data-i18n-home]');
+    if (home) home.setAttribute('href', '/en');
+    document.title = '404 — Qwara';
+  })();
+</script>

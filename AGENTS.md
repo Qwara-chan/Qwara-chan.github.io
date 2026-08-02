@@ -80,6 +80,7 @@ Easter-egg layer: `MeowEasterEgg.astro` (`is:inline`, deferred — don't break i
 - Projects are auto-fetched — **do not edit `_github.json` by hand**
 - Blog slug = `post.id`; tag URLs must `encodeURIComponent(tag)`
 - Blog pagination: `?page=N`, 9/page, with guards against `NaN`/`0`/overflow in `BlogIndexPage.astro`
+- The 404 page is a single bilingual page: Astro does **not** honor `src/pages/<locale>/404.astro` (the i18n fallback redirects `/en/404` → `/404` instead of routing it), so `src/components/pages/NotFoundPage.astro` renders zh by default and swaps to English client-side via `location.pathname` + same-origin `document.referrer`. Keep the swap script when editing it.
 
 ## Dev server quirks
 
