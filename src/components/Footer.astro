@@ -22,19 +22,22 @@ const socials = [
 ];
 ---
 
-<footer class="border-t border-default mt-phi-4">
+<footer class="border-t border-default mt-phi-4 relative">
+  {/* Caution-stripe hazard band on top */}
+  <div class="hazard-band absolute inset-x-0 top-0 h-[3px]" style="--hazard-color: var(--accent); --hazard-opacity: 0.5;" aria-hidden="true"></div>
+
   <div class="container-px container-mx py-phi-2">
     <div class="flex flex-col sm:flex-row items-center justify-between gap-6">
       <div class="flex items-center gap-3">
         <img
           src="/avatar.png"
           alt=""
-          class="w-7 h-7 rounded-lg"
+          class="w-7 h-7 rounded-[4px] border border-default"
           width="28"
           height="28"
         />
         <div class="text-sm">
-          <span class="font-semibold">Qwara</span>
+          <span class="font-semibold font-mono">QWARA</span>
           <span class="text-muted ml-2">&copy; {year} {t('footer.rights')}</span>
           <span class="text-muted ml-2 font-mono" style="opacity: 0.35;">v{version}</span>
         </div>
@@ -46,7 +49,7 @@ const socials = [
             href={s.href}
             target={s.icon === 'rss' ? undefined : '_blank'}
             rel={s.icon === 'rss' ? undefined : 'noopener noreferrer'}
-            class="flex items-center justify-center w-9 h-9 rounded-full border border-default text-muted hover:text-[var(--fg)] hover:border-strong transition-all duration-300 hover:-translate-y-0.5"
+            class="flex items-center justify-center w-9 h-9 rounded-[4px] border border-default text-muted hover:text-[var(--accent)] hover:border-[var(--accent)] transition-all duration-300 hover:-translate-y-0.5"
             aria-label={s.label}
           >
             {s.icon === 'github' && (
@@ -60,7 +63,7 @@ const socials = [
       </div>
     </div>
 
-    <div class="mt-phi-1 pt-phi-1 border-t border-default text-center text-xs text-muted">
+    <div class="mt-phi-1 pt-phi-1 border-t border-default text-center text-xs text-muted readout">
       <span>{t('footer.builtWith')}</span>
       <button
         type="button"

@@ -1,5 +1,6 @@
 ---
 import type { Project } from '@utils/posts';
+import { getLanguageAccent } from '@utils/posts';
 import GithubIcon from '@components/icons/GithubIcon.astro';
 import { getLangFromUrl } from '@i18n/utils';
 import type { Lang } from '@i18n/ui';
@@ -7,11 +8,11 @@ import type { Lang } from '@i18n/ui';
 interface Props {
   project: Project;
   lang?: Lang;
+  index?: number;
 }
 
 const lang = Astro.props.lang ?? getLangFromUrl(Astro.url);
-const { project } = Astro.props;
-
+const { project, index } = Astro.props;
 const data = project.data;
 
 const langLabel = lang === 'zh'
@@ -23,24 +24,13 @@ const updatedLabel = updated
   ? new Intl.DateTimeFormat(lang === 'zh' ? 'zh-CN' : 'en-US', { dateStyle: 'medium' }).format(updated)
   : '';
 
-const langDotClass = {
-  blue: 'bg-blue-500',
-  yellow: 'bg-yellow-500',
-  emerald: 'bg-emerald-500',
-  cyan: 'bg-cyan-500',
-  orange: 'bg-orange-500',
-  red: 'bg-red-500',
-  pink: 'bg-pink-500',
-  green: 'bg-green-500',
-  zinc: 'bg-zinc-400',
-}[data.languageColor ?? 'zinc'] ?? 'bg-zinc-400';
-
+const accent = getLanguageAccent(data.languageColor);
 const primaryHref = data.repo || data.url || '#';
 const hasSeparateVisit = !!data.url && data.url !== data.repo;
 ---
 
-<article data-stagger-item>
-  <div class="card card-hover overflow-hidden h-full flex flex-col group relative">
+<article data-stagger-item class="h-full">
+  <div class="card card-hover group relative flex h-full flex-col overflow-hidden rounded-[4px]">
     <a
       href={primaryHref}
       target="_blank"
@@ -49,14 +39,35 @@ const hasSeparateVisit = !!data.url && data.url !== data.repo;
       aria-label={`${langLabel.open} ${data.title}`}
     ></a>
 
-    <div class="relative overflow-hidden aspect-phi bg-[var(--bg-elev)] flex items-center justify-center pointer-events-none">
-      <div class="absolute inset-0 opacity-[0.04] dark:opacity-[0.06]"
-        style="background-image: linear-gradient(var(--fg) 1px, transparent 1px), linear-gradient(90deg, var(--fg) 1px, transparent 1px); background-size: 32px 32px;"></div>
+    {/* Language accent edge */}
+    <span class="h-[3px] w-full shrink-0" style={{ backgroundColor: accent }} aria-hidden="true"></span>
+
+    {/* HUD corner marks on the card frame */}
+    <span class="absolute left-2 top-2 z-20 h-3 w-3 border-l-[1.5px] border-t-[1.5px] opacity-0 transition-opacity duration-300 group-hover:opacity-80 pointer-events-none" style={{ borderColor: accent }} aria-hidden="true"></span>
+    <span class="absolute bottom-2 right-2 z-20 h-3 w-3 border-b-[1.5px] border-r-[1.5px] opacity-0 transition-opacity duration-300 group-hover:opacity-80 pointer-events-none" style={{ borderColor: accent }} aria-hidden="true"></span>
+
+    {/* Preview: coordinate grid + targeting reticle + watermark index */}
+    <div class="relative aspect-phi overflow-hidden bg-[var(--bg-elev)] flex items-center justify-center pointer-events-none">
+      <div class="absolute inset-0 schematic-grid"></div>
+      <div class="absolute inset-0 halftone opacity-40"></div>
+
+      {index != null && (
+        <span class="absolute right-3 bottom-1 font-mono font-extrabold leading-none text-[var(--fg)] opacity-[0.06]" aria-hidden="true">
+          {String(index + 1).padStart(2, '0')}
+        </span>
+      )}
+
+      {/* Reticle */}
+      <span class="absolute left-3 top-3 h-10 w-10 rounded-full border border-[var(--fg)] opacity-20" aria-hidden="true">
+        <span class="absolute left-1/2 top-1/2 h-[2px] w-14 -translate-x-1/2 -translate-y-1/2 bg-[var(--fg)] opacity-60"></span>
+        <span class="absolute left-1/2 top-1/2 h-14 w-[2px] -translate-x-1/2 -translate-y-1/2 bg-[var(--fg)] opacity-60"></span>
+      </span>
+
       <div class="relative flex flex-col items-center justify-center w-full h-full p-phi-1 text-center">
-        <GithubIcon class="w-10 h-10 text-[var(--fg-muted)] mb-2 transition-transform duration-500 group-hover:scale-110" />
-        <h3 class="text-base sm:text-lg font-mono font-bold tracking-tight truncate max-w-full px-2">{data.title}</h3>
+        <GithubIcon class="w-9 h-9 text-[var(--fg-muted)] mb-2 transition-transform duration-500 group-hover:scale-110" />
+        <h3 class="text-base sm:text-lg font-mono font-bold tracking-tight truncate max-w-full px-2 group-hover:text-[var(--accent)] transition-colors duration-300">{data.title}</h3>
         {data.fork && (
-          <span class="absolute top-3 right-3 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold border border-default text-muted pointer-events-none">
+          <span class="absolute top-3 right-3 px-2 py-0.5 rounded-[2px] text-[10px] font-mono font-bold border border-default text-muted pointer-events-none">
             {langLabel.fork}
           </span>
         )}
@@ -66,11 +77,11 @@ const hasSeparateVisit = !!data.url && data.url !== data.repo;
     <div class="p-phi-1 flex flex-col flex-1 pointer-events-none">
       <p class="text-sm text-muted leading-relaxed mb-4 line-clamp-3 flex-1">{data.description}</p>
 
-      <div class="flex items-center flex-wrap gap-x-4 gap-y-1.5 text-xs text-muted mb-4">
+      <div class="flex items-center flex-wrap gap-x-4 gap-y-1.5 text-xs text-muted font-mono mb-4">
         {data.language && (
           <span class="inline-flex items-center gap-1.5">
-            <span class:list={['w-2 h-2 rounded-full', langDotClass]}></span>
-            <span class="font-mono">{data.language}</span>
+            <span class="w-2 h-2 rounded-full" style={{ backgroundColor: accent }}></span>
+            <span>{data.language}</span>
           </span>
         )}
         <span class="inline-flex items-center gap-1">
@@ -82,7 +93,7 @@ const hasSeparateVisit = !!data.url && data.url !== data.repo;
           {data.forks}
         </span>
         {updatedLabel && (
-          <span class="font-mono text-[11px]">· {updatedLabel}</span>
+          <span class="text-[11px]">· {updatedLabel}</span>
         )}
       </div>
 
@@ -92,13 +103,13 @@ const hasSeparateVisit = !!data.url && data.url !== data.repo;
             href={data.url}
             target="_blank"
             rel="noopener noreferrer"
-            class="relative z-20 inline-flex items-center gap-1.5 text-xs text-muted hover:text-[var(--accent)] transition-colors duration-300 pointer-events-auto"
+            class="relative z-20 inline-flex items-center gap-1.5 text-xs text-muted hover:text-[var(--accent)] transition-colors duration-300 pointer-events-auto font-mono"
           >
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
             {langLabel.visit}
           </a>
         )}
-        <span class="relative z-20 inline-flex items-center gap-1.5 text-xs text-muted pointer-events-none">
+        <span class="relative z-20 inline-flex items-center gap-1.5 text-xs text-muted pointer-events-none font-mono">
           <GithubIcon class="w-3.5 h-3.5" />
           {langLabel.source}
         </span>

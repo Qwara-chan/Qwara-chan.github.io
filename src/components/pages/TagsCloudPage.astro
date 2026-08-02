@@ -1,6 +1,5 @@
 ---
 import BaseLayout from '@layouts/BaseLayout.astro';
-import ScrollReveal from '@components/animations/ScrollReveal.astro';
 import { getLangFromUrl, useTranslations, getLocalizedPath } from '@i18n/utils';
 import { getPosts, getAllTags } from '@utils/posts';
 
@@ -26,37 +25,37 @@ function tagOpacity(count: number): number {
 ---
 
 <BaseLayout title={t('tagsCloud.title')} description={t('tagsCloud.subtitle')}>
-  <div class="container-px container-mx golden-section">
-    <ScrollReveal>
-      <a href={blogBase} class="inline-flex items-center gap-1.5 text-sm text-muted hover:text-[var(--fg)] transition-colors duration-300 mb-6">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7M19 12H5" /></svg>
-        {t('blog.back')}
-      </a>
-      <p class="section-eyebrow">{t('tagsCloud.eyebrow')}</p>
-      <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight mb-3">{t('tagsCloud.title')}</h1>
-      <p class="text-muted mb-phi-2">
-        {t('tagsCloud.subtitle')}
-        <span class="ml-2 font-mono text-sm text-[var(--accent)]">
-          {tags.length} {t('tagsCloud.countUnit')}
-        </span>
-      </p>
-    </ScrollReveal>
+  <div class="container-px container-mx golden-section" data-section-reveal>
+    <a href={blogBase} class="inline-flex items-center gap-1.5 text-sm text-muted hover:text-[var(--fg)] transition-colors duration-300 mb-6 font-mono">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7M19 12H5" /></svg>
+      {t('blog.back')}
+    </a>
+    <div class="flex items-center gap-4 mb-3">
+      <span class="section-index">T//</span>
+      <p class="section-eyebrow mb-0!" data-scroll-skew data-skew-angle="8deg">{t('tagsCloud.eyebrow')}</p>
+      <div class="schematic-line flex-1"></div>
+    </div>
+    <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight mb-3">{t('tagsCloud.title')}</h1>
+    <p class="text-muted mb-phi-2 readout">
+      {t('tagsCloud.subtitle')}
+      <span class="ml-2 font-mono text-sm text-[var(--accent)]">
+        {tags.length} {t('tagsCloud.countUnit')}
+      </span>
+    </p>
 
     {tags.length > 0 ? (
-      <ScrollReveal delay={0.1}>
-        <div class="flex flex-wrap items-center gap-x-4 gap-y-3 justify-center max-w-3xl mx-auto py-phi-2">
-          {tags.map(({ tag, count }) => (
-            <a
-              href={`${tagsBase}/${encodeURIComponent(tag)}`}
-              class="inline-block font-bold tracking-tight transition-all duration-300 hover:scale-110 hover:text-[var(--accent)]"
-              style={`font-size: ${tagSize(count)}; opacity: ${tagOpacity(count)};`}
-            >
-              {tag}
-              <sup class="text-xs font-mono ml-0.5" style="opacity: 0.5;">{count}</sup>
-            </a>
-          ))}
-        </div>
-      </ScrollReveal>
+      <div class="flex flex-wrap items-center gap-x-4 gap-y-3 justify-center max-w-3xl mx-auto py-phi-2" data-scroll-fade>
+        {tags.map(({ tag, count }) => (
+          <a
+            href={`${tagsBase}/${encodeURIComponent(tag)}`}
+            class="inline-block font-bold tracking-tight transition-all duration-300 hover:scale-110 hover:text-[var(--accent)] font-mono"
+            style={`font-size: ${tagSize(count)}; opacity: ${tagOpacity(count)};`}
+          >
+            {tag}
+            <sup class="text-xs font-mono ml-0.5" style="opacity: 0.5;">{count}</sup>
+          </a>
+        ))}
+      </div>
     ) : (
       <div class="text-center py-20 text-muted">
         <p class="text-lg">{t('blog.noPosts')}</p>

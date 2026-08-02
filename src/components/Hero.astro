@@ -8,24 +8,56 @@ interface Props {
 
 const lang = Astro.props.lang ?? getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
+const idCard = 'QWARA-001';
+const osLabel = lang === 'zh' ? '核心: VIBE-CORE v1.0' : 'CORE: VIBE-CORE v1.0';
+const linkLabel = lang === 'zh' ? '链路: 稳定' : 'LINK: STABLE';
 ---
 
 <section class="relative min-h-[calc(100vh-4rem)] supports-[min-height:100dvh]:min-h-[calc(100dvh-4rem)] flex items-center overflow-hidden" id="hero">
+  <!-- Background layer stack (parallax on scroll, cursor-follow on the glow) -->
   <div class="absolute inset-0 pointer-events-none" data-hero-bg>
-    <div class="absolute inset-0 opacity-[0.03] dark:opacity-[0.05]"
-      style="background-image: linear-gradient(var(--fg) 1px, transparent 1px), linear-gradient(90deg, var(--fg) 1px, transparent 1px); background-size: 64px 64px;">
-    </div>
-    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full opacity-[0.04] blur-[120px]" style="background: var(--accent);" data-hero-glow></div>
+    <div class="absolute inset-0 schematic-grid" data-parallax data-parallax-speed="0.12"></div>
+    <div class="absolute inset-0 halftone opacity-[0.5]" data-parallax data-parallax-speed="0.2"></div>
+    <div class="absolute inset-0 noise-overlay" data-parallax data-parallax-speed="0.05"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full opacity-[0.06] blur-[140px]" style="background: var(--accent);" data-hero-glow></div>
+  </div>
+
+  <!-- HUD frame: corner brackets + crosshair marks -->
+  <div class="absolute inset-x-0 top-0 bottom-0 pointer-events-none hidden sm:block" aria-hidden="true">
+    <span class="absolute top-6 left-6 w-6 h-6 border-t-2 border-l-2 border-[var(--accent)] opacity-70"></span>
+    <span class="absolute top-6 right-6 w-6 h-6 border-t-2 border-r-2 border-[var(--accent)] opacity-70"></span>
+    <span class="absolute bottom-6 left-6 w-6 h-6 border-b-2 border-l-2 border-[var(--accent)] opacity-70"></span>
+    <span class="absolute bottom-6 right-6 w-6 h-6 border-b-2 border-r-2 border-[var(--accent)] opacity-70"></span>
+    <span class="absolute top-8 left-1/2 -translate-x-1/2 w-1 h-1 bg-[var(--accent)] opacity-60"></span>
+    <span class="absolute top-8 left-1/2 -translate-x-1/2 w-16 h-px bg-gradient-to-r from-transparent via-[var(--accent)] to-transparent opacity-40"></span>
+  </div>
+
+  <!-- Top-left ID readout -->
+  <div class="absolute top-8 left-6 sm:left-10 font-mono text-xs text-muted tracking-widest hidden md:flex items-center gap-3 hero-fade" style="--hero-dur: 0.6s; --hero-delay: 0.2s" data-hero-id>
+    <span class="text-[var(--accent)]">{idCard}</span>
+    <span class="opacity-40">//</span>
+    <span>{osLabel}</span>
+    <span class="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-pulse"></span>
+    <span>{linkLabel}</span>
+  </div>
+
+  <!-- Right-edge status rail -->
+  <div class="absolute right-6 sm:right-10 top-1/2 -translate-y-1/2 flex-col items-center gap-6 hidden lg:flex font-mono text-[10px] text-muted tracking-[0.3em] [writing-mode:vertical-rl]" aria-hidden="true">
+    <span class="w-px h-16 bg-current opacity-30"></span>
+    <span>SYS.ONLINE</span>
+    <span class="w-px h-16 bg-current opacity-30"></span>
+    <span>v{new Date().getFullYear()}</span>
+    <span class="w-px h-16 bg-current opacity-30"></span>
   </div>
 
   <div class="container-px container-mx relative z-10 w-full py-20">
     <div class="max-w-3xl">
       <p class="section-eyebrow mb-6 hero-fade" style="--hero-y: 10px; --hero-dur: 0.6s; --hero-delay: 0s" data-hero-eyebrow>
         <span class="inline-block w-8 h-px bg-current align-middle mr-2"></span>
-        {t('hero.greeting')}
+        <span class="font-mono">{t('hero.greeting')}</span>
       </p>
 
-      <h1 class="type-phi-name tracking-tighter mb-phi-1 hero-fade" style="--hero-y: 30px; --hero-dur: 0.8s; --hero-delay: 0.3s" data-hero-name>
+      <h1 class="type-phi-name tracking-tighter mb-phi-1 hero-fade font-mono" style="--hero-y: 30px; --hero-dur: 0.8s; --hero-delay: 0.3s" data-hero-name>
         {t('hero.name')}<span class="text-[var(--accent)]">.</span>
       </h1>
 
@@ -49,12 +81,21 @@ const t = useTranslations(lang);
     </div>
   </div>
 
+  <!-- Left-edge progress rail -->
+  <div class="absolute left-0 top-0 bottom-0 w-[3px] bg-[var(--border)] opacity-40" aria-hidden="true">
+    <div class="w-full bg-[var(--accent)] origin-top transition-[height] duration-150 ease-out" style="height: 0%;" data-hero-rail></div>
+  </div>
+
+  <!-- Bottom scroll indicator with progress rail -->
   <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-muted hero-fade" style="--hero-y: 10px; --hero-dur: 0.6s; --hero-delay: 1.5s" data-hero-scroll>
     <span class="text-xs font-mono uppercase tracking-[0.2em]">{t('hero.scroll')}</span>
     <div class="w-px h-12 bg-current opacity-30 overflow-hidden relative">
       <span class="absolute top-0 left-0 w-full h-1/2 bg-[var(--accent)] animate-[scroll-indicator_2s_ease-in-out_infinite]"></span>
     </div>
   </div>
+
+  <!-- Bottom hazard band (caution stripes) -->
+  <div class="hazard-band absolute inset-x-0 bottom-0 h-2" style="--hazard-color: var(--accent); --hazard-opacity: 0.35;" aria-hidden="true"></div>
 </section>
 
 <style>
@@ -66,7 +107,8 @@ const t = useTranslations(lang);
 
 <script>
   // The entrance choreography is pure CSS (.hero-fade keyframes in
-  // global.css). This script only handles the mouse-parallax glow.
+  // global.css). This script only handles the mouse-parallax glow and
+  // the left-edge progress rail.
   let heroAbort: AbortController | null = null;
 
   function initHero() {
@@ -75,39 +117,55 @@ const t = useTranslations(lang);
     const { signal } = heroAbort;
 
     const glow = document.querySelector('[data-hero-glow]') as HTMLElement | null;
-    if (!glow) return;
-
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduceMotion) return;
 
-    // Smooth-follow parallax with an exponential lerp on rAF — no per-move
-    // style writes, the loop idles out once the glow settles.
-    let targetX = 0;
-    let targetY = 0;
-    let curX = 0;
-    let curY = 0;
-    let raf = 0;
+    if (glow && !reduceMotion) {
+      // Smooth-follow parallax with an exponential lerp on rAF — no per-move
+      // style writes, the loop idles out once the glow settles.
+      let targetX = 0;
+      let targetY = 0;
+      let curX = 0;
+      let curY = 0;
+      let raf = 0;
 
-    const loop = () => {
-      curX += (targetX - curX) * 0.1;
-      curY += (targetY - curY) * 0.1;
-      glow.style.transform = `translate(${curX.toFixed(2)}px, ${curY.toFixed(2)}px)`;
-      raf = Math.abs(targetX - curX) > 0.05 || Math.abs(targetY - curY) > 0.05
-        ? requestAnimationFrame(loop)
-        : 0;
-    };
+      const loop = () => {
+        curX += (targetX - curX) * 0.1;
+        curY += (targetY - curY) * 0.1;
+        glow.style.transform = `translate(${curX.toFixed(2)}px, ${curY.toFixed(2)}px)`;
+        raf = Math.abs(targetX - curX) > 0.05 || Math.abs(targetY - curY) > 0.05
+          ? requestAnimationFrame(loop)
+          : 0;
+      };
 
-    window.addEventListener('mousemove', (e) => {
-      targetX = (e.clientX / window.innerWidth - 0.5) * 100;
-      targetY = (e.clientY / window.innerHeight - 0.5) * 100;
-      if (!raf) raf = requestAnimationFrame(loop);
-    }, { passive: true, signal });
+      window.addEventListener('mousemove', (e) => {
+        targetX = (e.clientX / window.innerWidth - 0.5) * 120;
+        targetY = (e.clientY / window.innerHeight - 0.5) * 120;
+        if (!raf) raf = requestAnimationFrame(loop);
+      }, { passive: true, signal });
 
-    // Stop the loop when the page is swapped out.
-    signal.addEventListener('abort', () => {
-      if (raf) cancelAnimationFrame(raf);
-      raf = 0;
-    });
+      // Stop the loop when the page is swapped out.
+      signal.addEventListener('abort', () => {
+        if (raf) cancelAnimationFrame(raf);
+        raf = 0;
+      });
+    }
+
+    // Left-edge scroll progress rail (fills as you leave the hero).
+    const rail = document.querySelector('[data-hero-rail]') as HTMLElement | null;
+    const hero = document.querySelector('#hero');
+    if (rail && hero) {
+      function update() {
+        const heroEl = hero as HTMLElement;
+        const rect = heroEl.getBoundingClientRect();
+        const vh = window.innerHeight;
+        const total = rect.height - vh;
+        const scrolled = Math.min(Math.max(-rect.top, 0), Math.max(total, 0));
+        const progress = total > 0 ? scrolled / total : 1;
+        rail!.style.height = `${(progress * 100).toFixed(1)}%`;
+      }
+      window.addEventListener('scroll', update, { passive: true, signal });
+      update();
+    }
   }
 
   initHero();

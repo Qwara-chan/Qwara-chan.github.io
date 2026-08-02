@@ -5,7 +5,6 @@ import About from '@components/About.astro';
 import Skills from '@components/Skills.astro';
 import Timeline from '@components/Timeline.astro';
 import StaggerGrid from '@components/animations/StaggerGrid.astro';
-import ScrollReveal from '@components/animations/ScrollReveal.astro';
 import BlogCard from '@components/BlogCard.astro';
 import ProjectCard from '@components/ProjectCard.astro';
 import { getLangFromUrl, useTranslations, getLocalizedPath } from '@i18n/utils';
@@ -25,20 +24,21 @@ const projects = (await getProjects(lang)).slice(0, 4);
   <Timeline lang={lang} />
 
 {posts.length > 0 && (
-  <section class="golden-section border-t border-default">
+  <section class="golden-section border-t border-default relative" data-section-reveal>
     <div class="container-px container-mx">
-      <ScrollReveal>
-        <div class="flex items-end justify-between mb-phi-2">
-          <div>
-            <p class="section-eyebrow">{t('blog.eyebrow')}</p>
-            <h2 class="section-title">{t('blog.title')}</h2>
+      <div class="flex items-end justify-between mb-phi-2">
+        <div>
+          <div class="flex items-center gap-4 mb-2">
+            <span class="section-index">04 //</span>
+            <p class="section-eyebrow mb-0!">{t('blog.eyebrow')}</p>
           </div>
-          <a href={getLocalizedPath('blog', lang)} class="text-sm link-underline whitespace-nowrap">
-            {t('projects.viewAll')}
-            <span class="ml-1">&rarr;</span>
-          </a>
+          <h2 class="section-title" data-scroll-fade data-scroll-fade-y="12px">{t('blog.title')}</h2>
         </div>
-      </ScrollReveal>
+        <a href={getLocalizedPath('blog', lang)} class="text-sm link-underline whitespace-nowrap font-mono">
+          {t('projects.viewAll')}
+          <span class="ml-1">&rarr;</span>
+        </a>
+      </div>
 
       <StaggerGrid class="grid md:grid-cols-2 lg:grid-cols-3 gap-phi-1">
         {posts.map((post) => (
@@ -50,20 +50,21 @@ const projects = (await getProjects(lang)).slice(0, 4);
 )}
 
 {projects.length > 0 && (
-  <section class="golden-section border-t border-default">
+  <section class="golden-section border-t border-default relative" data-section-reveal>
     <div class="container-px container-mx">
-      <ScrollReveal>
-        <div class="flex items-end justify-between mb-phi-2">
-          <div>
-            <p class="section-eyebrow">{t('projects.eyebrow')}</p>
-            <h2 class="section-title">{t('projects.title')}</h2>
+      <div class="flex items-end justify-between mb-phi-2">
+        <div>
+          <div class="flex items-center gap-4 mb-2">
+            <span class="section-index">05 //</span>
+            <p class="section-eyebrow mb-0!">{t('projects.eyebrow')}</p>
           </div>
-          <a href={getLocalizedPath('projects', lang)} class="text-sm link-underline whitespace-nowrap">
-            {t('projects.viewAll')}
-            <span class="ml-1">&rarr;</span>
-          </a>
+          <h2 class="section-title" data-scroll-fade data-scroll-fade-y="12px">{t('projects.title')}</h2>
         </div>
-      </ScrollReveal>
+        <a href={getLocalizedPath('projects', lang)} class="text-sm link-underline whitespace-nowrap font-mono">
+          {t('projects.viewAll')}
+          <span class="ml-1">&rarr;</span>
+        </a>
+      </div>
 
       <StaggerGrid class="grid sm:grid-cols-2 lg:grid-cols-2 gap-phi-1">
         {projects.map((project) => (

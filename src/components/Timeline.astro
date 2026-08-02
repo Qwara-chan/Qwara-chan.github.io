@@ -1,5 +1,4 @@
 ---
-import ScrollReveal from '@components/animations/ScrollReveal.astro';
 import { getLangFromUrl, useTranslations } from '@i18n/utils';
 import type { Lang } from '@i18n/ui';
 
@@ -25,15 +24,15 @@ const timeline = lang === 'zh'
     ];
 ---
 
-<section id="timeline" class="golden-section border-t border-default">
+<section id="timeline" class="golden-section border-t border-default relative" data-section-reveal data-reveal-delay="0.05">
   <div class="container-px container-mx">
-    <ScrollReveal>
-      <p class="section-eyebrow">{t('timeline.eyebrow')}</p>
-    </ScrollReveal>
+    <div class="flex items-center gap-4 mb-phi-3">
+      <span class="section-index">03 //</span>
+      <p class="section-eyebrow mb-0!" data-scroll-skew data-skew-angle="8deg">{t('timeline.eyebrow')}</p>
+      <div class="schematic-line flex-1"></div>
+    </div>
 
-    <ScrollReveal delay={0.1}>
-      <h2 class="section-title mb-phi-3">{t('timeline.title')}</h2>
-    </ScrollReveal>
+    <h2 class="section-title mb-phi-3" data-scroll-fade data-scroll-fade-y="12px">{t('timeline.title')}</h2>
 
     <div class="relative max-w-2xl">
       <div class="absolute left-[7px] sm:left-1/2 top-0 bottom-0 w-px bg-[var(--border)] overflow-hidden">
@@ -42,19 +41,21 @@ const timeline = lang === 'zh'
 
       <div class="space-y-phi-2">
         {timeline.map((item, i) => (
-          <ScrollReveal delay={i * 0.15} y={30}>
-            <div class:list={[
+          <div
+            class:list={[
               'relative flex items-start gap-phi-1',
               i % 2 === 0 ? 'sm:flex-row-reverse sm:text-right' : '',
-            ]}>
-              <div class="absolute left-0 sm:left-1/2 sm:-translate-x-1/2 w-4 h-4 rounded-full bg-[var(--bg)] border-2 border-[var(--accent)] z-10 mt-1"></div>
-              <div class:list={['pl-12 sm:pl-0 sm:w-1/2', i % 2 === 0 ? 'sm:pr-12' : 'sm:pl-12']}>
-                <span class="inline-block text-xs font-mono font-bold text-muted mb-2">{item.year}</span>
-                <h3 class="text-lg font-semibold mb-2">{item.title}</h3>
-                <p class="text-sm text-muted leading-relaxed">{item.desc}</p>
-              </div>
+            ]}
+            data-section-reveal
+            data-reveal-delay={i * 0.12}
+          >
+            <div class="absolute left-0 sm:left-1/2 sm:-translate-x-1/2 w-4 h-4 rounded-full bg-[var(--bg)] border-2 border-[var(--accent)] z-10 mt-1"></div>
+            <div class:list={['pl-12 sm:pl-0 sm:w-1/2', i % 2 === 0 ? 'sm:pr-12' : 'sm:pl-12']}>
+              <span class="inline-block text-xs font-mono font-bold text-[var(--accent)] mb-2 px-2 py-0.5 border border-[var(--accent)]/40 rounded-[3px]">{item.year}</span>
+              <h3 class="text-lg font-semibold mb-2">{item.title}</h3>
+              <p class="text-sm text-muted leading-relaxed">{item.desc}</p>
             </div>
-          </ScrollReveal>
+          </div>
         ))}
       </div>
     </div>

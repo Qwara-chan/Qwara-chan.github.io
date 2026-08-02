@@ -6,8 +6,8 @@
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#09090b",
-  "theme_color": "#6366f1",
+  "background_color": "#171713",
+  "theme_color": "#f1c644",
   "categories": ["blog", "portfolio", "personal"],
   "icons": [
     { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" },
