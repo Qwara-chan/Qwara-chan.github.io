@@ -1,6 +1,5 @@
 ---
 import BaseLayout from './BaseLayout.astro';
-import ScrollReveal from '@components/animations/ScrollReveal.astro';
 import Mermaid from '@components/Mermaid.astro';
 import '@styles/katex.css';
 import { getLangFromUrl, useTranslations, formatDate, getReadingTime, getWordCount, getLocalizedPath } from '@i18n/utils';
@@ -29,6 +28,10 @@ const blogHref = getLocalizedPath('blog', lang);
 
 const tags = post.data.tags;
 
+// OG image lives in the post's own locale route: under en→zh fallback the page
+// is served at /en/blog/<slug> but only /og/<slug>.png is generated for a zh post.
+const ogImage = getLocalizedPath(`og/${post.id}`, post.data.lang) + '.png';
+
 const prevHref = prevPost ? getLocalizedPath(`blog/${prevPost.id}`, lang) : null;
 const nextHref = nextPost ? getLocalizedPath(`blog/${nextPost.id}`, lang) : null;
 
@@ -43,42 +46,44 @@ const related = allPosts
   .map((x) => x.post);
 ---
 
-<BaseLayout title={post.data.title} description={post.data.description} image={getLocalizedPath(`og/${post.id}`, lang) + '.png'}>
-  <article class="container-px container-mx py-phi-2 sm:py-phi-3">
-    <ScrollReveal y={20}>
-      <a href={blogHref} class="inline-flex items-center gap-1.5 text-sm text-muted hover:text-[var(--fg)] transition-colors duration-300 mb-8">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7M19 12H5" /></svg>
-        {t('blog.back')}
-      </a>
-    </ScrollReveal>
+<BaseLayout title={post.data.title} description={post.data.description} image={ogImage}>
+  <article class="container-px container-mx py-phi-2 sm:py-phi-3 relative" data-section-reveal>
+    <a href={blogHref} class="inline-flex items-center gap-1.5 text-sm text-muted hover:text-[var(--fg)] transition-colors duration-300 mb-8 font-mono">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7M19 12H5" /></svg>
+      {t('blog.back')}
+    </a>
 
     <div class="grid lg:grid-cols-[1.618fr_1fr] gap-phi-3">
       <div class="min-w-0">
-        <ScrollReveal y={30} delay={0.1}>
-          <div class="flex flex-wrap items-center gap-3 text-sm text-muted mb-4">
-            <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate, lang)}</time>
-            {post.data.updatedDate && post.data.updatedDate.getTime() !== post.data.pubDate.getTime() && (
-              <>
-                <span class="w-1 h-1 rounded-full bg-current opacity-30"></span>
-                <span class="text-[var(--accent)]">
-                  {t('blog.updatedOn')} {formatDate(post.data.updatedDate, lang)}
-                </span>
-              </>
-            )}
-            <span class="w-1 h-1 rounded-full bg-current opacity-30"></span>
-            <span>{readingTime} {t('blog.minRead')}</span>
-            <span class="w-1 h-1 rounded-full bg-current opacity-30"></span>
-            <span>{wordCount.toLocaleString()} {t('common.words')}</span>
-          </div>
-          <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight mb-phi-1">
-            {post.data.title}
-          </h1>
-          <p class="text-lg text-muted leading-relaxed mb-phi-1">{post.data.description}</p>
+        <div class="flex items-center gap-4 mb-4">
+          <span class="section-index">P//</span>
+          <div class="schematic-line flex-1"></div>
+        </div>
 
-          <div class="flex flex-wrap items-center gap-2 mb-phi-2">
-            {tags.length > 0 && tags.map((tag) => (
-              <a href={`${getLocalizedPath('tags', lang)}/${encodeURIComponent(tag)}`} class="tag-chip">#{tag}</a>
-            ))}
+        <div class="flex flex-wrap items-center gap-3 text-sm text-muted font-mono mb-4">
+          <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate, lang)}</time>
+          {post.data.updatedDate && post.data.updatedDate.getTime() !== post.data.pubDate.getTime() && (
+            <>
+              <span class="w-1 h-1 rounded-full bg-current opacity-30"></span>
+              <span class="text-[var(--accent)]">
+                {t('blog.updatedOn')} {formatDate(post.data.updatedDate, lang)}
+              </span>
+            </>
+          )}
+          <span class="w-1 h-1 rounded-full bg-current opacity-30"></span>
+          <span>{readingTime} {t('blog.minRead')}</span>
+          <span class="w-1 h-1 rounded-full bg-current opacity-30"></span>
+          <span>{wordCount.toLocaleString()} {t('common.words')}</span>
+        </div>
+        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight mb-phi-1">
+          {post.data.title}
+        </h1>
+        <p class="text-lg text-muted leading-relaxed mb-phi-1">{post.data.description}</p>
+
+        <div class="flex flex-wrap items-center gap-2 mb-phi-2">
+          {tags.length > 0 && tags.map((tag) => (
+            <a href={`${getLocalizedPath('tags', lang)}/${encodeURIComponent(tag)}`} class="tag-chip font-mono">#{tag}</a>
+          ))}
 
             <!-- Share / copy link -->
             <button
@@ -97,7 +102,6 @@ const related = allPosts
           </div>
 
           <div class="h-px bg-[var(--border)] mb-phi-2"></div>
-        </ScrollReveal>
 
         {tocItems.length > 0 && (
           <details class="lg:hidden card p-4 mb-phi-1" data-mobile-toc>
@@ -121,11 +125,11 @@ const related = allPosts
         <div class="reading-progress-wrapper" data-reading-progress>
           <div class="prose prose-lg max-w-none dark:prose-invert
             prose-headings:scroll-mt-20 prose-headings:tracking-tight
-            prose-a:link-underline prose-code:before:hidden prose-code:after:hidden
-            prose-code:rounded prose-code:bg-[var(--ink-100)] dark:prose-code:bg-[var(--ink-800)]
+            prose-code:before:hidden prose-code:after:hidden
+            prose-code:rounded prose-code:bg-[var(--color-ink-100)] dark:prose-code:bg-[var(--color-ink-800)]
             prose-code:px-1.5 prose-code:py-0.5 prose-code:text-sm prose-code:font-mono
-            prose-pre:rounded-xl prose-pre:border prose-pre:border-default
-            prose-img:rounded-xl prose-img:cursor-zoom-in
+            prose-pre:rounded-phi-md prose-pre:border prose-pre:border-[var(--border)]
+            prose-img:rounded-phi-md prose-img:cursor-zoom-in
             prose-blockquote:not-italic prose-blockquote:border-[var(--fg)]"
           >
             <Content />
@@ -216,7 +220,7 @@ const related = allPosts
     <img
       src=""
       alt=""
-      class="max-w-full max-h-[90vh] rounded-xl shadow-2xl transition-transform duration-300 scale-95"
+      class="max-w-full max-h-[90vh] rounded-phi-md shadow-2xl transition-transform duration-300 scale-95"
       data-lightbox-img
     />
   </div>

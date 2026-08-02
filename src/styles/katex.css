@@ -8,5 +8,6 @@
 .katex-display {
   overflow-x: auto;
   overflow-y: hidden;
-  padding: var(--space-phi-sm, 0.618rem) 0;
+  /* φ-xs step (there is no --spacing-phi token below 1.618rem) */
+  padding: 0.618rem 0;
 }

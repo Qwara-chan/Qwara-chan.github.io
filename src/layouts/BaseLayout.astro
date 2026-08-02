@@ -5,6 +5,7 @@ import Footer from '@components/Footer.astro';
 import MeowEasterEgg from '@components/MeowEasterEgg.astro';
 import BackToTop from '@components/BackToTop.astro';
 import KeyboardShortcuts from '@components/KeyboardShortcuts.astro';
+import ScrollFX from '@components/animations/ScrollFX.astro';
 import { getLangFromUrl, getSwitchHref, getWordCount } from '@i18n/utils';
 import { getPosts } from '@utils/posts';
 import '../styles/global.css';
@@ -22,7 +23,7 @@ const {
   description = lang === 'zh'
     ? 'Qwara 的个人主页 — 全栈开发者、开源爱好者。技术博客、项目作品集与个人介绍。'
     : "Qwara's personal site — full-stack developer, open source enthusiast. Blog, projects and about.",
-  image = '/og-image.svg',
+  image = '/og/default.png',
 } = Astro.props;
 
 const siteName = 'Qwara';
@@ -58,7 +59,7 @@ const totalWords = allPosts.reduce((sum, p) => sum + getWordCount(p.body ?? '', 
     <link rel="icon" type="image/png" href="/favicon-64.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#6366f1" />
+    <meta name="theme-color" content="#f1c644" />
     <meta name="generator" content={Astro.generator} />
 
     <title>{pageTitle}</title>
@@ -93,11 +94,14 @@ const totalWords = allPosts.reduce((sum, p) => sum + getWordCount(p.body ?? '', 
     <noscript>
       <style>
         /* Content hidden by animation pre-states must be visible without JS. */
-        [data-animate],
         [data-stagger-grid] [data-stagger-item],
+        [data-section-reveal],
+        [data-scroll-fade],
+        [data-scroll-skew],
         .hero-fade {
           opacity: 1 !important;
           transform: none !important;
+          animation: none !important;
         }
         [data-skill-fill] {
           width: 100% !important;
@@ -151,6 +155,7 @@ const totalWords = allPosts.reduce((sum, p) => sum + getWordCount(p.body ?? '', 
     <BackToTop lang={lang} />
     <KeyboardShortcuts lang={lang} />
     <MeowEasterEgg />
+    <ScrollFX />
 
     <script>
       // Register the service worker for offline support. Wrapped in try/catch

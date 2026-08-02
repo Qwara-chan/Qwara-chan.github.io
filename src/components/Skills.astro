@@ -1,5 +1,4 @@
 ---
-import ScrollReveal from '@components/animations/ScrollReveal.astro';
 import { getLangFromUrl, useTranslations } from '@i18n/utils';
 import type { Lang } from '@i18n/ui';
 
@@ -23,45 +22,50 @@ const skillGroups = lang === 'zh'
     ];
 ---
 
-<section id="skills" class="golden-section border-t border-default">
+<section id="skills" class="golden-section border-t border-default relative" data-section-reveal data-reveal-delay="0.05">
   <div class="container-px container-mx">
-    <ScrollReveal>
-      <p class="section-eyebrow">{t('skills.eyebrow')}</p>
-    </ScrollReveal>
+    <div class="flex items-center gap-4 mb-phi-1">
+      <span class="section-index">02 //</span>
+      <p class="section-eyebrow mb-0!" data-scroll-skew data-skew-angle="8deg">{t('skills.eyebrow')}</p>
+      <div class="schematic-line flex-1"></div>
+    </div>
 
-    <ScrollReveal delay={0.1}>
-      <h2 class="section-title mb-3">{t('skills.title')}</h2>
-    </ScrollReveal>
+    <h2 class="section-title mb-3" data-scroll-fade data-scroll-fade-y="12px">{t('skills.title')}</h2>
 
-    <ScrollReveal delay={0.15}>
-      <p class="text-muted mb-phi-2">{t('skills.subtitle')}</p>
-    </ScrollReveal>
+    <p class="text-muted mb-phi-2 readout" data-scroll-fade data-scroll-fade-y="12px">{t('skills.subtitle')}</p>
 
     <div class="grid md:grid-cols-3 gap-phi-1">
       {skillGroups.map((group, gi) => (
-        <ScrollReveal delay={0.2 + gi * 0.1} y={30}>
-          <div class="card p-phi-1 h-full">
-            <h3 class="text-sm font-mono uppercase tracking-wider text-muted mb-phi-1">{group.name}</h3>
-            <div class="space-y-phi-1">
-              {group.skills.map((skill) => (
-                <div data-skill-bar>
-                  <div class="flex items-center justify-between mb-2">
-                    <span class="text-sm">{skill.name}</span>
-                    <span class="text-xs font-mono text-muted">{skill.level}%</span>
-                  </div>
-                  <div class="h-1 rounded-full bg-[var(--border)] overflow-hidden">
-                    <div
-                      class="h-full rounded-full"
-                      data-skill-fill
-                      data-level={skill.level}
-                      style="width: 0%; background: linear-gradient(90deg, var(--color-accent-dark), var(--accent));"
-                    ></div>
-                  </div>
-                </div>
-              ))}
-            </div>
+        <div
+          class="card p-phi-1 h-full rounded-[4px] relative halftone"
+          data-section-reveal
+          data-reveal-delay={0.1 + gi * 0.08}
+          data-tilt
+        >
+          <div class="flex items-center justify-between mb-phi-1">
+            <h3 class="text-sm font-mono uppercase tracking-wider text-[var(--accent)]">{group.name}</h3>
+            <span class="text-[10px] font-mono text-muted opacity-50 select-none" aria-hidden="true">{String(gi + 1).padStart(2, '0')}</span>
           </div>
-        </ScrollReveal>
+          <div class="space-y-phi-1">
+            {group.skills.map((skill) => (
+              <div data-skill-bar>
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-sm">{skill.name}</span>
+                  <span class="text-xs font-mono text-muted">{skill.level}%</span>
+                </div>
+                <div class="h-[7px] rounded-[2px] bg-[var(--border)] overflow-hidden relative"
+                  style="background-image: repeating-linear-gradient(90deg, transparent 0 9px, var(--bg) 9px 10px);">
+                  <div
+                    class="h-full rounded-[2px]"
+                    data-skill-fill
+                    data-level={skill.level}
+                    style="width: 0%; background: repeating-linear-gradient(90deg, var(--accent) 0 10px, var(--color-warning-dark) 10px 14px);"
+                  ></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       ))}
     </div>
   </div>

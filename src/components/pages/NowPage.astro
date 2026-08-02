@@ -1,6 +1,5 @@
 ---
 import BaseLayout from '@layouts/BaseLayout.astro';
-import ScrollReveal from '@components/animations/ScrollReveal.astro';
 import { getCollection, render } from 'astro:content';
 import { getLangFromUrl, useTranslations, formatDate, getLocalizedPath } from '@i18n/utils';
 
@@ -13,36 +12,34 @@ const homeHref = getLocalizedPath('', lang);
 ---
 
 <BaseLayout title={now.data.title} description={now.data.title}>
-  <div class="container-px container-mx golden-section">
-    <ScrollReveal>
-      <p class="section-eyebrow">{t('now.eyebrow')}</p>
-      <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight mb-3">{now.data.title}</h1>
-      <div class="flex flex-wrap items-center gap-2 mb-phi-2">
-        <span class="tag-chip inline-flex items-center gap-2">
-          <span class="relative flex w-2 h-2">
-            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span class="relative inline-flex rounded-full w-2 h-2 bg-emerald-500"></span>
-          </span>
-          {t('now.updated')} {formatDate(now.data.updatedDate, lang)}
+  <div class="container-px container-mx golden-section" data-section-reveal>
+    <div class="flex items-center gap-4 mb-3">
+      <span class="section-index">N//</span>
+      <p class="section-eyebrow mb-0!" data-scroll-skew data-skew-angle="8deg">{t('now.eyebrow')}</p>
+      <div class="schematic-line flex-1"></div>
+    </div>
+    <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight mb-3">{now.data.title}</h1>
+    <div class="flex flex-wrap items-center gap-2 mb-phi-2">
+      <span class="tag-chip inline-flex items-center gap-2 font-mono">
+        <span class="relative flex w-2 h-2">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--accent)] opacity-75"></span>
+          <span class="relative inline-flex rounded-full w-2 h-2 bg-[var(--accent)]"></span>
         </span>
-      </div>
-    </ScrollReveal>
+        {t('now.updated')} {formatDate(now.data.updatedDate, lang)}
+      </span>
+    </div>
 
-    <ScrollReveal y={20} delay={0.1}>
-      <div class="prose prose-lg max-w-none dark:prose-invert
-        prose-headings:tracking-tight
-        prose-a:link-underline prose-code:before:hidden prose-code:after:hidden
-        prose-code:rounded prose-code:bg-[var(--ink-100)] dark:prose-code:bg-[var(--ink-800)]
-        prose-code:px-1.5 prose-code:py-0.5 prose-code:text-sm prose-code:font-mono">
-        <Content />
-      </div>
-    </ScrollReveal>
+    <div class="prose prose-lg max-w-none dark:prose-invert
+      prose-headings:tracking-tight
+      prose-code:before:hidden prose-code:after:hidden
+      prose-code:rounded prose-code:bg-[var(--color-ink-100)] dark:prose-code:bg-[var(--color-ink-800)]
+      prose-code:px-1.5 prose-code:py-0.5 prose-code:text-sm prose-code:font-mono" data-scroll-fade>
+      <Content />
+    </div>
 
-    <ScrollReveal y={10} delay={0.15}>
-      <a href={homeHref} class="inline-flex items-center gap-1.5 text-sm text-muted hover:text-[var(--fg)] transition-colors duration-300 mt-phi-3">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7M19 12H5" /></svg>
-        {t('now.backHome')}
-      </a>
-    </ScrollReveal>
+    <a href={homeHref} class="inline-flex items-center gap-1.5 text-sm text-muted hover:text-[var(--fg)] transition-colors duration-300 mt-phi-3 font-mono" data-scroll-fade>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7M19 12H5" /></svg>
+      {t('now.backHome')}
+    </a>
   </div>
 </BaseLayout>
