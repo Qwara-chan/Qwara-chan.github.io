@@ -38,7 +38,9 @@
       wrapper.appendChild(fallback);
     }
 
-    pre.replaceWith(wrapper);
+    // If a page swap tore the <pre> out of the document while `await mermaid.render`
+    // was in flight, replaceWith would throw NotFoundError — just skip it.
+    if (pre.isConnected) pre.replaceWith(wrapper);
     return wrapper;
   }
 
