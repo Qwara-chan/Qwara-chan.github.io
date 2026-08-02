@@ -18,35 +18,31 @@ const href = getLocalizedPath(`blog/${post.id}`, lang);
 const bodyText = post.body ?? '';
 const readingTime = getReadingTime(bodyText, lang);
 const wordCount = getWordCount(bodyText, lang);
-
-// Stable hue from the title so each post gets a consistent gradient cover.
-const titleHash = (str: string) => {
-  let h = 0;
-  for (let i = 0; i < str.length; i++) {
-    h = (h << 5) - h + str.charCodeAt(i);
-    h |= 0;
-  }
-  return Math.abs(h);
-};
-const coverHue = titleHash(post.data.title) % 360;
 ---
 
 <article data-stagger-item>
-  <a href={href} class:list={['card card-hover block h-full overflow-hidden group', featured ? 'sm:flex sm:items-center' : '']}>
+  <a href={href} class:list={['card card-hover block h-full overflow-hidden group relative', featured ? 'sm:flex sm:items-center' : '']}>
+    {/* HUD corner marks on the card frame */}
+    <span class="absolute top-2 left-2 w-3 h-3 border-t-[1.5px] border-l-[1.5px] border-[var(--accent)] opacity-0 group-hover:opacity-80 transition-opacity duration-300 z-20 pointer-events-none" aria-hidden="true"></span>
+    <span class="absolute bottom-2 right-2 w-3 h-3 border-b-[1.5px] border-r-[1.5px] border-[var(--accent)] opacity-0 group-hover:opacity-80 transition-opacity duration-300 z-20 pointer-events-none" aria-hidden="true"></span>
+
     <div class:list={['relative overflow-hidden bg-[var(--bg-elev)]', featured ? 'sm:w-1/2 aspect-video sm:aspect-auto' : 'aspect-phi']}>
       {post.data.cover ? (
         <img src={post.data.cover} alt={post.data.title} class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" />
       ) : (
-        <div class="w-full h-full flex items-center justify-center relative overflow-hidden"
-          style={`background: linear-gradient(135deg, hsl(${coverHue} 65% 58%), hsl(${(coverHue + 45) % 360} 68% 42%));`}>
-          <div class="absolute inset-0 opacity-25" style="background-image: radial-gradient(circle at 20% 80%, rgba(255,255,255,0.4) 0%, transparent 55%);"></div>
-          <span class="relative text-5xl font-mono font-black text-white/30 select-none">{post.data.title.charAt(0)}</span>
+        <div class="w-full h-full flex items-center justify-center relative overflow-hidden halftone"
+          style={`background-color: var(--bg-elev);`}>
+          <div class="absolute inset-0 opacity-[0.08]" style="background-image: linear-gradient(var(--fg) 1px, transparent 1px), linear-gradient(90deg, var(--fg) 1px, transparent 1px); background-size: 32px 32px;"></div>
+          <span class="relative text-5xl font-mono font-black text-[var(--accent)] opacity-40 select-none">{post.data.title.charAt(0)}</span>
         </div>
       )}
+      <span class="absolute top-3 left-3 px-1.5 py-0.5 rounded-[2px] text-[9px] font-mono font-bold uppercase tracking-wider text-[#10100e] z-10" style="background: var(--accent);">
+        #{String(Math.abs((post.data.title.split('').reduce((a, c) => (a * 31 + c.charCodeAt(0)) | 0, 0))) % 100).padStart(2, '0')}
+      </span>
     </div>
 
     <div class:list={['p-phi-1', featured ? 'sm:w-1/2' : '']}>
-      <div class="flex items-center gap-3 text-xs text-muted mb-3">
+      <div class="flex items-center gap-3 text-xs text-muted font-mono mb-3">
         <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate, lang)}</time>
         <span class="w-1 h-1 rounded-full bg-current opacity-30"></span>
         <span>{readingTime} {t('blog.minRead')}</span>
@@ -54,16 +50,16 @@ const coverHue = titleHash(post.data.title) % 360;
         <span>{wordCount.toLocaleString()} {t('common.words')}</span>
       </div>
 
-      <h3 class:list={['font-bold tracking-tight mb-2 transition-colors duration-300', featured ? 'text-2xl' : 'text-lg', 'group-hover:text-[var(--fg)]']}>
+      <h3 data-search-title class:list={['font-bold tracking-tight mb-2 transition-colors duration-300', featured ? 'text-2xl' : 'text-lg', 'group-hover:text-[var(--accent)]']}>
         {post.data.title}
       </h3>
 
-      <p class="text-sm text-muted leading-relaxed mb-4 line-clamp-2">{post.data.description}</p>
+      <p data-search-desc class="text-sm text-muted leading-relaxed mb-4 line-clamp-2">{post.data.description}</p>
 
       {post.data.tags.length > 0 && (
         <div class="flex flex-wrap gap-1.5">
           {post.data.tags.slice(0, 3).map((tag) => (
-            <span class="tag-chip">{tag}</span>
+            <span class="tag-chip font-mono">#{tag}</span>
           ))}
         </div>
       )}

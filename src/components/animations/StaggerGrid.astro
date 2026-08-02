@@ -27,7 +27,13 @@ const {
 <script>
   // Staggered reveal via IntersectionObserver + CSS transitions (global.css
   // holds the hidden pre-state and the .is-revealed transition).
+  let sgAbort: AbortController | null = null;
+
   function initStaggerGrid() {
+    sgAbort?.abort();
+    sgAbort = new AbortController();
+    const { signal } = sgAbort;
+
     document.querySelectorAll('[data-stagger-grid]').forEach((grid) => {
       if ((grid as HTMLElement).dataset.initialized) return;
       (grid as HTMLElement).dataset.initialized = 'true';
@@ -54,6 +60,7 @@ const {
         { rootMargin: '0px 0px -20% 0px' },
       );
       io.observe(grid);
+      signal.addEventListener('abort', () => io.disconnect(), { once: true });
     });
   }
 

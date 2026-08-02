@@ -1,148 +1,203 @@
 ---
 import BaseLayout from '@layouts/BaseLayout.astro';
+import ProjectDossier from '@components/ProjectDossier.astro';
 import ProjectCard from '@components/ProjectCard.astro';
 import GithubIcon from '@components/icons/GithubIcon.astro';
 import StaggerGrid from '@components/animations/StaggerGrid.astro';
-import ScrollReveal from '@components/animations/ScrollReveal.astro';
 import { getLangFromUrl, useTranslations } from '@i18n/utils';
 import { getProjects } from '@utils/posts';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
+
 const projects = await getProjects(lang);
 
-// Unique languages for the filter toolbar
-const languages = [...new Set(projects.map((p) => p.data.language).filter(Boolean))] as string[];
+// Featured repos get the full-screen sticky dossier narrative; the rest degrade
+// to a compact HUD card wall. If nothing is featured, the top 4 carry the show.
+// The narrative is capped at 4 so a growing set of starred repos can't turn the
+// page into an endless scroll; overflow featured repos fall back to the wall.
+const featured = projects.filter((p) => p.data.featured);
+const leadCount = Math.min(4, projects.length);
+const narrative = (featured.length ? featured : projects).slice(0, leadCount);
+const narrativeIds = new Set(narrative.map((p) => p.id));
+const wall = projects.filter((p) => !narrativeIds.has(p.id));
+
+const total = narrative.length;
+const pad = (n: number) => String(n).padStart(2, '0');
+const githubUrl = 'https://github.com/Qwara-chan';
 ---
 
 <BaseLayout title={t('projects.title')} description={t('projects.subtitle')}>
-  <div class="container-px container-mx golden-section">
-    <ScrollReveal>
-      <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-3">
-        <div>
-          <p class="section-eyebrow">{t('projects.eyebrow')}</p>
-          <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight">{t('projects.title')}</h1>
-        </div>
-        <a
-          href="https://github.com/Qwara-chan"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="inline-flex items-center gap-2 text-sm text-muted hover:text-[var(--accent)] transition-colors duration-300 self-start sm:self-end"
-        >
-          <GithubIcon class="w-4 h-4" />
-          {t('projects.viewOnGithub')}
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </a>
+  <!-- Fixed left-edge HUD rail — tracks the current dossier while the narrative is on screen -->
+  {total > 0 && (
+    <aside class="narrative-rail" data-narrative-rail aria-hidden="true">
+      <span class="rail-readout" data-rail-readout>01 / {pad(total)}</span>
+      <div class="rail-track"><span class="rail-fill" data-rail-fill></span></div>
+    </aside>
+  )}
+
+  <!-- Cinematic header -->
+  <header class="relative flex min-h-[72svh] flex-col justify-end overflow-hidden border-b border-default" data-section-reveal>
+    <div class="schematic-grid pointer-events-none absolute inset-0"></div>
+    <div class="halftone pointer-events-none absolute inset-0 opacity-40"></div>
+    <div class="noise-overlay pointer-events-none absolute inset-0 opacity-50"></div>
+
+    <div class="container-px container-mx relative w-full pb-phi-3 pt-24">
+      <div class="mb-2 flex items-center gap-4">
+        <span class="section-index">P//</span>
+        <p class="section-eyebrow mb-0!" data-scroll-skew data-skew-angle="8deg">{t('projects.eyebrow')}</p>
       </div>
-      <p class="text-muted mb-2">{t('projects.subtitle')}</p>
-      <p class="text-xs font-mono text-muted mb-phi-2 inline-flex items-center gap-1.5">
-        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-        {t('projects.syncedFromGithub')} · {projects.length} {t('projects.repoCount')}
-      </p>
-    </ScrollReveal>
 
-    {projects.length > 0 ? (
-      <div data-project-container>
-        <div class="flex flex-wrap items-center gap-3 mb-phi-2" data-project-toolbar>
-          <div class="flex flex-wrap gap-2" data-project-langs>
-            <button class="tag-chip tag-chip-active" data-lang-filter="">
-              {t('projects.allLangs')}
-            </button>
-            {languages.map((l) => (
-              <button class="tag-chip" data-lang-filter={l}>
-                {l}
-              </button>
-            ))}
-          </div>
-          <div class="flex flex-wrap gap-2 sm:ml-auto" data-project-sort>
-            <button class="tag-chip tag-chip-active" data-sort="updated">
-              {t('projects.sortUpdated')}
-            </button>
-            <button class="tag-chip" data-sort="stars">
-              {t('projects.sortStars')}
-            </button>
-            <button class="tag-chip" data-sort="forks">
-              {t('projects.sortForks')}
-            </button>
-          </div>
+      <h1 class="type-phi-name">{t('projects.title')}</h1>
+
+      <div class="mt-6 flex flex-wrap items-end justify-between gap-6">
+        <p class="max-w-xl leading-relaxed text-muted">{t('projects.subtitle')}</p>
+        <p class="readout inline-flex items-center gap-2 whitespace-nowrap">
+          <span class="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--accent)]"></span>
+          RECORDS <span data-records-count>{pad(projects.length)}</span>
+          <span class="opacity-50">{t('projects.records')}</span>
+        </p>
+      </div>
+    </div>
+
+    <div class="hazard-band absolute inset-x-0 bottom-0 h-[3px]" style="--hazard-color: var(--accent); --hazard-opacity: 0.5;" aria-hidden="true"></div>
+  </header>
+
+  <!-- Sticky dossier narrative -->
+  {total > 0 && (
+    <div data-narrative>
+      {narrative.map((project, i) => (
+        <ProjectDossier project={project} index={i} lang={lang} />
+      ))}
+    </div>
+  )}
+
+  <!-- Remaining projects: compact HUD card wall -->
+  {wall.length > 0 && (
+    <section class="relative border-t border-default" data-section-reveal>
+      <div class="container-px container-mx py-phi-3">
+        <div class="mb-phi-1 flex flex-wrap items-center gap-4">
+          <span class="section-index">AX //</span>
+          <h2 class="text-phi-md font-bold tracking-tight">{t('projects.wall')}</h2>
+          <span class="readout ml-auto">{pad(wall.length)} {t('projects.records')}</span>
         </div>
-
-        <StaggerGrid class="grid sm:grid-cols-2 gap-phi-1">
-          {projects.map((project) => (
-            <div
-              data-project-item
-              data-lang={project.data.language ?? ''}
-              data-stars={project.data.stars}
-              data-forks={project.data.forks}
-              data-updated={new Date(project.data.pushedAt ?? project.data.updatedAt ?? 0).getTime()}
-            >
-              <ProjectCard project={project} lang={lang} />
-            </div>
+        <StaggerGrid class="grid gap-phi-1 sm:grid-cols-2 lg:grid-cols-3">
+          {wall.map((project, i) => (
+            <ProjectCard project={project} lang={lang} index={i} />
           ))}
         </StaggerGrid>
       </div>
-    ) : (
-      <div class="text-center py-20 text-muted">
-        <p class="text-lg">{t('blog.noPosts')}</p>
-      </div>
-    )}
+    </section>
+  )}
+
+  <!-- End of file -->
+  <div class="container-px container-mx py-phi-2">
+    <div class="schematic-line mb-phi-1"></div>
+    <p class="readout mb-phi-1">{t('projects.endOfFile')}</p>
+    <a
+      href={githubUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      class="inline-flex items-center gap-2 font-mono text-sm text-muted transition-colors duration-300 hover:text-[var(--accent)]"
+    >
+      <GithubIcon class="h-4 w-4" />
+      {t('projects.viewOnGithub')}
+      <span>&rarr;</span>
+    </a>
   </div>
 </BaseLayout>
 
 <script>
-  // Client-side language filter + sort for the projects grid. Each card is
-  // wrapped with data attributes so we can reorder via CSS `order` without
-  // touching the DOM tree (keeps the stagger animation intact).
-  let projAbort: AbortController | null = null;
+  // Dossier narrative choreography. Drives per-panel --panel-progress /
+  // --panel-reveal from each wrapper's position, keeps the left-edge HUD rail
+  // in sync, and follows the standard init + astro:after-swap + AbortController
+  // pattern (see CLAUDE.md). Sticky pinning is pure CSS and needs no JS; this
+  // script only layers the scroll-linked readout/reveal on top.
+  let narAbort: AbortController | null = null;
 
-  function initProjects() {
-    projAbort?.abort();
-    projAbort = new AbortController();
-    const { signal } = projAbort;
+  function initNarrative() {
+    narAbort?.abort();
+    narAbort = new AbortController();
+    const { signal } = narAbort;
 
-    const toolbar = document.querySelector('[data-project-toolbar]');
-    const items = Array.from(document.querySelectorAll<HTMLElement>('[data-project-item]'));
-    if (!toolbar || !items.length) return;
-    const langBtns = Array.from(toolbar.querySelectorAll<HTMLButtonElement>('[data-lang-filter]'));
-    const sortBtns = Array.from(toolbar.querySelectorAll<HTMLButtonElement>('[data-sort]'));
-    if (!items.length) return;
+    const narrative = document.querySelector('[data-narrative]');
+    if (!narrative) return;
 
-    let activeLang = '';
-    let activeSort = 'updated';
+    const rail = document.querySelector<HTMLElement>('[data-narrative-rail]');
+    const readout = document.querySelector('[data-rail-readout]');
+    const fill = document.querySelector<HTMLElement>('[data-rail-fill]');
+    const panels = Array.from(narrative.querySelectorAll<HTMLElement>('[data-panel]'));
+    const total = panels.length;
+    if (!total) return;
 
-    function apply() {
-      const visible = items.filter((el) => {
-        const lang = el.dataset.lang || '';
-        return !activeLang || lang === activeLang;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let ticking = false;
+
+    function compute() {
+      ticking = false;
+      let active = -1;
+      let overall = 0;
+      let overallMax = 0;
+
+      panels.forEach((wrap, i) => {
+        const rect = wrap.getBoundingClientRect();
+        const vh = window.innerHeight;
+        const runway = rect.height + vh;
+        const passed = Math.min(Math.max(vh - rect.top, 0), runway);
+        const p = runway > 0 ? passed / runway : 0;
+
+        wrap.style.setProperty('--panel-progress', p.toFixed(4));
+        // Reveal finishes ~40% into the runway so the wipe completes early.
+        wrap.style.setProperty('--panel-reveal', String(Math.min(1, Math.max(0, p * 2.5))).slice(0, 6));
+
+        overall += passed;
+        overallMax += runway;
+        // The pinned panel is the last one whose runway still overlaps the viewport.
+        if (rect.top <= 0 && rect.bottom > 0) active = i;
       });
-      const visibleSet = new Set(visible);
-      items.forEach((el) => { el.hidden = !visibleSet.has(el); });
 
-      visible.sort((a, b) => {
-        if (activeSort === 'stars') return parseInt(b.dataset.stars || '0') - parseInt(a.dataset.stars || '0');
-        if (activeSort === 'forks') return parseInt(b.dataset.forks || '0') - parseInt(a.dataset.forks || '0');
-        return parseInt(b.dataset.updated || '0') - parseInt(a.dataset.updated || '0');
-      });
-      visible.forEach((el, i) => { el.style.order = String(i); });
+      if (readout) {
+        const cur = active >= 0 ? active + 1 : 1;
+        readout.textContent = `${String(cur).padStart(2, '0')} / ${String(total).padStart(2, '0')}`;
+      }
+      if (fill && overallMax > 0) {
+        fill.style.transform = `scaleY(${(overall / overallMax).toFixed(4)})`;
+      }
     }
 
-    langBtns.forEach((btn) => {
-      btn.addEventListener('click', () => {
-        activeLang = btn.dataset.langFilter || '';
-        langBtns.forEach((b) => b.classList.toggle('tag-chip-active', b === btn));
-        apply();
-      }, { signal });
-    });
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(compute);
+    };
 
-    sortBtns.forEach((btn) => {
-      btn.addEventListener('click', () => {
-        activeSort = btn.dataset.sort || 'updated';
-        sortBtns.forEach((b) => b.classList.toggle('tag-chip-active', b === btn));
-        apply();
-      }, { signal });
-    });
+    if (reduceMotion) {
+      // Reduced motion: show everything, no scroll-linked choreography.
+      panels.forEach((wrap) => {
+        wrap.style.setProperty('--panel-progress', '1');
+        wrap.style.setProperty('--panel-reveal', '1');
+      });
+      if (readout) readout.textContent = `${String(total).padStart(2, '0')} / ${String(total).padStart(2, '0')}`;
+      if (fill) fill.style.transform = 'scaleY(1)';
+    } else {
+      window.addEventListener('scroll', onScroll, { passive: true, signal });
+      window.addEventListener('resize', onScroll, { passive: true, signal });
+      compute();
+    }
+
+    // Toggle the rail while the narrative is in view
+    if (rail) {
+      const io = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((e) => rail.classList.toggle('is-active', e.isIntersecting));
+        },
+        { threshold: 0.05 },
+      );
+      io.observe(narrative);
+      signal.addEventListener('abort', () => io.disconnect());
+    }
   }
 
-  initProjects();
-  document.addEventListener('astro:after-swap', initProjects);
+  initNarrative();
+  document.addEventListener('astro:after-swap', initNarrative);
 </script>

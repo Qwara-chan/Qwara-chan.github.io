@@ -1,0 +1,287 @@
+---
+interface Props {
+  class?: string;
+}
+const { class: className = '' } = Astro.props;
+---
+
+<div class={className} data-scroll-fx-root aria-hidden="true"></div>
+
+<script>
+  // ScrollFX — the aggressive scroll choreography engine.
+  //
+  // All effects are IntersectionObserver- or rAF-driven with per-init
+  // AbortController teardown (the standard astro:after-swap pattern):
+  //   - [data-section-reveal]  opacity + rise wipe when a section enters
+  //   - [data-scroll-fade]      elements lerp opacity / Y as they cross the viewport
+  //   - [data-scroll-skew]      headings kick into a subtle 3D skew on enter
+  //   - [data-tilt]             cards tilt toward the cursor (rAF lerp)
+  //   - [data-scroll-progress]  per-section reading bar (scaleX)
+  //   - [data-parallax]         background layers drift with data-parallax-speed
+  //
+  // NOTE: no clip-path on [data-section-reveal] — Chrome computes IO geometry
+  // from clip-path, so a transient wipe breaks child observers. The dramatic
+  // clip wipe is reserved for hero text (.hero-fade), which has no child IOs.
+  //
+  // Every effect respects prefers-reduced-motion; the CSS pre-states live in
+  // global.css so content is never stuck hidden without JS (noscript override
+  // in BaseLayout).
+
+  let fxAbort: AbortController | null = null;
+
+  function initScrollFX() {
+    fxAbort?.abort();
+    fxAbort = new AbortController();
+    const { signal } = fxAbort;
+
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // ---------- section reveal (opacity + rise wipe) ----------
+    document.querySelectorAll('[data-section-reveal]').forEach((el) => {
+      const revealEl = el as HTMLElement;
+      if (revealEl.dataset.fxDone) return;
+      revealEl.dataset.fxDone = 'true';
+      const delay = parseFloat(revealEl.dataset.revealDelay || '0');
+      revealEl.style.setProperty('--reveal-delay', `${delay}s`);
+
+      const io = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              revealEl.classList.add('is-revealed');
+              io.disconnect();
+            }
+          });
+        },
+        { rootMargin: '0px 0px -12% 0px', threshold: 0.08 },
+      );
+      io.observe(revealEl);
+      signal.addEventListener('abort', () => io.disconnect(), { once: true });
+    });
+
+    // ---------- scroll-linked fade (continuous, while in/near the viewport) ----------
+    const fadeEls = Array.from(document.querySelectorAll<HTMLElement>('[data-scroll-fade]'));
+    if (fadeEls.length > 0 && !reduceMotion) {
+      const fades = fadeEls
+        .filter((el) => !el.dataset.fxDone)
+        .map((el) => {
+          el.dataset.fxDone = 'true';
+          el.style.setProperty('--scroll-progress', '1');
+          return el;
+        });
+      if (fades.length > 0) {
+        const activeFades = new Set<HTMLElement>();
+        // Recompute every element currently inside the band. The IO alone is
+        // not enough: with the default threshold it only fires on enter/leave,
+        // so --scroll-progress would freeze at the entry value and the opacity
+        // would be stuck at the floor for the whole page.
+        const updateFades = () => {
+          const vh = window.innerHeight;
+          activeFades.forEach((el) => {
+            const rect = el.getBoundingClientRect();
+            // Distance of the element's center from the viewport center,
+            // normalized so 0 = centered (opaque) and ±1 = off-screen.
+            const center = rect.top + rect.height / 2;
+            const progress = 1 - Math.abs(center - vh / 2) / (vh / 2 + rect.height / 2);
+            el.style.setProperty('--scroll-progress', String(Math.max(0, Math.min(1, progress)).toFixed(3)));
+          });
+        };
+        // Coalesce scroll/resize into a single rAF pass to avoid forcing a
+        // synchronous layout read on every scroll event.
+        let ticking = false;
+        const onFadeScroll = () => {
+          if (ticking) return;
+          ticking = true;
+          requestAnimationFrame(() => {
+            ticking = false;
+            updateFades();
+          });
+        };
+
+        const io = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) activeFades.add(entry.target as HTMLElement);
+              else activeFades.delete(entry.target as HTMLElement);
+            });
+            updateFades();
+          },
+          { rootMargin: '40% 0px 40% 0px' },
+        );
+        fades.forEach((el) => io.observe(el));
+        window.addEventListener('scroll', onFadeScroll, { passive: true, signal });
+        window.addEventListener('resize', onFadeScroll, { passive: true, signal });
+        signal.addEventListener('abort', () => io.disconnect(), { once: true });
+      }
+    } else if (fadeEls.length > 0) {
+      // Reduced motion: just force everything visible.
+      fadeEls.forEach((el) => {
+        el.style.setProperty('--scroll-progress', '1');
+        el.style.opacity = '1';
+        el.style.transform = 'none';
+      });
+    }
+
+    // ---------- heading skew kick ----------
+    document.querySelectorAll('[data-scroll-skew]').forEach((el) => {
+      const skewEl = el as HTMLElement;
+      if (skewEl.dataset.fxDone) return;
+      skewEl.dataset.fxDone = 'true';
+      if (reduceMotion) return;
+
+      const angle = skewEl.dataset.skewAngle || '10deg';
+      const io = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              skewEl.classList.remove('is-skewed-out');
+              skewEl.classList.add('is-skewed');
+              setTimeout(() => {
+                skewEl.classList.remove('is-skewed');
+                skewEl.classList.add('is-skewed-out');
+              }, 750);
+            }
+          });
+        },
+        { rootMargin: '0px 0px -25% 0px' },
+      );
+      skewEl.style.setProperty('--skew-angle', angle);
+      io.observe(skewEl);
+      signal.addEventListener('abort', () => io.disconnect(), { once: true });
+    });
+
+    // ---------- cursor tilt on cards ----------
+    const tiltEls = Array.from(document.querySelectorAll<HTMLElement>('[data-tilt]'));
+    if (tiltEls.length > 0 && !reduceMotion) {
+      const finePointer = window.matchMedia('(pointer: fine)').matches;
+      if (finePointer) {
+        const active = new Map<HTMLElement, { tx: number; ty: number; cx: number; cy: number }>();
+        let raf = 0;
+
+        const loop = () => {
+          raf = 0;
+          active.forEach((state, el) => {
+            const rx = state.cx - 0.5;
+            const ry = state.cy - 0.5;
+            const rotY = rx * 10; // ±5°
+            const rotX = -ry * 8;  // ±4°
+            const tx = rx * 8;
+            const ty = ry * 6;
+            state.tx += (tx - state.tx) * 0.14;
+            state.ty += (ty - state.ty) * 0.14;
+            el.style.transform = `perspective(900px) rotateX(${rotX.toFixed(2)}deg) rotateY(${rotY.toFixed(2)}deg) translate3d(${state.tx.toFixed(2)}px, ${state.ty.toFixed(2)}px, 0)`;
+          });
+          if (active.size > 0) raf = requestAnimationFrame(loop);
+        };
+
+        tiltEls.forEach((el) => {
+          el.addEventListener(
+            'pointerenter',
+            (e) => {
+              active.set(el, { tx: 0, ty: 0, cx: 0.5, cy: 0.5 });
+              const rect = el.getBoundingClientRect();
+              const state = active.get(el)!;
+              state.cx = (e.clientX - rect.left) / rect.width;
+              state.cy = (e.clientY - rect.top) / rect.height;
+              if (!raf) raf = requestAnimationFrame(loop);
+            },
+            { signal },
+          );
+          el.addEventListener(
+            'pointermove',
+            (e) => {
+              const state = active.get(el);
+              if (!state) return;
+              const rect = el.getBoundingClientRect();
+              state.cx = (e.clientX - rect.left) / rect.width;
+              state.cy = (e.clientY - rect.top) / rect.height;
+            },
+            { signal },
+          );
+          const reset = () => {
+            const state = active.get(el);
+            if (!state) return;
+            active.delete(el);
+            el.style.transform = '';
+          };
+          el.addEventListener('pointerleave', reset, { signal });
+          el.addEventListener('pointercancel', reset, { signal });
+        });
+
+        signal.addEventListener('abort', () => {
+          if (raf) cancelAnimationFrame(raf);
+          raf = 0;
+          tiltEls.forEach((el) => { el.style.transform = ''; });
+        });
+      }
+    }
+
+    // ---------- per-section scroll progress ----------
+    document.querySelectorAll('[data-scroll-progress]').forEach((el) => {
+      const bar = el as HTMLElement;
+      if (bar.dataset.fxDone) return;
+      bar.dataset.fxDone = 'true';
+
+      // A malformed selector in the template must not throw and kill the rest
+      // of initScrollFX (a single uncaught exception would skip every effect).
+      let target: Element | null = null;
+      if (bar.dataset.scrollProgressTarget) {
+        try {
+          target = document.querySelector(bar.dataset.scrollProgressTarget);
+        } catch {
+          target = null;
+        }
+      } else {
+        target = bar.parentElement;
+      }
+      if (!target) return;
+
+      function update() {
+        const rect = target!.getBoundingClientRect();
+        const vh = window.innerHeight;
+        const total = rect.height + vh;
+        const passed = Math.min(Math.max(vh - rect.top, 0), total);
+        const progress = total > 0 ? passed / total : 0;
+        bar.style.transform = `scaleX(${progress.toFixed(4)})`;
+      }
+
+      window.addEventListener('scroll', update, { passive: true, signal });
+      update();
+    });
+
+    // ---------- parallax layers ----------
+    document.querySelectorAll('[data-parallax]').forEach((el) => {
+      const layer = el as HTMLElement;
+      if (layer.dataset.fxDone) return;
+      layer.dataset.fxDone = 'true';
+      if (reduceMotion) return; // same guard as fade/skew/tilt — no drift for reduced-motion users
+      const speed = parseFloat(layer.dataset.parallaxSpeed || '0.15');
+
+      function update() {
+        const rect = layer.getBoundingClientRect();
+        const vh = window.innerHeight;
+        // 0 when the layer is centered on screen, ±1 at the edges
+        const center = (rect.top + rect.height / 2 - vh / 2) / (vh / 2);
+        const shift = -center * speed * 120;
+        layer.style.transform = `translate3d(0, ${shift.toFixed(1)}px, 0)`;
+      }
+
+      const io = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              update();
+              window.addEventListener('scroll', update, { passive: true, signal });
+            }
+          });
+        },
+        { rootMargin: '100% 0px 100% 0px' },
+      );
+      io.observe(layer);
+      signal.addEventListener('abort', () => io.disconnect(), { once: true });
+    });
+  }
+
+  initScrollFX();
+  document.addEventListener('astro:after-swap', initScrollFX);
+</script>

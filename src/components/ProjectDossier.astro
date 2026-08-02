@@ -1,0 +1,122 @@
+---
+import type { Project } from '@utils/posts';
+import { getLanguageAccent } from '@utils/posts';
+import GithubIcon from '@components/icons/GithubIcon.astro';
+import { useTranslations } from '@i18n/utils';
+import type { Lang } from '@i18n/ui';
+
+interface Props {
+  project: Project;
+  index: number;
+  lang: Lang;
+}
+
+const { project, index, lang } = Astro.props;
+const t = useTranslations(lang);
+const data = project.data;
+
+const num = String(index + 1).padStart(2, '0');
+const accent = getLanguageAccent(data.languageColor);
+
+const langLabel = lang === 'zh'
+  ? { visit: '访问', source: '源码' }
+  : { visit: 'Visit', source: 'Source' };
+
+const updated = data.updatedAt ? new Date(data.updatedAt) : null;
+const updatedLabel = updated
+  ? new Intl.DateTimeFormat(lang === 'zh' ? 'zh-CN' : 'en-US', { dateStyle: 'medium' }).format(updated)
+  : '';
+
+const primaryHref = data.repo || data.url || '#';
+const hasSeparateVisit = !!data.url && data.url !== data.repo;
+---
+
+<div data-panel data-panel-id={data.id} style={{ '--panel-accent': accent }}>
+  <div class="narrative-panel">
+    <!-- Background: coordinate grid + halftone + scanline + watermark + reticle -->
+    <div class="panel-bg" aria-hidden="true">
+      <div class="panel-bg-grid schematic-grid" data-parallax data-parallax-speed="0.05"></div>
+      <div class="halftone absolute inset-0 opacity-30"></div>
+      <span class="panel-watermark" data-parallax data-parallax-speed="0.03">{num}</span>
+      <span class="panel-crosshair absolute right-[7%] top-[24%]"></span>
+      <span class="panel-crosshair absolute left-[4%] bottom-[16%] opacity-60"></span>
+      <div class="panel-scanline"></div>
+    </div>
+
+    <!-- Content: clip-wipe reveal driven by --panel-reveal -->
+    <div class="panel-content" data-panel-content>
+      <div
+        class="corner-marks container-px container-mx relative z-10 flex h-full flex-col justify-center gap-5 pb-16 pt-[calc(var(--nav-h)+2rem)]"
+        style="--corner-color: var(--panel-accent)"
+      >
+        <!-- HUD header row -->
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <span class="section-index">{num} //</span>
+            <p class="section-eyebrow mb-0!">{t('projects.record')}</p>
+          </div>
+          <div class="flex items-center gap-2">
+            {data.language && (
+              <span class="inline-flex items-center gap-1.5 rounded-[2px] border border-default px-2 py-0.5 font-mono text-[11px] uppercase tracking-wider text-muted">
+                <span class="h-2 w-2 rounded-full" style={{ backgroundColor: accent }}></span>
+                {data.language}
+              </span>
+            )}
+            {data.featured && (
+              <span
+                class="inline-flex items-center gap-1.5 rounded-[2px] border px-2 py-0.5 font-mono text-[11px] font-bold uppercase tracking-wider"
+                style={{ color: accent, borderColor: accent }}
+              >
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297l3.18 6.44 7.11 1.03-5.15 5.02 1.22 7.1L12 17.02l-6.36 3.87 1.22-7.1-5.15-5.02 7.11-1.03z"/></svg>
+                {t('projects.featured')}
+              </span>
+            )}
+          </div>
+        </div>
+
+        <!-- Title + description -->
+        <div>
+          <h2 class="text-[clamp(2rem,5vw,4.25rem)] font-extrabold leading-[0.95] tracking-tight">
+            {data.title}
+          </h2>
+          <div class="schematic-line mt-6 w-16"></div>
+          <p class="mt-6 max-w-2xl text-base leading-relaxed text-muted sm:text-lg">{data.description}</p>
+        </div>
+
+        <!-- HUD readout row -->
+        <div class="flex flex-wrap items-center gap-x-6 gap-y-2 font-mono text-sm text-muted">
+          <span class="inline-flex items-center gap-1.5">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297l3.18 6.44 7.11 1.03-5.15 5.02 1.22 7.1L12 17.02l-6.36 3.87 1.22-7.1-5.15-5.02 7.11-1.03z"/></svg>
+            {data.stars}
+          </span>
+          <span class="inline-flex items-center gap-1.5">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="6" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M6 8v8M8 7l8-1M8 17l8 1"/></svg>
+            {data.forks}
+          </span>
+          {updatedLabel && (
+            <span class="inline-flex items-center gap-1.5 text-xs uppercase tracking-wider opacity-80">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+              {updatedLabel}
+            </span>
+          )}
+        </div>
+
+        <!-- CTA row -->
+        <div class="flex flex-wrap items-center gap-3">
+          <a href={primaryHref} target="_blank" rel="noopener noreferrer" class="btn btn-primary pointer-events-auto">
+            <GithubIcon class="h-4 w-4" />
+            {langLabel.source}
+          </a>
+          {hasSeparateVisit && data.url && (
+            <a href={data.url} target="_blank" rel="noopener noreferrer" class="btn btn-ghost pointer-events-auto">
+              {langLabel.visit}
+            </a>
+          )}
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom scroll progress -->
+    <div class="panel-progress" aria-hidden="true"><span></span></div>
+  </div>
+</div>
