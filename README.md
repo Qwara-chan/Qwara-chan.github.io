@@ -1,6 +1,6 @@
 # Qwara's Corner 🐾
 
-A personal portfolio & blog built with Astro 7, featuring minimalist monochrome design with golden ratio proportions and a touch of feline whimsy.
+A personal portfolio & blog built with Astro 7, featuring a dark-industrial HUD design language with warning-yellow accents, golden ratio proportions, and a touch of feline whimsy.
 
 ![Astro](https://img.shields.io/badge/Astro-7.1.6-BC52EE?logo=astro&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.3.3-06B6D4?logo=tailwindcss&logoColor=white)
@@ -20,7 +20,7 @@ A personal portfolio & blog built with Astro 7, featuring minimalist monochrome 
 
 ### Design
 - **Golden Ratio (φ ≈ 1.618)** — Typography scale, section spacing, grid proportions, aspect ratios
-- **Monochrome palette** — Zinc-based grays with restrained indigo accent
+- **Dark-industrial HUD palette** — Monochrome ink scale with warning-yellow (`#f1c644`) accent, schematic-grid textures, square corners
 - **View Transitions** — Smooth page transitions via `<ClientRouter />`
 - **Dark / Light mode** — Persisted in localStorage, re-applied across navigations
 - **Mobile-first** — Responsive layout with full-screen mobile menu
@@ -51,7 +51,7 @@ A personal portfolio & blog built with Astro 7, featuring minimalist monochrome 
 │   └── fetch-github-repos.mjs  # Build-time GitHub repos fetch
 ├── src/
 │   ├── components/
-│   │   ├── animations/       # ScrollReveal, StaggerGrid
+│   │   ├── animations/       # ScrollFX (scroll engine), StaggerGrid
 │   │   ├── Navbar.astro      # Fixed nav with theme/lang toggle
 │   │   ├── Footer.astro      # Social links + colophon
 │   │   ├── Hero.astro        # Homepage hero entrance
@@ -143,22 +143,36 @@ Edit `src/data/now/zh.mdx` / `src/data/now/en.mdx` — frontmatter `updatedDate`
 Projects auto-sync from your GitHub at build time. No manual editing needed.
 
 ### Theme Colors
-Edit `@theme` block in `src/styles/global.css`:
+Semantic colors are CSS custom properties in `src/styles/global.css` (`:root` / `.dark`), so both themes stay in sync — reference the vars, not hard-coded hexes:
 
 ```css
 @theme {
-  --color-accent: #6366f1;        /* Primary accent */
-  --color-accent-light: #818cf8;  /* Dark mode accent */
-  --color-accent-dark: #4f46e5;   /* Gradient end */
+  --color-ink-50: #f4f4f2;        /* monochrome ink scale */
+  --color-warning: #f1c644;       /* accent family */
+  --color-warning-light: #f7d968; /* dark-mode accent */
+  --color-warning-dark: #d9a92e;
+}
+
+:root {
+  --bg: var(--color-ink-50);
+  --accent: #a16207;              /* light-mode accent */
+  --accent-surface: var(--color-warning); /* accent-as-background */
+}
+.dark {
+  --bg: var(--color-ink-900);
+  --accent: var(--color-warning-light);
+  --accent-surface: var(--color-warning-light);
 }
 ```
+
+Rule of thumb: text on an accent **surface** must be `#10100e` (use `--accent-surface` for backgrounds so light mode keeps WCAG AA contrast).
 
 ### Golden Ratio Tokens
 ```css
 --phi: 1.618;
---space-phi-1: 1.618rem;
---space-phi-2: 2.618rem;
---space-phi-3: 4.236rem;
+--spacing-phi-1: 1.618rem;
+--spacing-phi-2: 2.618rem;
+--spacing-phi-3: 4.236rem;
 --ratio-phi: 1.618 / 1;
 ```
 

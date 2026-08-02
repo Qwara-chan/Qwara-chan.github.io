@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-Personal portfolio & blog for Qwara (「Qwara's Corner 🐾」) — a bilingual (中文/English) static site built with **Astro 7** + **Tailwind CSS v4**, deployed to GitHub Pages. Minimalist monochrome design with golden-ratio (φ) proportions and a pervasive cat easter-egg layer.
+Personal portfolio & blog for Qwara (「Qwara's Corner 🐾」) — a bilingual (中文/English) static site built with **Astro 7** + **Tailwind CSS v4**, deployed to GitHub Pages. **Dark-industrial HUD design language** (Hypergryph-inspired, see `~/文档/design-language.md`): dark canvas, warning-yellow accent, halftone/scanline textures, tactical corner brackets, mono readouts — with an aggressive scroll-choreography layer and a pervasive cat easter-egg layer.
 
 ## Commands
 
@@ -37,7 +37,7 @@ Shared query helpers live in `src/utils/posts.ts` (`getPosts`, `getProjects`, `g
 - Routing (in `astro.config.mjs`): default locale `zh` with **no prefix**; `en` prefixed `/en/`; fallback `en → zh`.
 
 ### Client-side scripts: re-init on View Transitions
-`BaseLayout.astro` mounts `<ClientRouter />`; every interactive script on the site (ScrollReveal, StaggerGrid, Mermaid, SearchPage, PostLayout's reading-progress/TOC/copy/lightbox, the theme script) does the same thing:
+`BaseLayout.astro` mounts `<ClientRouter />`; every interactive script on the site (StaggerGrid, Mermaid, SearchPage, PostLayout's reading-progress/TOC/copy/lightbox, the theme script) does the same thing:
 ```js
 initX();
 document.addEventListener('astro:after-swap', initX);
@@ -46,20 +46,22 @@ Each init tears down prior state with an `AbortController` (`prev?.abort()`) and
 
 ### Styling: Tailwind v4, CSS-first, golden-ratio tokens
 - `src/styles/global.css` imports Tailwind v4 (`@import "tailwindcss"` + `@plugin "@tailwindcss/typography"`) — **no `tailwind.config.js`**.
-- The `@theme` block defines φ-based tokens which generate utilities directly: `--spacing-phi-*` → `p-phi-*`/`gap-phi-*`/`mb-phi-*`, `--text-phi-*` → `text-phi-*`, `--radius-phi-*` → `rounded-phi-*`, plus `--ratio-phi` → `aspect-phi`.
-- Semantic colors are CSS custom properties in `:root` / `.dark` (`--bg`, `--bg-elev`, `--fg`, `--fg-muted`, `--border`, `--accent`, `--accent-soft`). **Reference these vars** (`bg-[var(--bg)]`, `text-muted`, `border-default`, `text-[var(--accent)]`) rather than zinc utilities directly, so both themes stay consistent. Accent: indigo `#6366f1` / `#818cf8` dark.
-- Reusable component classes live in `@layer components`: `.card`, `.card-hover`, `.btn` / `.btn-primary` / `.btn-ghost`, `.tag-chip`, `.section-eyebrow`, `.container-px`, `.container-mx`, `.golden-section`, `.aspect-phi`.
-- Dark mode is class-based: `.dark` on `<html>`; Tailwind `@custom-variant dark` makes `dark:` work with the class. An inline boot script reads localStorage before paint; a `dark` re-apply script handles `after-swap`.
+- The `@theme` block defines φ-based tokens which generate utilities directly: `--spacing-phi-*` → `p-phi-*`/`gap-phi-*`/`mb-phi-*`, `--text-phi-*` → `text-phi-*`, `--radius-phi-*` → `rounded-phi-*`. (v4's `aspect-*` utilities come from the `--aspect-*` namespace; `aspect-phi` is a hand-written class consuming `--ratio-phi`.)
+- **Design language (dark-industrial HUD)**: semantic colors are CSS custom properties in `:root` / `.dark` (`--bg`, `--bg-elev`, `--fg`, `--fg-muted`, `--border`, `--accent`, `--accent-soft`). **Reference these vars** (`bg-[var(--bg)]`, `text-muted`, `border-default`, `text-[var(--accent)]`) rather than zinc utilities directly, so both themes stay consistent. Accent is warning-yellow **`#f1c644`** (dark `#f7d968`); text on accent surfaces must be `#10100e`.
+- Industrial texture utilities live in `@layer`/plain CSS: `.halftone` (dot screen), `.noise-overlay` (film grain), `.hazard-band` (diagonal caution stripes via `::after`), `.schematic-grid` / `.schematic-line` (dashed blueprint grid/divider), `.corner-marks` (HUD corner brackets, `--corner-size`/`--corner-color`), `.section-index` ("01 //" mono chips), `.readout` (mono uppercase metadata). Cards use square-ish `rounded-[4px]`/`radius-phi-sm` corners, not pills.
+- Reusable component classes live in `@layer components`: `.card`, `.card-hover`, `.btn` / `.btn-primary` / `.btn-ghost` (mono, uppercase, square), `.tag-chip`, `.section-eyebrow`, `.container-px`, `.container-mx`, `.golden-section`, `.aspect-phi`. `.nav-link` active/hover state is **corner brackets**, not underline.
+- Dark mode is class-based: `.dark` on `<html>`; Tailwind `@custom-variant dark` makes `dark:` work with the class. An inline boot script reads localStorage before paint; a `dark` re-apply script handles `after-swap`. Default (preference) is dark — the light theme is a secondary citizen.
 
 ### KaTeX & Mermaid
 - **KaTeX**: `remark-math` + `rehype-katex` wired through `markdown.processor: unified({...})` in `astro.config.mjs` (Astro 7 style — top-level `remarkPlugins`/`rehypePlugins` config keys are deprecated). `$...$` / `$$...$$` work in `.md` and `.mdx`. The KaTeX CSS is imported **only** in `PostLayout.astro` (`src/styles/katex.css`) to keep it off non-post pages.
 - **Mermaid**: `Mermaid.astro` (included by `PostLayout`) renders fenced ` ```mermaid ` blocks lazily — Astro 7's Shiki marks the language on `pre[data-language="mermaid"]`, **not** `code.language-mermaid`. It lazy-loads `mermaid` via dynamic `import()`, renders under `securityLevel: 'strict'`, falls back to a `.mermaid-fallback` `<pre>` on error, and re-renders on theme flip via a `MutationObserver`. Wrappers get `.mermaid-figure` class (styled in `global.css`).
 
 ### Animation system
-No animation library (GSAP was removed in 2026-07 for performance). Scroll-reveal is IntersectionObserver + CSS transitions:
-- `ScrollReveal.astro` → `[data-animate]` + per-element `--reveal-*` CSS vars.
-- `StaggerGrid.astro` → `[data-stagger-grid]` with `--stagger-delay` per item.
-- Hidden pre-states and the `.is-revealed` transitions live in `global.css`, with `prefers-reduced-motion` and a `<noscript>` override (content must never be stuck hidden without JS).
+No animation library (GSAP was removed in 2026-07 for performance). Two layers:
+- **`ScrollFX.astro`** (mounted once in `BaseLayout`, runs on every page) — the aggressive scroll choreography engine: `[data-section-reveal]` (opacity + rise wipe on enter, with `data-reveal-delay`; **no clip-path** — Chrome computes IntersectionObserver geometry from clip-path, which would break child observers; the dramatic clip wipe is reserved for hero text `.hero-fade`), `[data-scroll-fade]` (continuous opacity/Y tied to viewport crossing, `data-scroll-fade-y`), `[data-scroll-skew]` (heading kick, `data-skew-angle`), `[data-tilt]` (cursor-follow card tilt, pointer-fine only), `[data-scroll-progress]` (per-section scaleX bar, `data-scroll-progress-target`), `[data-parallax]` (bg layers, `data-parallax-speed`). All IO + rAF based, re-inits on `astro:after-swap` with per-init `AbortController`, respects `prefers-reduced-motion`.
+- **Legacy per-component reveal** (`StaggerGrid.astro` / skill bars / timeline line) — IntersectionObserver + CSS transitions; the hidden pre-states and `.is-revealed` transitions live in `global.css`, with `prefers-reduced-motion` and a `<noscript>` override (content must never be stuck hidden without JS). `ScrollReveal.astro` was removed in the 2026-08 review cleanup — don't reintroduce it.
+- Hero entrance is pure CSS keyframes (`.hero-fade`); the Hero script only adds the mouse-parallax glow and the left-edge progress rail.
+- **Projects dossier narrative** (`/projects`, zh + en mirror) — `featured` repos render as full-viewport sticky dossier panels (`ProjectDossier.astro`: each `[data-panel]` runway `150vh` pins its `.narrative-panel` at `top:0` while the next slides over it). Scroll choreography lives in `ProjectsPage.astro`'s `initNarrative()`: a rAF loop writes `--panel-progress` / `--panel-reveal` (the content clip-wipe) per panel, drives the left-edge HUD rail (`[data-narrative-rail]`) + `0X / 0N` readout, and is skipped entirely under `prefers-reduced-motion`. Non-featured repos degrade to a `ProjectCard` wall below. Panel accent = language color via `getLanguageAccent()` in `src/utils/posts.ts`; relevant CSS lives in `global.css` under the dossier section.
 
 ## Conventions & gotchas
 
@@ -71,4 +73,4 @@ No animation library (GSAP was removed in 2026-07 for performance). Scroll-revea
 - Blog posts use `post.id` as the slug; tag URLs must `encodeURIComponent(tag)`.
 - Path aliases (in `tsconfig.json`): `@/*`, `@components/*`, `@layouts/*`, `@utils/*`, `@i18n/*`, `@styles/*`.
 - Fonts are self-hosted and subset-split (HarmonyOS Sans SC Latin/CJK, JetBrains Mono) with `unicode-range`; CJK woff2s are preloaded only for zh pages.
-- The cat easter-egg layer is `MeowEasterEgg.astro` (idle-time boot, console banner, `window.__qwara`, `data-meow-rev`, hidden `/secret-cat/` route, konami/paw-rain). It is `is:inline` and deferred — don't break its idle scheduling. When adding cat/easter-egg content, keep commit messages simple (e.g. "增加了更多的猫猫") with no detailed description.
+- The cat easter-egg layer is `MeowEasterEgg.astro` (idle-time boot, console banner, `window.__qwara` REPL, `data-meow-rev` + poke-avatar-5× achievement, hidden `/secret-cat/` route, typing "meow"/"喵" → paw rain, konami → super rain, `Ctrl+Shift+M`, footer meow, tab-away title "喵？不要走…"). It is `is:inline` and deferred — don't break its idle scheduling. **Deliberately removed (2026-08):** long-press spawn, idle walker cat, double-click empty-area burst, selection meow, mouse paw trail — do not re-add them. When adding cat/easter-egg content, keep commit messages simple (e.g. "增加了更多的猫猫") with no detailed description.

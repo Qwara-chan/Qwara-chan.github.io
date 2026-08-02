@@ -5,10 +5,12 @@ import sharp from 'sharp';
 
 export const getStaticPaths = (async () => {
   const posts = await getPosts('zh');
-  return posts.map((post) => ({
-    params: { slug: post.id },
-    props: { post },
-  }));
+  return posts
+    .filter((post) => post.id !== 'default') // reserved by the static og/default.png route
+    .map((post) => ({
+      params: { slug: post.id },
+      props: { post },
+    }));
 }) satisfies GetStaticPaths;
 
 export const GET: APIRoute = async ({ props }) => {

@@ -17,6 +17,11 @@ pnpm-debug.log*
 # environment variables
 .env
 .env.production
+.env.local
+.env.*.local
+
+# linked worktrees (compose workflow)
+.worktrees/
 
 # macOS
 .DS_Store
