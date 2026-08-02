@@ -11,6 +11,12 @@ const MAX_PAGES = 3;
 
 const API = `https://api.github.com/users/${GITHUB_USER}/repos?per_page=100&sort=updated`;
 
+// Use a token when available (CI provides GITHUB_TOKEN automatically).
+// Unauthenticated calls are limited to 60 req/hr on a shared IP — the
+// Actions runner is notorious for hitting that, so passing the token
+// bumps the quota to 5000 req/hr and makes the sync reliable.
+const TOKEN = process.env.GH_TOKEN || process.env.GITHUB_TOKEN || '';
+
 function normalizeLangColor(lang) {
   const map = {
     TypeScript: 'blue',
@@ -40,6 +46,7 @@ async function fetchRepos() {
       headers: {
         Accept: 'application/vnd.github+json',
         'User-Agent': 'qwara-portfolio-build',
+        ...(TOKEN ? { Authorization: `Bearer ${TOKEN}` } : {}),
       },
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
