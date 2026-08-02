@@ -35,6 +35,9 @@ export function formatDate(date: Date, lang: Lang): string {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
+    // date-only frontmatter (z.coerce.date) parses to UTC midnight; without a
+    // fixed timezone a negative-offset build machine would render the day before.
+    timeZone: 'UTC',
   }).format(date);
 }
 

@@ -4,6 +4,28 @@ import type { Lang } from '@i18n/ui';
 export type Post = CollectionEntry<'blog/zh'> | CollectionEntry<'blog/en'>;
 export type Project = CollectionEntry<'projects'>;
 
+/**
+ * GitHub `languageColor` key → the site's monochrome language-accent token.
+ * Mirrors the neutral "language dots" palette in global.css so the language
+ * accent (used for dossier edges, progress bars, corner marks) stays theme-agnostic
+ * and consistent with the rest of the industrial design language.
+ */
+const languageAccentByKey: Record<string, string> = {
+  blue: 'var(--color-lang-ts)',
+  yellow: 'var(--color-lang-js)',
+  emerald: 'var(--color-lang-css)',
+  cyan: 'var(--color-lang-html)',
+  orange: 'var(--color-lang-js)',
+  red: 'var(--color-lang-other)',
+  pink: 'var(--color-lang-css)',
+  green: 'var(--color-lang-ts)',
+  zinc: 'var(--color-lang-other)',
+};
+
+export function getLanguageAccent(colorKey?: string): string {
+  return languageAccentByKey[colorKey ?? 'zinc'] ?? 'var(--color-lang-other)';
+}
+
 export async function getPosts(lang: Lang): Promise<Post[]> {
   const posts = await getCollection(lang === 'en' ? 'blog/en' : 'blog/zh');
   return posts
@@ -22,7 +44,8 @@ export async function getProjects(_lang: Lang): Promise<Project[]> {
     if (a.data.featured !== b.data.featured) return a.data.featured ? -1 : 1;
     const ta = new Date(a.data.pushedAt ?? a.data.updatedAt ?? 0).getTime();
     const tb = new Date(b.data.pushedAt ?? b.data.updatedAt ?? 0).getTime();
-    return tb - ta;
+    // An unparseable date yields NaN; fall back to 0 so the comparator stays stable.
+    return (Number.isFinite(tb) ? tb : 0) - (Number.isFinite(ta) ? ta : 0);
   });
 }
 

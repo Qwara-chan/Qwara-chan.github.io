@@ -2,7 +2,6 @@
 import BaseLayout from '@layouts/BaseLayout.astro';
 import BlogCard from '@components/BlogCard.astro';
 import StaggerGrid from '@components/animations/StaggerGrid.astro';
-import ScrollReveal from '@components/animations/ScrollReveal.astro';
 import { getLangFromUrl, useTranslations, getLocalizedPath } from '@i18n/utils';
 import { getPosts, getAllTags, paginate } from '@utils/posts';
 
@@ -17,7 +16,9 @@ const pages = paginate(allPosts, pageSize);
 const totalPages = pages.length;
 
 // Guard against `?page=abc` / `?page=0` / `?page=999`: fall back to a sane page.
-const urlPage = Number.parseInt(Astro.url.searchParams.get('page') ?? '1', 10);
+// Only accept a strictly numeric string — parseInt alone would let `2abc` / `1e3` through.
+const pageParam = Astro.url.searchParams.get('page') ?? '1';
+const urlPage = /^\d+$/.test(pageParam) ? Number(pageParam) : NaN;
 const currentPage = Number.isFinite(urlPage) ? Math.min(Math.max(1, urlPage), totalPages) : 1;
 const posts = pages[currentPage - 1] ?? [];
 
@@ -26,29 +27,29 @@ const tagsBase = getLocalizedPath('tags', lang);
 ---
 
 <BaseLayout title={t('blog.title')} description={t('blog.subtitle')}>
-  <div class="container-px container-mx golden-section">
-    <ScrollReveal>
-      <p class="section-eyebrow">{t('blog.eyebrow')}</p>
-      <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight mb-3">{t('blog.title')}</h1>
-      <p class="text-muted mb-phi-2">{t('blog.subtitle')}</p>
-    </ScrollReveal>
+  <div class="container-px container-mx golden-section" data-section-reveal>
+    <div class="flex items-center gap-4 mb-3">
+      <span class="section-index">B//</span>
+      <p class="section-eyebrow mb-0!" data-scroll-skew data-skew-angle="8deg">{t('blog.eyebrow')}</p>
+      <div class="schematic-line flex-1"></div>
+    </div>
+    <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight mb-3">{t('blog.title')}</h1>
+    <p class="text-muted mb-phi-2 readout">{t('blog.subtitle')}</p>
 
     {allTags.length > 0 && (
-      <ScrollReveal delay={0.1}>
-        <div class="flex flex-wrap gap-2 mb-phi-2 items-center">
-          <a href={blogBase} class="tag-chip tag-chip-active">
-            {t('blog.allTags')}
+      <div class="flex flex-wrap gap-2 mb-phi-2 items-center">
+        <a href={blogBase} class="tag-chip tag-chip-active font-mono">
+          {t('blog.allTags')}
+        </a>
+        {allTags.map(({ tag, count }) => (
+          <a href={`${tagsBase}/${encodeURIComponent(tag)}`} class="tag-chip font-mono">
+            #{tag} <span class="opacity-50 ml-1">{count}</span>
           </a>
-          {allTags.map(({ tag, count }) => (
-            <a href={`${tagsBase}/${encodeURIComponent(tag)}`} class="tag-chip">
-              #{tag} <span class="opacity-50 ml-1">{count}</span>
-            </a>
-          ))}
-          <a href={tagsBase} class="tag-chip ml-auto whitespace-nowrap">
-            ☁ {t('tagsCloud.title')}
-          </a>
-        </div>
-      </ScrollReveal>
+        ))}
+        <a href={tagsBase} class="tag-chip ml-auto whitespace-nowrap font-mono">
+          ☁ {t('tagsCloud.title')}
+        </a>
+      </div>
     )}
 
     {posts.length > 0 ? (
