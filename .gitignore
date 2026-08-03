@@ -30,5 +30,5 @@ pnpm-debug.log*
 .vscode/
 .idea/
 
-# session-local review/plan notes (not for commit)
-*_TODO.md
+# session-local review/plan notes (repo root only, not for commit)
+/*_TODO.md

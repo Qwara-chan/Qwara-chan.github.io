@@ -29,7 +29,7 @@ Collections are defined in `src/content.config.ts` with Zod schemas using `glob(
 Shared query helpers live in `src/utils/posts.ts` (`getPosts`, `getProjects`, `getAllTags`, `paginate`, and the `getStaticPaths` builders `getPostStaticPaths` / `getTagStaticPaths`). Tag pages load posts in a **single collection fetch** (avoid the N+1 `getCollection()`-per-tag pattern — the grouped map is already built in `getTagStaticPaths`).
 
 ### GitHub projects auto-sync (do not hand-edit)
-`scripts/fetch-github-repos.mjs` runs before every dev/build, hits the **unauthenticated** GitHub API (60 req/hr), and writes `src/data/projects/_github.json`. That file is gitignored and regenerated at build time. On failure (rate limit/network) it **keeps the previous snapshot** rather than wiping the projects page — but on a fresh clone with no snapshot it falls back to `[]`. Forks are dropped (`INCLUDE_FORKS = false`).
+`scripts/fetch-github-repos.mjs` runs before every dev/build, uses `GH_TOKEN`/`GITHUB_TOKEN` when available (CI provides `GITHUB_TOKEN`), falls back to the **unauthenticated** GitHub API (60 req/hr), and writes `src/data/projects/_github.json`. That file is gitignored and regenerated at build time. On failure (rate limit/network/auth) it **keeps the previous snapshot** rather than wiping the projects page — but on a fresh clone with no snapshot it falls back to `[]` locally, or **aborts the build** in CI rather than shipping an empty projects page green. Forks and private repos are dropped.
 
 ### i18n
 - `src/i18n/ui.ts` — the bilingual string dictionaries, `zh` and `en`, with `UIKey = keyof typeof ui.zh` (all UI copy must have both variants).
@@ -67,7 +67,7 @@ No animation library (GSAP was removed in 2026-07 for performance). Two layers:
 
 - **Content frontmatter** (blog, Zod-validated): `title`, `description`, `pubDate`, `tags`, `cover?`, `draft`, `lang`; `/now` uses `title`, `updatedDate`, `lang`. Mark a post `draft: true` to hide it — drafts are filtered in `getPosts`/`getPostStaticPaths`.
 - **`dist/`, `.astro/`, and `src/data/projects/_github.json` are gitignored** — never commit them. `.astro/` holds generated type stubs.
-- `sharp` is a devDependency but is required by Astro for production image optimization — keep it.
+- `sharp` is a devDependency but is required by Astro for production image optimization — keep it (0.35+ ships prebuilt binaries only; no source-build fallback on exotic platforms).
 - Search (`SearchPage.astro`) is pure client-side filtering over `data-search-*` attributes with rAF-coalesced scoring — it works identically in dev and prod; no index build step.
 - Blog pagination is `?page=N` (9/page) with guards against `NaN`/`0`/overflow in `BlogIndexPage.astro`.
 - Blog posts use `post.id` as the slug; tag URLs must `encodeURIComponent(tag)`.

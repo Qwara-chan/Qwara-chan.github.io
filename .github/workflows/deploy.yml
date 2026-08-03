@@ -36,10 +36,8 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y fonts-noto-cjk
 
       - name: Build with Astro
-        env:
-          # Bump GitHub API quota for the repo-fetch prebuild (60/hr unauth → 5000/hr).
-          # The Actions runner's shared IP is frequently rate-limited otherwise.
-          GH_TOKEN: ${{ github.token }}
+        # Actions auto-exports GITHUB_TOKEN to every step, and the fetch script
+        # picks it up itself — no explicit env needed for the repo-fetch quota bump.
         run: npm run build
 
       - name: Upload artifact
