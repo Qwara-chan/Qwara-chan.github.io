@@ -40,17 +40,18 @@ const camLabel = 'CAM 01 · AUTO-TRACK';
   <!-- Hero 专属 HUD 层（撕裂条/角标/读数等 fixed 装饰）：随 Hero 滚出视口中线后
        整体淡出（data-hero-hud），不盖住下方章节与页脚（2026-08 review 修复）。 -->
   <div data-hero-hud>
-  <!-- Glitch 撕裂条 -->
+  <!-- Glitch 撕裂条（保持 fixed：JS 按视口定位撕裂位置） -->
   <div class="glitchbar fixed left-[-4%] right-[-4%] h-[6px] z-[3] pointer-events-none" id="glitchbar" aria-hidden="true"></div>
 
-  <!-- 视口四角尖角标记 -->
-  <span class="cb tl fixed top-[62px] left-[18px]" aria-hidden="true"></span>
-  <span class="cb tr fixed top-[62px] right-[18px]" aria-hidden="true"></span>
-  <span class="cb bl fixed bottom-[104px] left-[18px]" aria-hidden="true"></span>
-  <span class="cb br fixed bottom-[104px] right-[18px]" aria-hidden="true"></span>
+  <!-- 视口四角尖角标记（absolute：随 Hero 滚动，Hero 只有 100vh-4rem 高，
+       fixed 会钉在视口底部盖住下方内容的标题 → 「字在底栏上部」） -->
+  <span class="cb tl absolute top-[62px] left-[18px]" aria-hidden="true"></span>
+  <span class="cb tr absolute top-[62px] right-[18px]" aria-hidden="true"></span>
+  <span class="cb bl absolute bottom-[104px] left-[18px]" aria-hidden="true"></span>
+  <span class="cb br absolute bottom-[104px] right-[18px]" aria-hidden="true"></span>
 
   <!-- 顶栏 REC + 时间码（在播状态读数） -->
-  <div class="rec-readout fixed top-[70px] right-[30px] z-[4] pointer-events-none hero-fade" style="--hero-dur: 0.7s; --hero-delay: 0.2s" aria-hidden="true">
+  <div class="rec-readout absolute top-[70px] right-[30px] z-[4] pointer-events-none hero-fade" style="--hero-dur: 0.7s; --hero-delay: 0.2s" aria-hidden="true">
     <span class="rec-dot" id="rec"></span>
     <span class="font-mono phosphor">REC <b id="tc">00:00:00:00</b> · CAM 01</span>
   </div>
@@ -72,26 +73,30 @@ const camLabel = 'CAM 01 · AUTO-TRACK';
     </div>
   </div>
 
-  <!-- 下半部 HUD（档案块/房间号/侧标/编辑台） -->
-  <div data-hero-hud>
+  <!-- 下半部 HUD（档案块/房间号/侧标） -->
+  <div data-hero-hud class="hud-lower">
   <!-- 左下档案数据块 -->
-  <div class="archive-data fixed left-[30px] bottom-[110px] z-[4] pointer-events-none hero-fade" style="--hero-dur: 0.7s; --hero-delay: 0.3s" aria-hidden="true">
+  <div class="archive-data absolute left-[30px] bottom-[110px] z-[4] pointer-events-none hero-fade" style="--hero-dur: 0.7s; --hero-delay: 0.3s" aria-hidden="true">
     <span>FILE NO. — <b>{fileNo}</b></span>
     <span>SECTOR — <b>{sector}</b> · CLR — <b>E</b></span>
     <span>ARCHIVED — <b>{archived}</b></span>
   </div>
 
   <!-- 房间号 -->
-  <div class="chamber-tag fixed left-1/2 -translate-x-1/2 bottom-[104px] z-[4] pointer-events-none hero-fade" style="--hero-dur: 0.7s; --hero-delay: 0.4s" aria-hidden="true">
+  <div class="chamber-tag absolute left-1/2 -translate-x-1/2 bottom-[104px] z-[4] pointer-events-none hero-fade" style="--hero-dur: 0.7s; --hero-delay: 0.4s" aria-hidden="true">
     <span class="font-mono">CHAMBER <b class="text-[var(--accent)]">{sector}</b></span>
   </div>
 
   <!-- 侧边竖排标注 -->
-  <span class="side-label fixed top-1/2 -translate-y-1/2 left-[26px] z-[4] pointer-events-none hero-fade" style="--hero-dur: 0.7s; --hero-delay: 0.25s" aria-hidden="true">{tapeLabel}</span>
-  <span class="side-label fixed top-1/2 -translate-y-1/2 right-[26px] z-[4] pointer-events-none hero-fade" style="--hero-dur: 0.7s; --hero-delay: 0.25s" aria-hidden="true">{camLabel}</span>
+  <span class="side-label absolute top-1/2 -translate-y-1/2 left-[26px] z-[4] pointer-events-none hero-fade" style="--hero-dur: 0.7s; --hero-delay: 0.25s" aria-hidden="true">{tapeLabel}</span>
+  <span class="side-label absolute top-1/2 -translate-y-1/2 right-[26px] z-[4] pointer-events-none hero-fade" style="--hero-dur: 0.7s; --hero-delay: 0.25s" aria-hidden="true">{camLabel}</span>
+  </div>
 
+  <!-- 编辑台单独包装：独立快速淡出 —— 快速滚动时内容会进入底栏区域，
+       半透明窗口越短，透过底栏看到文字的「透字」越不明显 -->
+  <div data-hero-hud class="hud-deck">
   <!-- 黑色编辑台 -->
-  <div class="deck fixed left-0 right-0 bottom-0 z-30 hero-fade" style="--hero-dur: 0.7s; --hero-delay: 0.45s" data-hero-deck>
+  <div class="deck absolute left-0 right-0 bottom-0 z-30 hero-fade" style="--hero-dur: 0.7s; --hero-delay: 0.45s" data-hero-deck>
     <div class="vhsbar thin" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
     <div class="deck-inner">
       <div class="deck-group">
@@ -288,14 +293,57 @@ const camLabel = 'CAM 01 · AUTO-TRACK';
   .deck-right .brand2 { color: #e8e0cc; letter-spacing: 0.3em; }
   .deck-right .chamber { color: var(--accent); font-weight: 700; }
 
-  /* HUD 层：随 Hero 滚出视口中线后整体淡出（JS 通过 IO 切换 .is-past） */
+  /* HUD 层退场/回场：随 Hero 滚出/滚回视口中线切换（JS 通过 IO 切换 .is-past）。
+     分层错落 —— 上半（读数/角标）先动，下半（档案块/房间号/侧标）晚 0.12s（hud-lower），
+     编辑台单独包装（hud-deck）快速淡出（0.22s，比全层快一倍）再下沉 24px 回位：
+     快速滚动时内容会进入底栏区域，编辑台半透明窗口越短，「透过底栏看到文字」越不明显。
+     位移保持克制（fixed 层大位移会在内容上方摩擦、读数上浮会顶进 navbar）；位移用
+     独立 translate 属性（hero-fade fill 锁死 transform）。闪烁修复：visibility 的
+     延迟按状态拆分 —— 回场（is-past 移除）立即 visible，淡入从第一帧渲染；只有退场
+     （is-past）才延迟 hidden。若用单一 `visibility 0s 0.45s`，回场淡入全程 hidden，
+     结束时突然完整出现 → 闪烁。 */
   [data-hero-hud] {
-    transition: opacity 0.35s var(--ease-out);
+    opacity: 1;
+    visibility: visible;
+    transition:
+      opacity 0.45s var(--ease-out),
+      visibility 0s;
+  }
+  [data-hero-hud].hud-lower {
+    transition-delay: 0.12s, 0s; /* 下半晚 0.12s 展开/收起（回场 visibility 立即） */
   }
   [data-hero-hud].is-past {
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
+    transition:
+      opacity 0.45s var(--ease-out),
+      visibility 0s 0.45s; /* 退场：淡出完再隐藏 */
+  }
+  [data-hero-hud].hud-lower.is-past {
+    transition-delay: 0.12s, 0.57s;
+  }
+  /* 编辑台单独包装：快速淡出（0.22s），避免快速滚动时内容透过半透明底栏露字 */
+  [data-hero-hud].hud-deck {
+    transition:
+      opacity 0.22s var(--ease-out),
+      visibility 0s;
+    transition-delay: 0.06s, 0s;
+  }
+  [data-hero-hud].hud-deck.is-past {
+    transition:
+      opacity 0.22s var(--ease-out),
+      visibility 0s 0.22s;
+    transition-delay: 0.06s, 0.28s;
+  }
+  /* 编辑台：轻微下沉（淡出由 hud-deck 包装负责 —— hero-fade 入场动画的 fill
+     会锁死 transform 和 opacity，元素自身的 opacity 规则无效） */
+  [data-hero-hud] .deck {
+    transition: translate 0.4s var(--ease-out);
+    transition-delay: 0.06s;
+  }
+  [data-hero-hud].is-past .deck {
+    translate: 0 24px;
   }
 
   @media (width < 760px) {
@@ -479,8 +527,11 @@ const camLabel = 'CAM 01 · AUTO-TRACK';
     ffBtn?.addEventListener('click', ff, { signal });
 
     // HUD 层随 Hero 滚出视口中线后淡出：它们是 fixed 钉在视口上的装饰，不隐藏会
-    // 盖住下方章节与页脚。用 IO 收窄底部观察区（-50% → Hero 底边越过视口中线即触发；
-    // rootMargin 只接受 px/% 单位，不能用 vh），跟随既有 IO + AbortController 模式。
+    // 盖住下方章节与页脚。观察区取「视口下半屏」（rootMargin top -50% → 观察区
+    // [50vh, 100vh]）：hero 底边越过视口中线即完全离开观察区 → 触发。注意正值
+    // rootMargin 是向外扩大（top +50% 会把观察区推到视口上方，无效）；用 bottom
+    // 收窄也无效 —— hero 是从顶部离开观察区的，要等它完全滚出视口才触发，deck
+    // 会挡内容过久。rootMargin 只接受 px/% 单位，不能用 vh。
     const hudEls = Array.from(document.querySelectorAll<HTMLElement>('[data-hero-hud]'));
     const heroSec = document.getElementById('hero');
     if (hudEls.length && heroSec && 'IntersectionObserver' in window) {
@@ -491,7 +542,7 @@ const camLabel = 'CAM 01 · AUTO-TRACK';
             hudEls.forEach((el) => el.classList.toggle('is-past', past));
           }
         },
-        { rootMargin: '0px 0px -50% 0px' },
+        { rootMargin: '-50% 0px 0px 0px' },
       );
       io.observe(heroSec);
       signal.addEventListener('abort', () => io.disconnect());
