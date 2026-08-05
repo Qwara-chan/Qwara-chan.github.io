@@ -25,33 +25,38 @@ const currentHash = Astro.url.hash.replace(/^#/, '');
 
 <header
   id="navbar"
-  class="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
+  class="fixed top-0 left-0 right-0 z-50"
   data-navbar
 >
+  <!-- 顶缘 VHS 三色信号条 -->
+  <div class="vhsbar thin absolute inset-x-0 top-0 z-[1] pointer-events-none" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+
   <div
     class="navbar-bg absolute inset-0 transition-opacity duration-300 opacity-0 pointer-events-none"
     data-navbar-bg
   ></div>
+
   <div class="container-px container-mx relative">
-    <nav class="flex items-center justify-between h-16 transition-all duration-300" data-nav-inner>
-      <a href={getLocalizedPath('', lang)} class="flex items-center gap-2.5 font-bold text-lg tracking-tight group">
-        <span class="relative inline-flex w-8 h-8 items-center justify-center">
-          <span class="absolute inset-0 border border-default group-hover:border-[var(--accent)] transition-colors duration-300"></span>
-          <span class="absolute inset-0 pointer-events-none" style="border: 1px solid var(--accent); clip-path: polygon(0 0, 18% 0, 0 18%, 0 100%, 100% 100%, 100% 82%, 82% 100%, 0 100%, 0 0); opacity: 0.6;" aria-hidden="true"></span>
+    <nav class="flex items-center justify-between h-16 transition-[height] duration-300" data-nav-inner>
+      <a href={getLocalizedPath('', lang)} class="navbar-brand flex items-center gap-3 font-bold group">
+        <span class="relative inline-flex w-8 h-8 items-center justify-center shrink-0">
+          <span class="absolute inset-0 bg-[var(--accent)] corner-cut transition-transform duration-300 group-hover:scale-105"></span>
           <img
             src="/avatar.png"
             alt=""
-            class="w-5 h-5 rounded-[2px] transition-transform duration-300 group-hover:rotate-12"
+            class="relative w-4 h-4 rounded-[1px] transition-transform duration-300 group-hover:rotate-12"
             data-meow-rev="reverse-cat: follow the cat to /secret-cat/"
-            width="20"
-            height="20"
+            width="16"
+            height="16"
           />
         </span>
-        <span class="font-mono tracking-tight">QWARA</span>
-        <span class="text-[10px] font-mono text-muted tracking-widest hidden sm:inline">// 全栈开发者</span>
+        <span class="flex flex-col leading-none">
+          <span class="font-display text-lg tracking-tight text-[var(--fg)]">QWARA</span>
+          <span class="text-[9px] font-mono text-muted tracking-[0.3em] uppercase mt-1">Research Archive</span>
+        </span>
       </a>
 
-      <div class="hidden md:flex items-center gap-1">
+      <div class="hidden md:flex items-center gap-0.5">
         {navItems.map((item) => {
           const itemPath = item.href.replace(/#.*$/, '').replace(/\/$/, '') || '/';
           const isActive = item.hash
@@ -62,11 +67,11 @@ const currentHash = Astro.url.hash.replace(/^#/, '');
               href={item.href}
               class:list={[
                 item.className,
-                'nav-link px-3.5 py-2 text-sm rounded-[4px] transition-all duration-300 font-mono',
-                isActive ? 'nav-active text-[var(--accent)]' : 'text-muted hover:text-[var(--fg)]',
+                'nav-link px-3 py-2 text-[13px] rounded-[4px] transition-all duration-300 font-mono',
+                isActive ? 'nav-active text-[var(--accent)] font-bold' : 'text-muted hover:text-[var(--fg)]',
               ]}
             >
-              <span class="text-[10px] opacity-60 mr-1.5 select-none" aria-hidden="true">{item.index}</span>
+              <span class="text-[9px] opacity-60 mr-1.5 select-none" aria-hidden="true">{item.index}</span>
               {t(item.key)}
             </a>
           );
@@ -74,25 +79,33 @@ const currentHash = Astro.url.hash.replace(/^#/, '');
       </div>
 
       <div class="flex items-center gap-2">
+        {/* VEL 速度计：纯 CSS 消费 MotionBus 写入 <html> 的 --scroll-vel（无 JS） */}
+        <div class="hidden lg:flex flex-col items-end justify-center gap-1 pr-1 select-none" aria-hidden="true">
+          <span class="font-mono text-[8px] tracking-[0.2em] uppercase text-muted">VEL</span>
+          <div class="w-10 h-[3px] bg-[var(--border)] overflow-hidden">
+            <div class="h-full bg-[var(--accent)] origin-left" style="transform: scaleX(calc(min(1, abs(var(--scroll-vel, 0)))));"></div>
+          </div>
+        </div>
+
         <a
           href={getLocalizedPath('search', lang)}
           class="hidden sm:flex items-center justify-center w-9 h-9 rounded-[4px] border border-default text-muted hover:text-[var(--accent)] hover:border-[var(--accent)] transition-all duration-300"
           aria-label={t('nav.search')}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
           </svg>
         </a>
 
         <button
           class="theme-toggle hidden sm:flex items-center justify-center w-9 h-9 rounded-[4px] border border-default text-muted hover:text-[var(--accent)] hover:border-[var(--accent)] transition-all duration-300"
-          aria-label="Toggle theme"
+          aria-label="Toggle theme (film negative)"
+          title="胶片负片 / FILM NEGATIVE"
         >
-          <svg class="sun-icon w-4 h-4 hidden dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
-          </svg>
-          <svg class="moon-icon w-4 h-4 block dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+          <!-- 胶片条图标：暗示「显影/负片」 -->
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="6" width="20" height="12" rx="1.5" />
+            <path d="M7 6v3M7 15v3M12 6v2.5M12 15.5V18M17 6v3M17 15v3" />
           </svg>
         </button>
 
@@ -117,19 +130,21 @@ const currentHash = Astro.url.hash.replace(/^#/, '');
         </button>
       </div>
     </nav>
-    {/* Caution-stripe hazard band under the nav (警戒线) */}
-    <div class="hazard-band absolute inset-x-0 bottom-0 h-[3px]" style="--hazard-color: var(--accent); --hazard-opacity: 0.5;" aria-hidden="true"></div>
+    <!-- 档案发丝线 + 橙色预警带 -->
+    <div class="absolute inset-x-0 bottom-0 h-px bg-[var(--border)] opacity-60" aria-hidden="true"></div>
+    <div class="hazard-band absolute inset-x-0 bottom-0 h-[3px] opacity-0 transition-opacity duration-300" style="--hazard-opacity: 0.5" data-nav-hazard aria-hidden="true"></div>
   </div>
 </header>
 
 <div
-  class="mobile-menu fixed inset-0 z-[55] bg-[var(--bg)]/95 flex flex-col items-center justify-center gap-8 opacity-0 pointer-events-none transition-opacity duration-300 md:hidden backdrop-blur-xl"
+  class="mobile-menu fixed inset-0 z-[55] bg-[var(--bg)]/95 flex flex-col items-center justify-center gap-7 opacity-0 pointer-events-none transition-opacity duration-300 md:hidden backdrop-blur-xl"
   data-mobile-menu
 >
+  <div class="absolute top-0 left-0 right-0 vhsbar thin" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
   {navItems.map((item) => (
     <a
       href={item.href}
-      class="group flex items-baseline gap-3 text-3xl font-bold tracking-tight text-muted hover:text-[var(--accent)] transition-colors duration-300"
+      class="group flex items-baseline gap-3 text-2xl font-bold tracking-tight text-muted hover:text-[var(--accent)] transition-colors duration-300"
       data-menu-link
     >
       <span class="text-xs font-mono text-[var(--accent)] opacity-70 select-none" aria-hidden="true">{item.index}</span>
@@ -148,13 +163,11 @@ const currentHash = Astro.url.hash.replace(/^#/, '');
     </a>
     <button
       class="theme-toggle flex items-center justify-center w-11 h-11 rounded-[4px] border border-default text-muted hover:text-[var(--accent)] hover:border-[var(--accent)] transition-all duration-300"
-      aria-label="Toggle theme"
+      aria-label="Toggle theme (film negative)"
     >
-      <svg class="sun-icon w-4 h-4 hidden dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
-      </svg>
-      <svg class="moon-icon w-4 h-4 block dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="6" width="20" height="12" rx="1.5" />
+        <path d="M7 6v3M7 15v3M12 6v2.5M12 15.5V18M17 6v3M17 15v3" />
       </svg>
     </button>
     <a
@@ -164,6 +177,7 @@ const currentHash = Astro.url.hash.replace(/^#/, '');
       {lang === 'zh' ? 'EN' : '中'}
     </a>
   </div>
+  <div class="vhsbar thin absolute bottom-0 left-0 right-0" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
 </div>
 
 <div class="h-16"></div>
@@ -183,6 +197,7 @@ const currentHash = Astro.url.hash.replace(/^#/, '');
     const navbar = document.querySelector('[data-navbar]');
     const navInner = document.querySelector('[data-nav-inner]');
     const navBg = document.querySelector('[data-navbar-bg]');
+    const navHazard = document.querySelector('[data-nav-hazard]');
     const menuToggle = document.querySelector('[data-menu-toggle]');
     const mobileMenu = document.querySelector('[data-mobile-menu]');
     const menuOpen = document.querySelector('.menu-open');
@@ -196,24 +211,49 @@ const currentHash = Astro.url.hash.replace(/^#/, '');
       // When menu is open, keep navbar transparent (menu provides the background)
       const wantBlur = scrolled && !menuOpenState;
       if (navbar) {
-        navbar.classList.toggle('backdrop-blur-md', wantBlur);
+        // 毛玻璃由 [data-navbar-bg] 子层承担（自带 backdrop-filter + opacity 淡入），
+        // 不在父层再叠加 Tailwind backdrop-blur-md —— 双层 backdrop-filter 让滚动越阈时
+        // 重光栅化两次（弱 GPU 上量到 ~50ms/次）。去掉父层后视觉不变、只算一遍模糊。
         navbar.classList.toggle('border-b', wantBlur);
         navbar.classList.toggle('border-default', wantBlur);
       }
-      if (navInner) navInner.classList.toggle('h-14', scrolled && !menuOpenState);
+      // 固定高度（markup 恒 h-16 = 64px）：收缩切换此前被 h-16/h-14 同存
+      // （h-16 胜出）打破，实际从未生效；硬修会让导航栏与 h-16 占位产生数像素
+      // 空隙 + 每次越阈跑一次高度布局过渡。滚动反馈由毛玻璃/底框/预警带承担，
+      // 去掉收缩更稳、更省。这里只清掉可能残留的 h-14。
+      if (navInner) navInner.classList.remove('h-14');
       if (navBg) {
         navBg.classList.toggle('opacity-100', wantBlur);
         navBg.classList.toggle('opacity-0', !wantBlur);
       }
+      if (navHazard) {
+        navHazard.classList.toggle('opacity-100', scrolled && !menuOpenState);
+      }
     }
 
+    // Coalesce into rAF + only run the class toggles when the 20px threshold
+    // state actually flips — otherwise every scroll event invalidates styles
+    // (backdrop-filter / height) that the scroll-choreography readers then
+    // force-reflow in the same frame (92ms measured during the boot sequence).
+    let scrollTicking = false;
     function handleScroll() {
-      scrolled = window.scrollY > 20;
-      updateScrolled();
+      if (scrollTicking) return;
+      scrollTicking = true;
+      requestAnimationFrame(() => {
+        scrollTicking = false;
+        const next = window.scrollY > 20;
+        if (next !== scrolled) {
+          scrolled = next;
+          updateScrolled();
+        }
+      });
     }
 
     window.addEventListener('scroll', handleScroll, { passive: true, signal });
-    handleScroll();
+    // Initial state applied synchronously: covers pages that load / VT-restore
+    // already scrolled (the coalesced handler only fires on real scroll events).
+    scrolled = window.scrollY > 20;
+    updateScrolled();
 
     function toggleMenu(open: boolean) {
       menuOpenState = open;
@@ -238,11 +278,12 @@ const currentHash = Astro.url.hash.replace(/^#/, '');
     const themeToggle = document.querySelectorAll('.theme-toggle');
     themeToggle.forEach((btn) => {
       btn.addEventListener('click', (e: Event) => {
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         const isDark = document.documentElement.classList.contains('dark');
         const newTheme = isDark ? 'light' : 'dark';
 
         // Circular reveal from the click point - falls back to plain toggle
-        // when the View Transition API is unavailable.
+        // when the View Transition API is unavailable or motion is reduced.
         const me = e as MouseEvent;
         const x = me.clientX;
         const y = me.clientY;
@@ -251,17 +292,36 @@ const currentHash = Astro.url.hash.replace(/^#/, '');
           Math.max(y, window.innerHeight - y),
         );
 
-        if (!document.startViewTransition) {
+        if (!document.startViewTransition || reduceMotion) {
           document.documentElement.classList.toggle('dark');
           localStorage.setItem('theme', newTheme);
           return;
         }
 
-        document.documentElement.classList.add('theme-transition');
-        const transition = document.startViewTransition(() => {
+        const updateTheme = () => {
           document.documentElement.classList.toggle('dark');
           localStorage.setItem('theme', newTheme);
-        });
+        };
+
+        document.documentElement.classList.add('theme-transition');
+        // Notify the cursor layer so it restores the native cursor for the
+        // duration (the transition top layer would otherwise swallow the reticle).
+        document.dispatchEvent(new CustomEvent('qw:vt-start'));
+        let transition: ReturnType<typeof document.startViewTransition> | undefined;
+        try {
+          transition = document.startViewTransition(updateTheme);
+        } catch {
+          // 已在途的视图过渡会让 startViewTransition 抛错：回退为直接切换，
+          // 并立即收尾（否则 theme-transition 卡死、qw:vt-end 永不派发）。
+          try {
+            updateTheme();
+          } catch {
+            /* 隐私模式等 localStorage.setItem 抛错：class 已切换，忽略写入失败 */
+          }
+          document.documentElement.classList.remove('theme-transition');
+          document.dispatchEvent(new CustomEvent('qw:vt-end'));
+          return;
+        }
         transition.ready.then(() => {
           document.documentElement.animate(
             {
@@ -279,6 +339,7 @@ const currentHash = Astro.url.hash.replace(/^#/, '');
         });
         transition.finished.finally(() => {
           document.documentElement.classList.remove('theme-transition');
+          document.dispatchEvent(new CustomEvent('qw:vt-end'));
         });
       }, { signal });
     });

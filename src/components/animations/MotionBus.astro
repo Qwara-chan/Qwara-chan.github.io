@@ -1,0 +1,147 @@
+<div data-motion-bus aria-hidden="true"></div>
+
+<script>
+  // MotionBus — the site-wide single rAF driver.
+  //
+  // One loop owns: cursor lerp state, scroll velocity, elapsed time. Layers that
+  // need per-frame work (custom cursor, hero WebGL canvas) register a driver and
+  // receive `state` each frame; they never add their own rAF/pointer listeners.
+  //
+  // This is the "one machine" backplane for the VIBE-CORE fiction: the cursor is
+  // the targeting reticle, scroll velocity is the engine RPM. Every consumer
+  // keeps the standard init + astro:after-swap + AbortController pattern.
+  //
+  // Loop policy: runs while drivers.size > 0 || hasPointer (recent). On desktop
+  // the cursor driver keeps it alive continuously; on touch it idles out unless
+  // the home page canvas is on screen. Lazy-starts on first add/pointermove.
+  //
+  // `window.__motionBus` is set synchronously in initMotionBus, so it is always
+  // present before slot/Hero scripts run on initial load, and before new-page
+  // scripts run after a swap (BaseLayout mounts before the slot).
+
+  interface BusState {
+    cursor: { x: number; y: number };
+    hasPointer: boolean;
+    scrollVel: number; // smoothed, clamped to [-1, 1]
+    time: number;      // rAF timestamp (ms)
+  }
+
+  let busAbort: AbortController | null = null;
+
+  function initMotionBus() {
+    busAbort?.abort();
+    busAbort = new AbortController();
+    const { signal } = busAbort;
+
+    const state: BusState = {
+      cursor: { x: window.innerWidth / 2, y: window.innerHeight / 2 },
+      hasPointer: false,
+      scrollVel: 0,
+      time: 0,
+    };
+    let cursorTarget = { ...state.cursor };
+    let lastY = window.scrollY;
+    let lastT = performance.now();
+    let lastVel = 0;
+
+    const drivers = new Map<string, (s: BusState) => void>();
+    let raf = 0;
+    let running = false;
+    // Pointer recency: hasPointer is true only for a short window after the last
+    // pointermove, so a lone tap on touch idles the loop out (per the policy above).
+    const POINTER_RECENCY_MS = 2000;
+    let pointerIdle = 0;
+
+    function loop(now: number) {
+      raf = 0;
+      state.time = now;
+
+      // ---- scroll velocity (read in-loop, smoothed, normalized to ±1) ----
+      const dy = window.scrollY - lastY;
+      const dt = Math.max(1, now - lastT);
+      lastY = window.scrollY;
+      lastT = now;
+      const target = Math.max(-1, Math.min(1, (dy / dt) * 2));
+      state.scrollVel += (target - state.scrollVel) * 0.15;
+      // 指数衰减永不触底：速度停下后若只靠 gate 判断增量，CSS 变量会停在 ~0.04 而不是 0
+      // （原 0.05 增量 gate 在每帧增量缩小后不再写入，残值卡住 VEL 表）。接近静止时直接归零。
+      if (Math.abs(state.scrollVel) < 0.005) state.scrollVel = 0;
+      if (state.scrollVel !== lastVel) {
+        lastVel = state.scrollVel;
+        document.documentElement.style.setProperty('--scroll-vel', state.scrollVel.toFixed(3));
+      }
+
+      // ---- cursor lerp (exponential follow) ----
+      state.cursor.x += (cursorTarget.x - state.cursor.x) * 0.2;
+      state.cursor.y += (cursorTarget.y - state.cursor.y) * 0.2;
+
+      drivers.forEach((d) => {
+        try {
+          d(state);
+        } catch {
+          /* one bad driver must never kill the loop */
+        }
+      });
+
+      if (drivers.size > 0 || state.hasPointer) {
+        raf = requestAnimationFrame(loop);
+      } else {
+        running = false;
+      }
+    }
+
+    function requestLoop() {
+      if (!running && (drivers.size > 0 || state.hasPointer)) {
+        running = true;
+        raf = requestAnimationFrame(loop);
+      }
+    }
+
+    window.addEventListener(
+      'pointermove',
+      (e) => {
+        // Snap on first move so the reticle doesn't fly in from screen center.
+        if (!state.hasPointer) {
+          state.cursor.x = e.clientX;
+          state.cursor.y = e.clientY;
+        }
+        cursorTarget.x = e.clientX;
+        cursorTarget.y = e.clientY;
+        state.hasPointer = true;
+        if (pointerIdle) window.clearTimeout(pointerIdle);
+        pointerIdle = window.setTimeout(() => {
+          state.hasPointer = false;
+          pointerIdle = 0;
+        }, POINTER_RECENCY_MS);
+        requestLoop();
+      },
+      { passive: true, signal },
+    );
+
+    const bus = {
+      add(id: string, frame: (s: BusState) => void) {
+        drivers.set(id, frame);
+        requestLoop();
+      },
+      remove(id: string) {
+        drivers.delete(id);
+      },
+      get state() {
+        return state;
+      },
+    };
+    (window as unknown as { __motionBus: typeof bus }).__motionBus = bus;
+
+    signal.addEventListener('abort', () => {
+      if (raf) cancelAnimationFrame(raf);
+      raf = 0;
+      running = false;
+      if (pointerIdle) window.clearTimeout(pointerIdle);
+      pointerIdle = 0;
+      delete (window as unknown as { __motionBus?: typeof bus }).__motionBus;
+    });
+  }
+
+  initMotionBus();
+  document.addEventListener('astro:after-swap', initMotionBus);
+</script>
