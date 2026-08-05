@@ -1,6 +1,6 @@
 # Qwara's Corner 🐾
 
-A personal portfolio & blog built with Astro 7, featuring a dark-industrial HUD design language with warning-yellow accents, golden ratio proportions, and a touch of feline whimsy.
+A personal portfolio & blog built with Astro 7, wearing a **QWARA RESEARCH ARCHIVE** design language — NASA-Punk 档案纸 with VHS cassette-futurism textures, NASA safety-orange accents, Swiss-grid type, a fullscreen playback hero, and a hidden cat easter egg.
 
 ![Astro](https://img.shields.io/badge/Astro-7.1.6-BC52EE?logo=astro&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.3.3-06B6D4?logo=tailwindcss&logoColor=white)
@@ -20,14 +20,14 @@ A personal portfolio & blog built with Astro 7, featuring a dark-industrial HUD 
 
 ### Design
 - **Golden Ratio (φ ≈ 1.618)** — Typography scale, section spacing, grid proportions, aspect ratios
-- **Dark-industrial HUD palette** — Monochrome ink scale with warning-yellow (`#f1c644`) accent, schematic-grid textures, square corners
+- **NASA-Punk 档案纸 palette** — Cream archival paper (`#f6f1e5`) with NASA safety-orange (`#e85d2a`) accent, VHS red/yellow/cyan bars, blueprint grid & halftone textures, square corners
 - **View Transitions** — Smooth page transitions via `<ClientRouter />`
-- **Dark / Light mode** — Persisted in localStorage, re-applied across navigations
+- **Light default + 胶片负片 dark mode** — Persisted in localStorage, re-applied across navigations
 - **Mobile-first** — Responsive layout with full-screen mobile menu
 
-### Motion
+### Motion (nonlinear only, no bounce)
+- **Fullscreen playback hero** — Name decode, REC/timecode, periodic RGB glitch, interactive transport deck
 - **CSS transitions + IntersectionObserver** — Scroll-reveal animations, skill bar fills, stagger grids
-- **Hero timeline** — Staggered name/title/subtitle entrance via CSS keyframes
 - **reduced-motion** — Respects `prefers-reduced-motion` media query
 
 ## 🛠 Tech Stack
@@ -143,29 +143,30 @@ Edit `src/data/now/zh.mdx` / `src/data/now/en.mdx` — frontmatter `updatedDate`
 Projects auto-sync from your GitHub at build time. No manual editing needed.
 
 ### Theme Colors
-Semantic colors are CSS custom properties in `src/styles/global.css` (`:root` / `.dark`), so both themes stay in sync — reference the vars, not hard-coded hexes:
+Semantic colors are CSS custom properties in `src/styles/global.css` (`:root` light default / `.dark` film negative), so both themes stay in sync — reference the vars, not hard-coded hexes:
 
 ```css
 @theme {
-  --color-ink-50: #f4f4f2;        /* monochrome ink scale */
-  --color-warning: #f1c644;       /* accent family */
-  --color-warning-light: #f7d968; /* dark-mode accent */
-  --color-warning-dark: #d9a92e;
+  --color-paper-100: #f6f1e5;     /* archival paper scale */
+  --color-signal-orange: #e85d2a; /* NASA safety orange accent */
+  --color-signal-red: #d0342c;    /* VHS tri-colour bars */
+  --color-signal-yellow: #e9b41e;
+  --color-signal-cyan: #0e8f9c;
 }
 
 :root {
-  --bg: var(--color-ink-50);
-  --accent: #a16207;              /* light-mode accent */
-  --accent-surface: var(--color-warning); /* accent-as-background */
+  --bg: #f6f1e5;                  /* light = archival paper */
+  --accent: #e85d2a;
+  --on-accent: #faf6ec;           /* text on accent surfaces */
 }
-.dark {
-  --bg: var(--color-ink-900);
-  --accent: var(--color-warning-light);
-  --accent-surface: var(--color-warning-light);
+.dark {                            /* 胶片负片 */
+  --bg: #141210;
+  --accent: #f0833d;
+  --on-accent: #141210;
 }
 ```
 
-Rule of thumb: text on an accent **surface** must be `#10100e` (use `--accent-surface` for backgrounds so light mode keeps WCAG AA contrast).
+Rule of thumb: text on an accent **surface** uses `var(--on-accent)` (not a hard-coded hex).
 
 ### Golden Ratio Tokens
 ```css

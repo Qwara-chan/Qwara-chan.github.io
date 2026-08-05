@@ -52,8 +52,8 @@ Query helpers in `src/utils/posts.ts` (`getPosts`, `getProjects`, `getAllTags`, 
 
 - `src/styles/global.css`: `@import "tailwindcss"` + `@plugin "@tailwindcss/typography"` — **no `tailwind.config.js`**. `@custom-variant dark` makes `dark:` class-based (`.dark` on `<html>`).
 - `@theme` φ-tokens generate utilities directly: `--spacing-phi-*` → `p-phi-*`/`gap-phi-*`, `--text-phi-*` → `text-phi-*`, `--radius-phi-*` → `rounded-phi-*`. Note: v4's `aspect-*` utilities come from the `--aspect-*` namespace, so `aspect-phi` is a hand-written class in `global.css` consuming `--ratio-phi` (the `--ratio-*` tokens themselves generate nothing).
-- **Dark-industrial HUD design language** (full spec in `CLAUDE.md`): semantic colors are CSS vars in `:root`/`.dark` (`--bg`, `--bg-elev`, `--fg`, `--fg-muted`, `--border`, `--accent`, `--accent-soft`) — reference these (`bg-[var(--bg)]`, `text-muted`, `border-default`), not zinc utilities. Accent is warning-yellow **`#f1c644`** (dark `#f7d968`); text on accent surfaces must be `#10100e`. Square-ish `rounded-[4px]`/`radius-phi-sm` corners, not pills.
-- Texture/readout utilities in plain CSS: `.halftone`, `.noise-overlay`, `.hazard-band`, `.schematic-grid`, `.corner-marks`, `.section-index`, `.readout`. Component classes in `@layer components`: `.card`, `.btn`/`.btn-primary`/`.btn-ghost`, `.tag-chip`, `.nav-link` (active/hover state is corner brackets, not underline).
+- **Dark-industrial HUD design language** (full spec in `CLAUDE.md`): semantic colors are CSS vars in `:root`/`.dark` (`--bg`, `--bg-elev`, `--fg`, `--fg-muted`, `--border`, `--accent`, `--accent-soft`) — reference these (`bg-[var(--bg)]`, `text-muted`, `border-default`), not zinc utilities. Accent is NASA safety orange **`#e85d2a`** (dark `#f0833d`); text on accent surfaces uses `var(--on-accent)`. Square-ish `rounded-[4px]`/`radius-phi-sm` corners, not pills.
+- Texture/readout utilities in plain CSS: `.halftone`, `.noise-overlay`, `.hazard-band`, `.schematic-grid`, `.corner-marks`, `.section-index`, `.readout`, plus text effects `.chroma` (red/cyan chromatic aberration) and `.phosphor` (accent glow) and the site-wide CRT screen layer (`[data-crt-layer]`, intensity via `--crt-scan`/`--crt-roll`/`--crt-vig`). Component classes in `@layer components`: `.card`, `.btn`/`.btn-primary`/`.btn-ghost`, `.tag-chip`, `.nav-link` (active/hover state is corner brackets, not underline).
 - Fonts are self-hosted and subset-split; CJK woff2s are preloaded only on zh pages.
 
 ## Animation & client JS
@@ -62,6 +62,8 @@ Two layers (details in `CLAUDE.md`):
 - **`ScrollFX.astro`** (mounted once in `BaseLayout`, runs on every page) — the main scroll-choreography engine, data-attribute driven (`[data-section-reveal]`, `[data-scroll-fade]`, `[data-scroll-skew]`, `[data-tilt]`, `[data-parallax]`, `[data-scroll-progress]`), IO + rAF, respects `prefers-reduced-motion`.
 - **Legacy per-component reveals** — `StaggerGrid.astro` (IntersectionObserver + CSS transitions; `.is-revealed` states in `global.css` with a `<noscript>` override so content is never stuck hidden without JS). `ScrollReveal.astro` was removed in the 2026-08 review cleanup — don't reintroduce it.
 - **Projects dossier** (`/projects`) — `featured` repos render as full-viewport sticky `ProjectDossier.astro` panels (150vh runway + clip-wipe), driven by `initNarrative()` in `ProjectsPage.astro`; non-featured repos degrade to a `ProjectCard` wall.
+- **Boot sequence** — `BootOverlay.astro` (home only, mounted in `Hero.astro`): ~3.4s cinematic tape-load (CRT power-on → self-test type → tape load with 25fps timecode → signal lock → film-gate wipe), gated by the `hero-booting` pre-paint class, once per session via `sessionStorage['qwara:booted']`; `?boot` forces it and adds `html.boot-forced`. Failsafes: BaseLayout 7s class removal, Hero `begin()` 5.2s.
+- **CRT screen layer** — `CrtLayer.astro` (mounted in `BaseLayout`, pure CSS, zero JS): scanlines + vignette + rolling band + subtle flicker over everything (`z-index: 80`); intensity via `--crt-*` vars, brighter in `.dark`; flicker/roll killed by reduced-motion.
 
 **Client JS re-init pattern (critical):** `BaseLayout` mounts `<ClientRouter />`, so every interactive script (ScrollFX, StaggerGrid, Mermaid, SearchPage, PostLayout's reading-progress/TOC/copy/lightbox, theme) must follow:
 ```js
@@ -69,6 +71,8 @@ initX();
 document.addEventListener('astro:after-swap', initX);
 ```
 Each init tears down prior state via an `AbortController` (`prev?.abort()`) and disconnects its IntersectionObserver/MutationObserver before re-collecting DOM — after a swap the old nodes are gone. Theme re-applies on `after-swap` only (mutating `before-swap` touches the outgoing doc and is discarded).
+
+**Shared-element transitions:** named elements carry `transition:name` (`qc-*` taxonomy — see CLAUDE.md) plus a `data-vt` marker. Elements inside stagger/reveal pre-states that carry `data-vt` are force-revealed during `html[data-astro-transition]` (CSS safety net + `StaggerGrid`/`ScrollFX` VT fast path that adds `.is-revealed` immediately), so morph targets always exist in the new snapshot.
 
 Easter-egg layer: `MeowEasterEgg.astro` (`is:inline`, deferred — don't break its idle scheduling; console banner, `window.__qwara`, hidden `/secret-cat/` route, konami/paw-rain).
 
