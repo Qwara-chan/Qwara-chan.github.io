@@ -152,6 +152,12 @@ const totalWords = allPosts.reduce((sum, p) => sum + getWordCount(p.body ?? '', 
     <script is:inline>
       (function () {
         try {
+          // Firefox 平台标记（pre-paint 加上）：不做降级（Firefox 保留完整毛玻璃
+          // 与 CRT 动态），仅供 CSS 施加 Firefox 独有的渲染增强（更浓的胶片质感、
+          // 页脚系统读数标注平台）。
+          if (navigator.userAgent.indexOf('Firefox') !== -1) {
+            document.documentElement.classList.add('browser-fx');
+          }
           // 浅色为默认（档案纸）。暗色 = 「胶片负片」，仅显式选择后进入。
           var theme = localStorage.getItem('theme');
           if (theme === 'dark') {

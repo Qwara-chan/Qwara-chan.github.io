@@ -522,9 +522,9 @@
   inset: 0;
   z-index: 80; /* boot overlay z-70 之上 → 开机墨屏也是 CRT 屏；cursor 10000 之下 */
   pointer-events: none;
-  /* 提升为独立合成层：flicker 只动 opacity，GPU 合成一步混色即可，
-     否则每次 opacity 阶跃都会对全视口的扫描线/暗角整屏重绘（弱 GPU 上表现为闪烁/撕裂）。 */
-  will-change: opacity;
+  /* 不设 will-change: opacity —— 那会让全屏层常驻合成，Firefox 上开销大。
+     opacity 是可合成属性，动画运行时浏览器会自动提升该层；动画暂停（3.2s
+     间隔的大部分时间）时不占全屏合成层。 */
   animation: crt-flicker 3.2s steps(1) infinite;
 }
 [data-crt-layer]::before {
@@ -567,6 +567,24 @@
   54%, 78% { opacity: 1; }
   79% { opacity: 0.99; }
   80% { opacity: 1; }
+}
+
+/* ---------- Firefox 独有渲染（html.browser-fx，由 BaseLayout pre-paint 标记） ----------
+   不是降级：Firefox 保留完整毛玻璃与 CRT 动态（与其它浏览器体验一致）。
+   额外给 Firefox 一点「独家」：更浓的胶片质感（扫描线/暗角静态微强，不耗性能），
+   页脚系统读数标注平台。 */
+html.browser-fx [data-crt-layer]::before {
+  opacity: calc(var(--crt-scan) * 1.2);
+}
+html.browser-fx [data-crt-layer]::after {
+  opacity: calc(var(--crt-vig) * 1.15);
+}
+html.browser-fx [data-sys-chip] {
+  font-size: 0; /* 隐藏「SYS · ONLINE」裸文本 */
+}
+html.browser-fx [data-sys-chip]::after {
+  content: 'SYS · FIREFOX';
+  font-size: 9px;
 }
 
 /* 色散（红/青通道分离；挂标题类元素，微妙常驻） */
