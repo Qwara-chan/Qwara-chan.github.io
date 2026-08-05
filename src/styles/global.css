@@ -1,47 +1,67 @@
+/* ============================================================
+   QWARA RESEARCH ARCHIVE — design system
+   NASA-Punk 档案纸 · VHS 磁带盒未来主义 · 瑞士国际主义骨架
+   动效语言：非线性缓动（ease-out / standard），无反弹无过冲。
+   ============================================================ */
+
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
+  /* ---------- 字体 ---------- */
   --font-sans: "HarmonyOS Sans SC", ui-sans-serif, system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  /* 档案展示体：Archivo Black 管拉丁，思源黑体 Heavy(900) 管中文 */
+  --font-display: "Archivo Black", "Noto Sans SC", "HarmonyOS Sans SC", ui-sans-serif, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace;
+  --font-serif: "Songti SC", "Noto Serif CJK SC", Georgia, "Times New Roman", serif;
 
-  /* Monochrome ink scale — dark-first industrial palette */
-  --color-ink-50: #f4f4f2;
-  --color-ink-100: #e8e8e4;
-  --color-ink-200: #d4d4ce;
-  --color-ink-300: #b5b5ae;
-  --color-ink-400: #8f8f88;
-  --color-ink-500: #6e6e68;
-  --color-ink-600: #52524d;
-  --color-ink-700: #3a3a36;
-  --color-ink-800: #262622;
-  --color-ink-850: #1e1e1a;
-  --color-ink-900: #171713;
-  --color-ink-950: #10100e;
+  /* ---------- 非线性动效语言（无反弹/过冲） ---------- */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);        /* ease-out-quint，落点精准 */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);    /* 缓出指数，接近但不越过 */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);     /* 标准对称 */
+  --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);     /* 兼容旧名 → 非线性缓出 */
+  --motion-rise: 22px;
 
-  /* Warning-yellow accent (警戒色) — Hypergryph "Advanced" tone */
-  --color-warning: #f1c644;
-  --color-warning-light: #f7d968;
-  --color-warning-dark: #d9a92e;
+  /* ---------- 档案纸墨色系 ---------- */
+  --color-paper-50: #faf6ec;
+  --color-paper-100: #f6f1e5;
+  --color-paper-200: #ece4d0;
+  --color-paper-300: #e0d5bb;
+  --color-paper-400: #cfc3a4;
+  --color-paper-500: #b3a788;
+  --color-paper-600: #8a8374;
+  --color-paper-700: #4a463f;
+  --color-paper-800: #2a261f;
+  --color-paper-850: #1d1a15;
+  --color-paper-900: #141210;
+  --color-paper-950: #0d0c0a;
 
-  /* Monochrome language dots (GitHub languages → neutral palette) */
-  --color-lang-ts: #d4d4ce;
-  --color-lang-js: #b5b5ae;
-  --color-lang-html: #8f8f88;
-  --color-lang-css: #6e6e68;
-  --color-lang-other: #52524d;
+  /* NASA 安全橙 */
+  --color-signal-orange: #e85d2a;
+  --color-signal-orange-deep: #c94a1d;
+  --color-signal-orange-soft: #f0833d;
 
+  /* VHS 三原色（CRT 三色光） */
+  --color-signal-red: #d0342c;
+  --color-signal-yellow: #e9b41e;
+  --color-signal-cyan: #0e8f9c;
+
+  /* 语言色点（GitHub languages → 档案墨色） */
+  --color-lang-ts: #4a463f;
+  --color-lang-js: #8a8374;
+  --color-lang-html: #c94a1d;
+  --color-lang-css: #0e8f9c;
+  --color-lang-other: #b3a788;
+
+  /* ---------- 黄金比例（保留既有 φ 系统，避免破坏 text-phi / p-phi 工具类） ---------- */
   --phi: 1.618;
-
-  /* Golden-ratio spacing scale → generates p-phi-*, gap-phi-*, mb-phi-*, space-y-phi-* … */
   --spacing-phi-1: 1.618rem;
   --spacing-phi-2: 2.618rem;
   --spacing-phi-3: 4.236rem;
   --spacing-phi-4: 6.854rem;
 
-  /* Golden-ratio type scale → generates text-phi-* (each step × φ) */
   --text-phi-xs: 0.618rem;
   --text-phi-xs--line-height: 1.618;
   --text-phi-sm: 1rem;
@@ -61,146 +81,166 @@
   --radius-phi-xl: 2.618rem;
 
   --container-phi: 64rem;
-
   --ratio-phi: 1.618 / 1;
-
-  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* ---------- 字体（自托管 + unicode-range 子集） ---------- */
+/* HarmonyOS Sans SC 正文（Latin / CJK） */
 @font-face {
   font-family: "HarmonyOS Sans SC";
   src: url("/fonts/HarmonyOS_Sans_SC_Regular_Latin.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
+  font-weight: 400; font-style: normal; font-display: swap;
   unicode-range: U+0020-007E, U+00A0-00FF, U+2000-206F, U+2070-209F, U+20A0-20CF, U+2100-214F, U+2190-21FF, U+2200-22FF, U+2500-257F, U+25A0-25FF, U+2600-26FF, U+3000-303F, U+FF00-FFEF;
 }
 @font-face {
   font-family: "HarmonyOS Sans SC";
   src: url("/fonts/HarmonyOS_Sans_SC_Regular_CJK.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
+  font-weight: 400; font-style: normal; font-display: swap;
   unicode-range: U+4E00-9FFF;
 }
 @font-face {
   font-family: "HarmonyOS Sans SC";
   src: url("/fonts/HarmonyOS_Sans_SC_Bold_Latin.woff2") format("woff2");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
+  font-weight: 700; font-style: normal; font-display: swap;
   unicode-range: U+0020-007E, U+00A0-00FF, U+2000-206F, U+2070-209F, U+20A0-20CF, U+2100-214F, U+2190-21FF, U+2200-22FF, U+2500-257F, U+25A0-25FF, U+2600-26FF, U+3000-303F, U+FF00-FFEF;
 }
 @font-face {
   font-family: "HarmonyOS Sans SC";
   src: url("/fonts/HarmonyOS_Sans_SC_Bold_CJK.woff2") format("woff2");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
+  font-weight: 700; font-style: normal; font-display: swap;
   unicode-range: U+4E00-9FFF;
 }
 
-/* JetBrains Mono — self-hosted (latin subset, variable font covering 400 + 700) */
+/* Archivo Black — 档案拉丁展示体 */
+@font-face {
+  font-family: "Archivo Black";
+  src: url("/fonts/ArchivoBlack_Latin.woff2") format("woff2");
+  font-weight: 400; font-style: normal; font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Noto Sans SC Heavy(900) — 思源黑体 Heavy 档案标题 */
+@font-face {
+  font-family: "Noto Sans SC";
+  src: url("/fonts/NotoSansSC_Heavy_Latin.woff2") format("woff2");
+  font-weight: 900; font-style: normal; font-display: swap;
+  unicode-range: U+0020-007E, U+00A0-00FF, U+2000-206F, U+2070-209F, U+20A0-20CF, U+2100-214F, U+2190-21FF, U+2200-22FF, U+2500-257F, U+25A0-25FF, U+2600-26FF, U+3000-303F, U+FF00-FFEF;
+}
+@font-face {
+  font-family: "Noto Sans SC";
+  src: url("/fonts/NotoSansSC_Heavy_CJK.woff2") format("woff2");
+  font-weight: 900; font-style: normal; font-display: swap;
+  unicode-range: U+4E00-9FFF;
+}
+
+/* JetBrains Mono — 数据读数（400/700） */
 @font-face {
   font-family: "JetBrains Mono";
   src: url("/fonts/JetBrainsMono_Latin.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
+  font-weight: 400; font-style: normal; font-display: swap;
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 @font-face {
   font-family: "JetBrains Mono";
   src: url("/fonts/JetBrainsMono_Latin.woff2") format("woff2");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
+  font-weight: 700; font-style: normal; font-display: swap;
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
 @layer base {
+  /* ============================================================
+     语义色：浅色（档案纸·默认） / 暗色（胶片负片）
+     ============================================================ */
   :root {
-    --bg: var(--color-ink-50);
-    --bg-elev: #fcfcfb;
-    --fg: var(--color-ink-900);
-    --fg-muted: var(--color-ink-500);
-    --border: var(--color-ink-200);
-    --border-strong: var(--color-ink-300);
-    /* Dark amber keeps the hazard-yellow family readable on light surfaces */
-    --accent: #a16207;
-    --accent-soft: rgba(161, 98, 7, 0.12);
-    /* Accent-as-background surface: brand yellow in light mode so #10100e text
-       keeps WCAG AA contrast (the dark amber fails at ~3.9:1). */
-    --accent-surface: var(--color-warning);
+    --bg: #f6f1e5;
+    --paper: #f6f1e5;
+    --bg-elev: #ece4d0;
+    --paper-2: #ece4d0;
+    --paper-3: #e0d5bb;
+    --fg: #1c1b18;
+    --ink: #1c1b18;
+    --fg-muted: #4a463f;
+    --ink-soft: #4a463f;
+    --fg-faint: #8a8374;
+    --ink-muted: #8a8374;
+    --border: #c9bfa4;
+    --hairline: #c9bfa4;
+    --border-strong: #b3a788;
+    --accent: #e85d2a;
+    --orange: #e85d2a;
+    --accent-deep: #c94a1d;
+    --accent-soft: rgba(232, 93, 42, 0.12);
+    --accent-surface: #e85d2a;
+    --on-accent: #faf6ec;
+    --red: #d0342c;
+    --yellow: #e9b41e;
+    --cyan: #0e8f9c;
+    /* CRT 屏层强度（微妙氛围档；屏级效果，不占表面纹理预算） */
+    --crt-scan: 0.028;
+    --crt-roll: 0.025;
+    --crt-vig: 0.14;
     color-scheme: light;
   }
 
   .dark {
-    --bg: var(--color-ink-900);
-    --bg-elev: var(--color-ink-850);
-    --fg: var(--color-ink-100);
-    --fg-muted: var(--color-ink-400);
-    --border: var(--color-ink-700);
-    --border-strong: var(--color-ink-600);
-    --accent: var(--color-warning-light);
-    --accent-soft: rgba(247, 217, 104, 0.12);
-    --accent-surface: var(--color-warning-light);
+    --bg: #141210;
+    --paper: #141210;
+    --bg-elev: #1d1a15;
+    --paper-2: #1d1a15;
+    --paper-3: #28241c;
+    --fg: #ece5d2;
+    --ink: #ece5d2;
+    --fg-muted: #b3ab93;
+    --ink-soft: #b3ab93;
+    --fg-faint: #8a8370;
+    --ink-muted: #8a8370;
+    --border: #3a3529;
+    --hairline: #3a3529;
+    --border-strong: #57503e;
+    --accent: #f0833d;
+    --orange: #f0833d;
+    --accent-deep: #d15c22;
+    --accent-soft: rgba(240, 131, 61, 0.16);
+    --accent-surface: #f0833d;
+    --on-accent: #141210;
+    --red: #ff5546;
+    --yellow: #f2c23c;
+    --cyan: #2fc3cf;
+    --crt-scan: 0.05;
+    --crt-roll: 0.05;
+    --crt-vig: 0.24;
     color-scheme: dark;
-    scrollbar-color: var(--color-ink-600) transparent;
+    scrollbar-color: var(--border-strong) transparent;
   }
 
+  /* 基础元素 */
   html {
     scroll-behavior: smooth;
     scrollbar-gutter: stable;
     scrollbar-width: thin;
-    scrollbar-color: var(--color-ink-300) transparent;
+    scrollbar-color: var(--border-strong) transparent;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     scroll-padding-top: 5rem;
   }
-
   body {
     background-color: var(--bg);
     color: var(--fg);
     font-family: var(--font-sans);
-    transition: background-color 0.4s var(--ease-smooth), color 0.4s var(--ease-smooth);
+    transition: background-color 0.4s var(--ease-standard), color 0.4s var(--ease-standard);
     overflow-x: hidden;
     -webkit-tap-highlight-color: transparent;
   }
-
   ::selection {
-    background-color: var(--accent-surface);
-    color: #10100e;
+    background-color: var(--accent);
+    color: var(--on-accent);
   }
-
-  ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-  }
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  ::-webkit-scrollbar-thumb {
-    background: var(--color-ink-300);
-    border-radius: 9999px;
-  }
-  .dark ::-webkit-scrollbar-thumb {
-    background: var(--color-ink-600);
-  }
-
-  a {
-    color: inherit;
-    text-decoration: none;
-  }
-
-  h1,
-  h2,
-  h3 {
-    text-wrap: balance;
-  }
-
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 9999px; }
+  a { color: inherit; text-decoration: none; }
+  h1, h2, h3 { text-wrap: balance; }
   :focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 2px;
@@ -208,68 +248,67 @@
 }
 
 @layer components {
-  .container-px {
-    @apply px-5 sm:px-8 lg:px-12;
-  }
-  .container-mx {
-    @apply mx-auto max-w-5xl;
-  }
-  .text-muted {
-    color: var(--fg-muted);
-  }
-  .border-default {
-    border-color: var(--border);
-  }
+  .container-px { @apply px-5 sm:px-8 lg:px-12; }
+  .container-mx { @apply mx-auto max-w-5xl; }
+  .text-muted { color: var(--fg-muted); }
+  .border-default { border-color: var(--border); }
 
+  /* 档案式下划线（hover 从 0 延展到全宽，非线性） */
   .link-underline {
     background-image: linear-gradient(var(--accent), var(--accent));
     background-size: 0% 1.5px;
     background-position: left bottom;
     background-repeat: no-repeat;
-    transition: background-size 0.3s var(--ease-smooth);
+    transition: background-size 0.3s var(--ease-out);
   }
-  .link-underline:hover {
-    background-size: 100% 1.5px;
-  }
-
-  /* Prose links: same gradient underline, scoped to typography blocks (the
-     prose-a: variant can't compose plain component classes in Tailwind v4). */
+  .link-underline:hover { background-size: 100% 1.5px; }
   .prose a {
     text-decoration: none;
     background-image: linear-gradient(var(--accent), var(--accent));
     background-size: 0% 1.5px;
     background-position: left bottom;
     background-repeat: no-repeat;
-    transition: background-size 0.3s var(--ease-smooth);
+    transition: background-size 0.3s var(--ease-out);
   }
-  .prose a:hover {
-    background-size: 100% 1.5px;
+  .prose a:hover { background-size: 100% 1.5px; }
+
+  /* 代码块：prose-code:* 会同时命中行内与块级 code。块级（Shiki 渲染的
+     pre code）必须保持透明、沿用语法主题底，否则会被行内底色盖成不可读。 */
+  .prose pre code {
+    background-color: transparent !important;
+    padding: 0 !important;
   }
 
-  /* Industrial card: hard-edged panel, hazard hover ring */
+  /* 档案卷宗卡：纸面 + 发丝线 + 角标记，hover 橙 */
   .card {
+    position: relative;
     background-color: var(--bg-elev);
     border: 1px solid var(--border);
     border-radius: var(--radius-phi-sm);
-    transition: border-color 0.3s var(--ease-smooth), transform 0.3s var(--ease-spring), box-shadow 0.3s var(--ease-smooth);
+    transition: border-color 0.3s var(--ease-standard), transform 0.3s var(--ease-out), box-shadow 0.3s var(--ease-standard);
   }
   .card-hover:hover {
     border-color: var(--accent);
-    box-shadow: 0 0 0 1px var(--accent), 0 12px 40px -12px rgba(241, 198, 68, 0.18);
+    box-shadow: 0 18px 44px -22px rgba(28, 27, 24, 0.28), 0 0 0 1px var(--accent);
+    transform: translateY(-3px);
   }
 
+  /* 档案指令按钮：mono 大写方角 */
   .btn {
     @apply inline-flex items-center justify-center gap-2 px-phi-1 py-2.5 rounded-[4px] text-sm font-mono font-bold uppercase tracking-wider transition-all duration-300;
-    transition-timing-function: var(--ease-spring);
+    transition-timing-function: var(--ease-out);
+    position: relative;
   }
   .btn-primary {
     background-color: var(--fg);
     color: var(--bg);
+    border: 1px solid var(--fg);
   }
   .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.25);
+    background-color: var(--accent);
     border-color: var(--accent);
+    color: var(--on-accent);
+    transform: translateY(-2px);
   }
   .btn-ghost {
     border: 1px solid var(--border);
@@ -282,56 +321,37 @@
     background-color: var(--accent-soft);
   }
 
-  /* Industrial chip: square corners, hazard hover state */
+  /* 档案标签 */
   .tag-chip {
     @apply inline-flex items-center px-3 py-1 rounded-[4px] text-xs font-medium;
     border: 1px solid var(--border);
     color: var(--fg-muted);
-    transition: all 0.25s var(--ease-smooth);
+    transition: all 0.25s var(--ease-out);
   }
-  .tag-chip:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-  }
+  .tag-chip:hover { border-color: var(--accent); color: var(--accent); }
   .tag-chip-active {
-    background-color: var(--accent-surface);
-    color: #10100e;
+    background-color: var(--accent);
+    color: var(--on-accent);
     border-color: var(--accent);
     font-weight: 700;
   }
 
-  /* Nav pill: active state gets corner brackets instead of the old underline */
-  .nav-link {
-    position: relative;
-  }
-  .nav-link::before,
-  .nav-link::after {
+  /* 导航：激活态 = 四角括号（方舟式尖角），非下划线 */
+  .nav-link { position: relative; }
+  .nav-link::before, .nav-link::after {
     content: '';
     position: absolute;
-    width: 7px;
-    height: 7px;
+    width: 7px; height: 7px;
     border: 0 solid var(--accent);
     opacity: 0;
-    transition: opacity 0.25s var(--ease-smooth);
+    transition: opacity 0.25s var(--ease-out);
   }
-  .nav-link::before {
-    top: 1px;
-    left: 1px;
-    border-top-width: 1.5px;
-    border-left-width: 1.5px;
-  }
-  .nav-link::after {
-    bottom: 1px;
-    right: 1px;
-    border-bottom-width: 1.5px;
-    border-right-width: 1.5px;
-  }
-  .nav-link:hover::before,
-  .nav-link:hover::after,
-  .nav-link.nav-active::before,
-  .nav-link.nav-active::after {
-    opacity: 1;
-  }
+  .nav-link::before { top: 1px; left: 1px; border-top-width: 1.5px; border-left-width: 1.5px; }
+  .nav-link::after { bottom: 1px; right: 1px; border-bottom-width: 1.5px; border-right-width: 1.5px; }
+  .nav-link:hover::before, .nav-link:hover::after,
+  .nav-link.nav-active::before, .nav-link.nav-active::after { opacity: 1; }
+
+  .nav-active { color: var(--accent); }
 
   .search-mark {
     background-color: var(--accent-soft);
@@ -342,6 +362,7 @@
 
   .section-title {
     @apply text-phi-md sm:text-phi-lg font-bold tracking-tight;
+    font-family: var(--font-display);
   }
   .section-eyebrow {
     @apply text-xs font-mono uppercase tracking-[0.2em] mb-3;
@@ -349,61 +370,83 @@
   }
 }
 
-/* ---------- Industrial texture utilities ---------- */
+/* ---------- 档案纹理工具类 ---------- */
 
-/* Diagonal caution stripes (警戒线) — overlay via .hazard-band + .hazard-band::after */
-.hazard-band {
-  position: relative;
-  overflow: hidden;
-}
-.hazard-band::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image: repeating-linear-gradient(
-    -45deg,
-    var(--hazard-color, var(--accent)) 0 10px,
-    transparent 10px 20px
-  );
-  opacity: var(--hazard-opacity, 0.14);
-  mix-blend-mode: normal;
+/* 全屏墙板拼缝（洁净实验室墙面） */
+.wall-grid, .schematic-grid {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--fg) 9%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--fg) 5%, transparent) 1px, transparent 1px),
+    linear-gradient(color-mix(in srgb, var(--fg) 5%, transparent) 1px, transparent 1px);
+  background-size: 100% 480px, 120px 100%, 120px 100%;
+  background-position: 0 0, 0 0, 0 0;
+  background-repeat: repeat, repeat, repeat;
+  background-color: transparent;
 }
 
-/* Halftone dot screen — low-density grain for panels/cards */
+/* 半调网点 */
 .halftone {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 18 18'%3E%3Ccircle cx='2.2' cy='2.2' r='1.4' fill='%2310100e' fill-opacity='0.16'/%3E%3C/svg%3E");
-  background-size: 18px 18px;
-}
-.dark .halftone {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 18 18'%3E%3Ccircle cx='2.2' cy='2.2' r='1.4' fill='%23f4f4f2' fill-opacity='0.10'/%3E%3C/svg%3E");
+  background-image: radial-gradient(color-mix(in srgb, var(--fg) 16%, transparent) 1.3px, transparent 1.4px);
+  background-size: 14px 14px;
 }
 
-/* Film-grain noise — full-bleed subtle texture */
+/* 胶片颗粒 */
 .noise-overlay {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
   background-size: 160px 160px;
 }
 
-/* Dashed schematic grid — blueprint paper for hero/section backgrounds */
-.schematic-grid {
-  background-image:
-    linear-gradient(var(--fg) 1px, transparent 1px),
-    linear-gradient(90deg, var(--fg) 1px, transparent 1px);
-  background-size: 64px 64px;
-  background-color: transparent;
-  opacity: 0.04;
-}
-.dark .schematic-grid {
-  opacity: 0.05;
+/* 橙色预警斜纹 */
+.hazard-band { position: relative; overflow: hidden; }
+.hazard-band::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(-45deg, var(--hazard-color, var(--accent)) 0 10px, transparent 10px 20px);
+  opacity: var(--hazard-opacity, 0.5);
 }
 
-/* HUD corner brackets — 4 L-shaped marks on a viewport/panel */
-.corner-marks {
-  position: relative;
+/* VHS 三原色条（CRT 三色光） */
+.vhsbar { display: flex; height: 10px; width: 100%; }
+.vhsbar > i { flex: 1; }
+.vhsbar > i:nth-child(1) { background: var(--red); }
+.vhsbar > i:nth-child(2) { background: var(--yellow); }
+.vhsbar > i:nth-child(3) { background: var(--cyan); }
+.vhsbar > i:nth-child(4) { background: var(--paper-3); }
+.vhsbar.thin { height: 5px; }
+
+/* 胶片齿孔（垂直边缘） */
+.sprockets {
+  background-image: repeating-linear-gradient(
+    180deg,
+    transparent 0 11px,
+    color-mix(in srgb, var(--fg) 22%, transparent) 11px 16px,
+    transparent 16px 47px
+  );
 }
-.corner-marks::before,
-.corner-marks::after {
+
+/* 印刷套准线 */
+.regmark {
+  position: relative;
+  width: 44px; height: 44px;
+  border: 1.5px solid color-mix(in srgb, var(--fg) 60%, transparent);
+  border-radius: 50%;
+  background: radial-gradient(circle at center, var(--fg) 0 1.6px, transparent 2.2px);
+  opacity: 0.55;
+}
+.regmark::after {
+  content: '';
+  position: absolute; inset: -6px; border-radius: 50%;
+  background: repeating-conic-gradient(var(--fg) 0 4deg, transparent 4deg 15deg);
+  -webkit-mask: radial-gradient(circle, transparent 0 21px, #000 22px);
+          mask: radial-gradient(circle, transparent 0 21px, #000 22px);
+  opacity: 0.6;
+}
+
+/* HUD 角括号 */
+.corner-marks { position: relative; }
+.corner-marks::before, .corner-marks::after {
   content: '';
   position: absolute;
   width: var(--corner-size, 14px);
@@ -412,20 +455,10 @@
   opacity: var(--corner-opacity, 0.8);
   pointer-events: none;
 }
-.corner-marks::before {
-  top: -1px;
-  left: -1px;
-  border-top-width: 2px;
-  border-left-width: 2px;
-}
-.corner-marks::after {
-  bottom: -1px;
-  right: -1px;
-  border-bottom-width: 2px;
-  border-right-width: 2px;
-}
+.corner-marks::before { top: -1px; left: -1px; border-top-width: 2px; border-left-width: 2px; }
+.corner-marks::after { bottom: -1px; right: -1px; border-bottom-width: 2px; border-right-width: 2px; }
 
-/* Dashed schematic divider line */
+/* 虚线档案分隔线 */
 .schematic-line {
   border: 0;
   height: 1px;
@@ -434,7 +467,7 @@
   background-repeat: repeat-x;
 }
 
-/* Mono readout row — HUD metadata */
+/* mono 读数 */
 .readout {
   font-family: var(--font-mono);
   font-size: 0.75rem;
@@ -443,66 +476,195 @@
   color: var(--fg-muted);
 }
 
-/* Section index chip — e.g. "01 // ABOUT" */
+/* 档案编号块（01 // ABOUT） */
 .section-index {
   font-family: var(--font-mono);
   font-weight: 700;
   font-size: 0.75rem;
-  letter-spacing: 0.15em;
+  letter-spacing: 0.18em;
   color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.section-index::before {
+  content: '';
+  width: 8px; height: 8px;
+  background: var(--accent);
+  flex: none;
 }
 
-/* ---------- Scroll choreography ---------- */
+/* 斜切角面板（方舟式） */
+.corner-cut {
+  clip-path: polygon(0 0, calc(100% - var(--corner-cut, 10px)) 0, 100% var(--corner-cut, 10px), 100% 100%, var(--corner-cut, 10px) 100%, 0 calc(100% - var(--corner-cut, 10px)));
+}
 
-/* Section reveal: hidden pre-state is IO-visible (opacity/translate only).
-   NOTE: no clip-path in the pre-state or transition — Chrome computes
-   IntersectionObserver geometry from clip-path, so a transient wipe on a
-   section would break child observers (skill bars, stagger grids) by firing
-   one non-intersecting callback mid-wipe and never re-firing. The dramatic
-   clip wipe is reserved for hero text (.hero-fade), which has no child IOs. */
+/* 档案橡皮章 */
+.stamp {
+  display: inline-block;
+  padding: 0.4rem 0.9rem;
+  border: 2px solid currentColor;
+  outline: 1px solid currentColor;
+  outline-offset: 3px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.7rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+.stamp-red { color: var(--red); }
+
+/* ---------- CRT 屏层（屏级效果，不占「每表面 ≤2 纹理」预算；纯 CSS 零 JS。
+   闪烁/滚动为环境循环，允许线性；reduced-motion 由全局 kill 块归零） ---------- */
+[data-crt-layer] {
+  position: fixed;
+  inset: 0;
+  z-index: 80; /* boot overlay z-70 之上 → 开机墨屏也是 CRT 屏；cursor 10000 之下 */
+  pointer-events: none;
+  /* 提升为独立合成层：flicker 只动 opacity，GPU 合成一步混色即可，
+     否则每次 opacity 阶跃都会对全视口的扫描线/暗角整屏重绘（弱 GPU 上表现为闪烁/撕裂）。 */
+  will-change: opacity;
+  animation: crt-flicker 3.2s steps(1) infinite;
+}
+[data-crt-layer]::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(180deg, var(--fg) 0 1px, transparent 1px 3px);
+  opacity: var(--crt-scan);
+}
+[data-crt-layer]::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 120% 100% at 50% 50%, transparent 62%, var(--fg) 140%);
+  opacity: var(--crt-vig);
+}
+[data-crt-roll] {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -22vh;
+  height: 20vh;
+  background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--fg) 60%, transparent), transparent);
+  opacity: var(--crt-roll);
+  will-change: transform; /* 独立层：在静态扫描线上滑过，不重绘底层 */
+  animation: crt-roll 11s linear infinite;
+}
+@keyframes crt-roll {
+  to { transform: translateY(144vh); }
+}
+@keyframes crt-flicker {
+  /* 振幅收到 ~1%（原 ~2%）：屏幕级硬切亮度跌落在浅色档案纸上容易读成
+     闪烁 bug；合成后仍保留“胶片颗粒”感，但不再抢眼。 */
+  0%, 100% { opacity: 1; }
+  6% { opacity: 0.993; }
+  7%, 30% { opacity: 1; }
+  31% { opacity: 0.988; }
+  32%, 52% { opacity: 1; }
+  53% { opacity: 0.995; }
+  54%, 78% { opacity: 1; }
+  79% { opacity: 0.99; }
+  80% { opacity: 1; }
+}
+
+/* 色散（红/青通道分离；挂标题类元素，微妙常驻） */
+.chroma {
+  text-shadow:
+    0.6px 0 0 color-mix(in srgb, var(--red) 50%, transparent),
+    -0.6px 0 0 color-mix(in srgb, var(--cyan) 50%, transparent);
+}
+/* 荧光（accent 辉光；挂 mono 读数类元素） */
+.phosphor {
+  text-shadow:
+    0 0 1px color-mix(in srgb, var(--accent) 80%, transparent),
+    0 0 8px color-mix(in srgb, var(--accent) 50%, transparent);
+}
+
+/* ---------- HUD 光标层（全部作用域限定在 [data-cursor-layer] 内，
+   否则会命中页面里带 data-cursor-label 属性的交互元素） ---------- */
+[data-cursor-layer] { position: fixed; top: 0; left: 0; width: 0; height: 0; z-index: 10000; pointer-events: none; }
+[data-cursor-layer][hidden] { display: none; }
+[data-cursor-layer] [data-cursor-ring],
+[data-cursor-layer] [data-cursor-dot],
+[data-cursor-layer] [data-cursor-label] { position: absolute; top: 0; left: 0; }
+[data-cursor-layer] [data-cursor-ring] {
+  width: 30px; height: 30px;
+  border: 1.5px solid var(--accent);
+  border-radius: 9999px;
+  transform: translate(-50%, -50%);
+  transition: border-color 0.25s var(--ease-standard), background-color 0.25s var(--ease-standard);
+}
+[data-cursor-layer] [data-cursor-ring].is-interactive {
+  border-color: var(--fg);
+  background-color: var(--accent-soft);
+}
+[data-cursor-layer] [data-cursor-ring]::before,
+[data-cursor-layer] [data-cursor-ring]::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  background: var(--accent);
+  opacity: 0.55;
+}
+[data-cursor-layer] [data-cursor-ring]::before { width: 1px; height: 26px; transform: translate(-50%, -50%); }
+[data-cursor-layer] [data-cursor-ring]::after { width: 26px; height: 1px; transform: translate(-50%, -50%); }
+[data-cursor-layer] [data-cursor-dot] {
+  width: 3px; height: 3px;
+  border-radius: 9999px;
+  background: var(--accent);
+  transform: translate(-50%, -50%);
+  transition: opacity 0.2s var(--ease-standard);
+}
+[data-cursor-layer] [data-cursor-label] {
+  top: 16px; left: 16px;
+  padding: 2px 6px;
+  font-family: var(--font-mono);
+  font-size: 9px; font-weight: 700;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--on-accent);
+  background: var(--accent);
+  opacity: 0;
+  transition: opacity 0.2s var(--ease-standard);
+}
+[data-cursor-layer] [data-cursor-label].is-visible { opacity: 1; }
+html.cursor-hidden, html.cursor-hidden * { cursor: none !important; }
+@media (pointer: coarse) { [data-cursor-layer] { display: none !important; } }
+
+/* ---------- 滚动编排（非线性，无 clip 于普通区块） ---------- */
 [data-section-reveal] {
   opacity: 0;
-  transform: translateY(var(--reveal-rise, 24px));
+  transform: translateY(var(--reveal-rise, var(--motion-rise)));
 }
 [data-section-reveal].is-revealed {
   opacity: 1;
   transform: translateY(0);
   transition:
-    opacity 0.7s var(--ease-spring),
-    transform 0.7s var(--ease-spring);
+    opacity 0.7s var(--ease-out),
+    transform 0.7s var(--ease-out);
   transition-delay: var(--reveal-delay, 0s);
 }
 
-/* Scroll-linked fade: JS (ScrollFX) writes --scroll-progress (0→1, 1 when the
-   element's center hits the viewport center); opacity and a small Y drift
-   track it continuously. The floor stays at 0.6 so section titles/body text
-   remain readable even when the element rests at the edge of the viewport. */
 [data-scroll-fade] {
   opacity: calc(0.6 + 0.4 * var(--scroll-progress, 1));
   transform: translateY(calc((0.5 - var(--scroll-progress, 1)) * var(--scroll-fade-y, 24px)));
   transition: none;
 }
 
-/* Skew kick on section headings when they enter (IO in ScrollFX) */
-[data-scroll-skew] {
-  transform-origin: left center;
-}
+[data-scroll-skew] { transform-origin: left center; }
 [data-scroll-skew].is-skewed {
   transform: perspective(600px) rotateX(var(--skew-angle, 10deg));
-  transition: transform 0.6s var(--ease-spring);
+  transition: transform 0.6s var(--ease-out);
 }
 [data-scroll-skew].is-skewed-out {
   transform: none;
-  transition: transform 0.6s var(--ease-smooth);
+  transition: transform 0.6s var(--ease-standard);
 }
 
-/* Cards tilt toward the cursor (rAF lerp, inline transform, ScrollFX) */
-[data-tilt] {
-  transform-style: preserve-3d;
-  will-change: transform;
-}
+[data-tilt] { transform-style: preserve-3d; will-change: transform; }
 
-/* ---------- Stagger grids: items hidden until the grid scrolls into view ---------- */
 [data-stagger-grid] [data-stagger-item] {
   opacity: 0;
   transform: translateY(30px);
@@ -510,174 +672,206 @@
 [data-stagger-grid] [data-stagger-item].is-revealed {
   opacity: 1;
   transform: none;
-  transition: opacity 0.6s var(--ease-spring), transform 0.6s var(--ease-spring);
+  transition: opacity 0.6s var(--ease-out), transform 0.6s var(--ease-out);
   transition-delay: var(--stagger-delay, 0s);
 }
 
-/* Hero entrance: CSS keyframes with a clip wipe (no JS for the intro pass) */
+/* Hero 入场：上升 + 淡入（纯 opacity/transform —— 合成器友好、不计入 CLS）。
+   曾在 13rem 级主名上逐帧 clip-path 擦除：非合成动画 + 布局偏移（CLS 0.1+）。
+   胶片门式 wipe 由根转场 module-in 与卷宗面板 clip 承担，入场本身保留非线性缓动。 */
 .hero-fade {
   opacity: 0;
-  animation: hero-enter var(--hero-dur, 0.7s) var(--ease-spring) var(--hero-delay, 0s) forwards;
+  animation: hero-enter var(--hero-dur, 0.8s) var(--ease-out) var(--hero-delay, 0s) forwards;
 }
 @keyframes hero-enter {
   from {
     opacity: 0;
     transform: translateY(var(--hero-y, 20px));
-    clip-path: inset(0 100% 0 0);
   }
   to {
     opacity: 1;
     transform: translateY(0);
-    clip-path: inset(0 0 0 0);
   }
 }
 
-/* Skill bars: width transition driven by IntersectionObserver */
-[data-skill-fill] {
-  transition: width 1.2s var(--ease-spring);
+[data-skill-fill] { transition: width 1.1s var(--ease-out); }
+
+/* 开场墨屏（磁带载入） */
+html.hero-booting .hero-fade {
+  animation: none !important;
+  opacity: 0 !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  /* `?boot` 强制测试（html.boot-forced）时，保留动画 —— 用户显式请求了动效 */
+  html:not(.boot-forced) *, html:not(.boot-forced) *::before, html:not(.boot-forced) *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-  [data-stagger-grid] [data-stagger-item],
-  [data-skill-fill],
-  [data-section-reveal],
-  [data-scroll-fade],
-  [data-scroll-skew],
-  [data-parallax],
-  .hero-fade {
+  html:not(.boot-forced) [data-stagger-grid] [data-stagger-item],
+  html:not(.boot-forced) [data-skill-fill],
+  html:not(.boot-forced) [data-section-reveal],
+  html:not(.boot-forced) [data-scroll-fade],
+  html:not(.boot-forced) [data-scroll-skew],
+  html:not(.boot-forced) [data-parallax],
+  html:not(.boot-forced) .hero-fade {
     opacity: 1 !important;
     transform: none !important;
     animation: none !important;
   }
+  html:not(.boot-forced) ::view-transition-group(*),
+  html:not(.boot-forced) ::view-transition-old(*),
+  html:not(.boot-forced) ::view-transition-new(*) {
+    animation: none !important;
+  }
 }
 
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation-duration: 0.35s;
-  animation-timing-function: var(--ease-spring);
+/* ---------- 页面切换：档案转场（非线性平面擦除） ----------
+   旧页退出、新页 clip 上卷 —— 平面图形作「胶水」。 */
+::view-transition-old(root), ::view-transition-new(root) {
+  animation-duration: 0.45s;
+  animation-timing-function: var(--ease-out);
+  animation-fill-mode: both;
+}
+::view-transition-old(root) { z-index: 1; animation-name: module-out; }
+::view-transition-new(root) { z-index: 2; animation-name: module-in; }
+@keyframes module-out {
+  to { opacity: 0; transform: translateY(-2%); }
+}
+@keyframes module-in {
+  from { opacity: 0; transform: translateY(2%); clip-path: inset(0 0 100% 0); }
 }
 
-::view-transition-old(root) {
-  z-index: 1;
-}
-::view-transition-new(root) {
-  z-index: 2;
-}
-
-/* Theme toggle: circular reveal - JS drives the clip-path, disable CSS fade */
 html.theme-transition::view-transition-old(root),
-html.theme-transition::view-transition-new(root) {
-  animation: none;
+html.theme-transition::view-transition-new(root) { animation: none; }
+html.theme-transition * { view-transition-name: none !important; }
+
+[data-module-readout] {
+  position: fixed;
+  top: 1.5rem;
+  left: 50%;
+  translate: -50% 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  view-transition-name: module-readout;
+  white-space: nowrap;
+}
+html[data-astro-transition] [data-module-readout] { opacity: 1; }
+::view-transition-old(module-readout) { animation: readout-out 0.3s both; }
+::view-transition-new(module-readout) { animation: readout-in 0.5s 0.05s both; }
+@keyframes readout-out { to { opacity: 0; transform: translateY(-6px); } }
+@keyframes readout-in { from { opacity: 0; transform: translateY(6px); } }
+
+.navbar-brand { view-transition-name: navbar-brand; }
+::view-transition-group(navbar-brand) { animation-duration: 0.3s; }
+
+/* 共享元素强制显影：带 data-vt 的变形目标若陷在 stagger / section-reveal
+   预态（opacity:0）里，新快照会缺失导致变形断裂 —— VT 期间直接显影。
+   JS 侧（StaggerGrid/ScrollFX）同步立即 is-revealed，防属性移除后折返。
+   任何已在 fast path 里标记 is-revealed 的区块（含无 data-vt、但换页时
+   处于视口内的页头）在 VT 期间同样掐断过渡、按 opacity:1 进快照，
+   否则快照在 0.7s reveal 的 t=0 采样成透明 → 顶部「空白→弹入」闪烁。 */
+html[data-astro-transition] [data-vt],
+html[data-astro-transition] [data-section-reveal]:has([data-vt]),
+html[data-astro-transition] [data-section-reveal].is-revealed {
+  opacity: 1 !important;
+  transform: none !important;
+  transition: none !important;
 }
 
-footer.tail-wag {
-  animation: tail-wiggle 0.5s ease-in-out;
-}
-@keyframes tail-wiggle {
-  0%, 100% { transform: rotate(0); }
-  25% { transform: rotate(-0.5deg); }
-  75% { transform: rotate(0.5deg); }
-}
-
-footer .footer-meow {
-  transition: opacity 0.3s ease;
+html[data-astro-transition-fallback="old"] body {
   opacity: 0.6;
+  transition: opacity 0.3s var(--ease-standard);
 }
-footer:hover .footer-meow {
+html[data-astro-transition-fallback="new"] body {
   opacity: 1;
+  transition: opacity 0.3s var(--ease-standard);
+}
+html[data-astro-transition-fallback="new"] [data-module-readout] {
+  animation: readout-in 0.4s both;
 }
 
 [data-navbar-bg] {
   background-color: var(--bg);
-  -webkit-backdrop-filter: blur(12px) saturate(180%);
-  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  backdrop-filter: blur(12px) saturate(160%);
 }
 
-.golden-section {
-  padding-block: var(--spacing-phi-2);
-}
-@media (min-width: 640px) {
-  .golden-section {
-    padding-block: var(--spacing-phi-3);
-  }
-}
+/* ---------- 排版 ---------- */
+.golden-section { padding-block: var(--spacing-phi-2); }
+@media (min-width: 640px) { .golden-section { padding-block: var(--spacing-phi-3); } }
 
+/* 档案主名 */
 .type-phi-name {
-  font-size: clamp(2.618rem, 6vw + 1rem, 5.854rem);
+  font-family: var(--font-display);
+  font-size: clamp(2.8rem, 6vw + 1rem, 6.2rem);
   line-height: 0.95;
-  letter-spacing: -0.04em;
-  font-weight: 700; /* @font-face only ships 400/700; 800 would synthesize a fake bold */
+  letter-spacing: -0.03em;
+  font-weight: 900;
+}
+.plate-heading {
+  position: relative;
+  text-shadow:
+    0.6px 0 0 color-mix(in srgb, var(--red) 45%, transparent),
+    -0.6px 0 0 color-mix(in srgb, var(--cyan) 45%, transparent);
+  transition: text-shadow 0.3s var(--ease-standard);
+}
+.plate-heading:hover {
+  text-shadow:
+    1.2px 0 0 color-mix(in srgb, var(--red) 60%, transparent),
+    -1.2px 0 0 color-mix(in srgb, var(--cyan) 60%, transparent);
+}
+.plate-heading::before {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  transform: translate3d(var(--plate-offset, 0.045em), var(--plate-offset, 0.045em), 0);
+  color: transparent;
+  -webkit-text-stroke: 1px var(--accent);
+  opacity: 0.35;
+  pointer-events: none;
 }
 
-.type-phi-title {
-  font-size: clamp(1.25rem, 1.618vw + 0.5rem, 1.618rem);
-  line-height: 1.382;
-  font-weight: 600;
-}
+.aspect-phi { aspect-ratio: var(--ratio-phi); }
 
-.type-phi-subtitle {
-  font-size: 1rem;
-  line-height: 1.618;
-  font-weight: 400;
-}
-
-.aspect-phi {
-  aspect-ratio: var(--ratio-phi);
-}
-
-/* Mermaid diagram containers (created client-side by Mermaid.astro) */
+/* ---------- Mermaid ---------- */
 .mermaid-figure {
   margin-block: var(--spacing-phi-2);
   border: 1px solid var(--border);
-  border-radius: 1rem;
+  border-radius: 0.5rem;
   padding: var(--spacing-phi-1);
   overflow-x: auto;
   background: var(--bg-elev);
   text-align: center;
 }
-
-.mermaid-figure svg {
-  max-width: 100%;
-  height: auto;
-}
-
+.mermaid-figure svg { max-width: 100%; height: auto; }
 .mermaid-fallback {
-  margin: 0;
-  padding: 0;
-  border: none;
-  background: transparent;
+  margin: 0; padding: 0; border: none; background: transparent;
   font-family: var(--font-mono);
-  font-size: 0.875rem;
-  line-height: 1.618;
-  color: var(--fg);
-  text-align: left;
+  font-size: 0.875rem; line-height: 1.618;
+  color: var(--fg); text-align: left;
   overflow-x: auto;
 }
 
-/* ---------- Project dossier narrative (sticky stack) ---------- */
+/* ---------- 项目任务卷宗（sticky 叙事） ---------- */
+:root { --nav-h: 64px; }
 
-:root {
-  --nav-h: 64px;
-}
-
-/* A dossier = a tall scroll runway whose inner panel is pinned to the viewport;
-   the next runway scrolls up and stacks over it (classic sticky stack). */
 [data-panel] {
   --panel-progress: 0;
-  --panel-reveal: 1; /* default fully-revealed: no-JS / reduced-motion safe */
+  --panel-reveal: 1;
   --panel-accent: var(--color-lang-other);
   position: relative;
   height: 150vh;
 }
-
 .narrative-panel {
   position: sticky;
   top: 0;
@@ -686,8 +880,6 @@ footer:hover .footer-meow {
   overflow: hidden;
   background-color: var(--bg);
 }
-
-/* Content layer wipes in left→right as --panel-reveal goes 0→1 (JS-driven). */
 .panel-content {
   position: relative;
   z-index: 10;
@@ -695,34 +887,29 @@ footer:hover .footer-meow {
   clip-path: inset(0 calc((1 - var(--panel-reveal)) * 100%) 0 0);
   will-change: clip-path;
 }
-
-/* Background layers */
-.panel-bg {
+.panel-edge {
   position: absolute;
-  inset: 0;
-  z-index: 0;
+  top: 0; bottom: 0;
+  left: calc(var(--panel-reveal) * 100%);
+  width: 2px;
+  background: var(--panel-accent, var(--accent));
+  opacity: 0.85;
+  transform: translateX(-1px);
   pointer-events: none;
+  z-index: 15;
 }
-.panel-bg-grid {
-  position: absolute;
-  inset: -10% 0;
-}
+.panel-bg { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+.panel-bg-grid { position: absolute; inset: -10% 0; }
 .panel-scanline {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  height: 1px;
+  position: absolute; left: 0; right: 0; top: 0; height: 1px;
   background: var(--fg);
-  opacity: 0.1;
+  opacity: 0.12;
   animation: panel-scan 9s linear infinite;
 }
 @keyframes panel-scan {
   from { transform: translateY(-10vh); }
   to { transform: translateY(110vh); }
 }
-
-/* Ghost mono index watermark behind each dossier */
 .panel-watermark {
   position: absolute;
   right: clamp(0.5rem, 3vw, 2.5rem);
@@ -733,64 +920,39 @@ footer:hover .footer-meow {
   line-height: 1;
   letter-spacing: -0.06em;
   color: var(--fg);
-  opacity: 0.045;
+  opacity: 0.05;
   user-select: none;
   pointer-events: none;
   white-space: nowrap;
 }
-
-/* Targeting reticle — decorative HUD crosshair */
 .panel-crosshair {
   position: absolute;
-  width: 3rem;
-  height: 3rem;
+  width: 3rem; height: 3rem;
   border: 1px solid var(--fg);
   border-radius: 9999px;
   opacity: 0.12;
 }
-.panel-crosshair::before,
-.panel-crosshair::after {
+.panel-crosshair::before, .panel-crosshair::after {
   content: '';
   position: absolute;
   background: var(--fg);
   opacity: 0.7;
 }
-.panel-crosshair::before {
-  left: 50%;
-  top: -25%;
-  width: 1px;
-  height: 150%;
-  transform: translateX(-50%);
-}
-.panel-crosshair::after {
-  top: 50%;
-  left: -25%;
-  height: 1px;
-  width: 150%;
-  transform: translateY(-50%);
-}
-
-/* Bottom-of-panel scroll progress bar */
+.panel-crosshair::before { left: 50%; top: -25%; width: 1px; height: 150%; transform: translateX(-50%); }
+.panel-crosshair::after { top: 50%; left: -25%; height: 1px; width: 150%; transform: translateY(-50%); }
 .panel-progress {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 3px;
+  position: absolute; left: 0; right: 0; bottom: 0; height: 3px;
   background: var(--border);
   z-index: 20;
   pointer-events: none;
 }
 .panel-progress > span {
-  display: block;
-  width: 100%;
-  height: 100%;
+  display: block; width: 100%; height: 100%;
   background: var(--panel-accent, var(--accent));
   transform: scaleX(var(--panel-progress));
   transform-origin: left center;
 }
 
-/* Fixed left-edge HUD rail for the whole narrative (readout + progress) */
 .narrative-rail {
   position: fixed;
   top: 50%;
@@ -803,11 +965,9 @@ footer:hover .footer-meow {
   gap: 0.75rem;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.4s var(--ease-smooth);
+  transition: opacity 0.4s var(--ease-standard);
 }
-.narrative-rail.is-active {
-  opacity: 1;
-}
+.narrative-rail.is-active { opacity: 1; }
 .rail-readout {
   font-family: var(--font-mono);
   font-size: 0.625rem;
@@ -829,12 +989,39 @@ footer:hover .footer-meow {
   transform-origin: top center;
 }
 
-/* Tailwind's md breakpoint is 48rem; keep this below-md media query in sync */
+/* ---------- 滚动固定工具条 / 年份头 ----------
+   钉在固定导航栏（--nav-h: 64px）之下，半透明纸底 + 毛玻璃 +
+   发丝线。移动端不钉，避免在窄屏占据过多空间。 */
+.sticky-bar {
+  position: sticky;
+  top: var(--nav-h);
+  z-index: 30;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  backdrop-filter: blur(12px) saturate(150%);
+  border-bottom: 1px solid var(--border);
+}
 @media (width < 48rem) {
-  [data-panel] {
-    height: 175vh;
-  }
-  /* Narrow screens: fade+rise instead of the wide clip wipe (text stays legible) */
+  .sticky-bar { position: static; }
+}
+
+/* 装饰性幽灵数字：视差水印（配合 [data-parallax] 漂移） */
+.ghost-numeral {
+  position: absolute;
+  font-family: var(--font-mono);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.05em;
+  color: var(--fg);
+  opacity: 0.045;
+  user-select: none;
+  pointer-events: none;
+  white-space: nowrap;
+  will-change: transform;
+}
+
+@media (width < 48rem) {
+  [data-panel] { height: 175vh; }
   .panel-content {
     clip-path: none;
     opacity: calc(0.15 + 0.85 * var(--panel-reveal));
@@ -845,31 +1032,17 @@ footer:hover .footer-meow {
     top: 16%;
     font-size: clamp(6rem, 30vw, 9rem);
   }
-  .narrative-rail {
-    display: none;
-  }
+  .narrative-rail { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  [data-panel] {
-    --panel-progress: 1;
-    --panel-reveal: 1;
-  }
-  .panel-content {
-    clip-path: none;
-    opacity: 1;
-    transform: none;
-  }
-  .panel-bg-grid,
-  .panel-watermark {
-    transform: none !important;
-  }
-  .panel-scanline {
-    animation: none;
-  }
+  [data-panel] { --panel-progress: 1; --panel-reveal: 1; }
+  .panel-content { clip-path: none; opacity: 1; transform: none; }
+  .panel-bg-grid, .panel-watermark { transform: none !important; }
+  .panel-scanline { animation: none; }
 }
 
-/* Print styles - clean article output without chrome */
+/* ---------- 打印 ---------- */
 @media print {
   #navbar,
   [data-mobile-menu],
@@ -883,37 +1056,15 @@ footer:hover .footer-meow {
   aside {
     display: none !important;
   }
-
-  body {
-    background: #fff !important;
-    color: #000 !important;
-  }
-
-  .prose {
-    max-width: 100% !important;
-    color: #000 !important;
-  }
-
-  .prose pre,
-  .prose code {
-    color: #000 !important;
-    background: transparent !important;
-    border-color: #ccc !important;
-  }
-
+  body { background: #fff !important; color: #000 !important; }
+  .prose { max-width: 100% !important; color: #000 !important; }
+  .prose pre, .prose code { color: #000 !important; background: transparent !important; border-color: #ccc !important; }
   .prose a[href^="http"]::after {
     content: " (" attr(href) ")";
     font-size: 0.85em;
     color: #555;
     text-decoration: none;
   }
-
-  .card {
-    border-color: #ccc !important;
-    box-shadow: none !important;
-  }
-
-  .golden-section {
-    padding-block: 1rem !important;
-  }
+  .card { border-color: #ccc !important; box-shadow: none !important; }
+  .golden-section { padding-block: 1rem !important; }
 }

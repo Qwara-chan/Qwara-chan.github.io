@@ -33,10 +33,10 @@ const hasSeparateVisit = !!data.url && data.url !== data.repo;
 
 <div data-panel data-panel-id={data.id} style={{ '--panel-accent': accent }}>
   <div class="narrative-panel">
-    <!-- Background: coordinate grid + halftone + scanline + watermark + reticle -->
+    <!-- Background: coordinate grid + scanline + watermark + reticle (halftone
+         removed — max 2 texture layers per surface rule) -->
     <div class="panel-bg" aria-hidden="true">
       <div class="panel-bg-grid schematic-grid" data-parallax data-parallax-speed="0.05"></div>
-      <div class="halftone absolute inset-0 opacity-30"></div>
       <span class="panel-watermark" data-parallax data-parallax-speed="0.03">{num}</span>
       <span class="panel-crosshair absolute right-[7%] top-[24%]"></span>
       <span class="panel-crosshair absolute left-[4%] bottom-[16%] opacity-60"></span>
@@ -76,7 +76,11 @@ const hasSeparateVisit = !!data.url && data.url !== data.repo;
 
         <!-- Title + description -->
         <div>
-          <h2 class="text-[clamp(2rem,5vw,4.25rem)] font-extrabold leading-[0.95] tracking-tight">
+          <h2
+            class="font-display text-[clamp(2rem,5vw,4.25rem)] font-black leading-[0.95] tracking-tight"
+            transition:name={`qc-proj-${data.id}`}
+            data-vt
+          >
             {data.title}
           </h2>
           <div class="schematic-line mt-6 w-16"></div>
@@ -85,7 +89,7 @@ const hasSeparateVisit = !!data.url && data.url !== data.repo;
 
         <!-- HUD readout row -->
         <div class="flex flex-wrap items-center gap-x-6 gap-y-2 font-mono text-sm text-muted">
-          <span class="inline-flex items-center gap-1.5">
+          <span class="inline-flex items-center gap-1.5" transition:name={`qc-proj-stars-${data.id}`}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297l3.18 6.44 7.11 1.03-5.15 5.02 1.22 7.1L12 17.02l-6.36 3.87 1.22-7.1-5.15-5.02 7.11-1.03z"/></svg>
             {data.stars}
           </span>
@@ -103,18 +107,21 @@ const hasSeparateVisit = !!data.url && data.url !== data.repo;
 
         <!-- CTA row -->
         <div class="flex flex-wrap items-center gap-3">
-          <a href={primaryHref} target="_blank" rel="noopener noreferrer" class="btn btn-primary pointer-events-auto">
+          <a href={primaryHref} target="_blank" rel="noopener noreferrer" class="btn btn-primary pointer-events-auto" data-cursor-label={langLabel.source}>
             <GithubIcon class="h-4 w-4" />
             {langLabel.source}
           </a>
           {hasSeparateVisit && data.url && (
-            <a href={data.url} target="_blank" rel="noopener noreferrer" class="btn btn-ghost pointer-events-auto">
+            <a href={data.url} target="_blank" rel="noopener noreferrer" class="btn btn-ghost pointer-events-auto" data-cursor-label={langLabel.visit}>
               {langLabel.visit}
             </a>
           )}
         </div>
       </div>
     </div>
+
+    <!-- Leading edge of the reveal wipe (travels ahead of the clip) -->
+    <span class="panel-edge" aria-hidden="true"></span>
 
     <!-- Bottom scroll progress -->
     <div class="panel-progress" aria-hidden="true"><span></span></div>

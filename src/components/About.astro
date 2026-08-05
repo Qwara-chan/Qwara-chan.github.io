@@ -31,32 +31,18 @@ const stats = lang === 'zh'
     </div>
 
     <div class="max-w-3xl">
-      <div class="flex items-start gap-phi-1 mb-phi-2" data-scroll-fade>
-        <div class="relative shrink-0 corner-marks" style="--corner-size: 10px;">
-          <img
-            src="/avatar.png"
-            alt={lang === 'zh' ? 'Qwara 头像' : "Qwara's avatar"}
-            class="w-20 h-20 sm:w-24 sm:h-24 rounded-[6px] border border-default object-cover bg-[var(--bg-elev)] transition-transform duration-300 hover:scale-105 hover:rotate-[-3deg]"
-            loading="lazy"
-            width="96"
-            height="96"
-          />
-          <div class="absolute -bottom-2 -right-2 px-2 py-0.5 rounded-[3px] text-[10px] font-mono font-bold text-[#10100e] shadow-sm" style="background: var(--accent);">
-            {t('about.badge')}
-          </div>
-        </div>
-        <div class="flex-1 min-w-0 pt-1">
-          <h2 class="section-title mb-3">{t('about.title')}</h2>
-          <div class="flex flex-wrap gap-x-5 gap-y-1.5 text-xs text-muted font-mono">
-            <span class="inline-flex items-center gap-1.5">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-              {t('about.location')}
-            </span>
-            <span class="inline-flex items-center gap-1.5">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20"/></svg>
-              {t('about.interests')}
-            </span>
-          </div>
+      <!-- 头像框/人员档案卡已移除（2026-08）：区块回归标题 + 元信息 + 正文 + 数据读数 -->
+      <div class="mb-phi-1" data-scroll-fade data-scroll-fade-y="12px">
+        <h2 class="section-title mb-3 plate-heading" data-text={t('about.title')}>{t('about.title')}</h2>
+        <div class="flex flex-wrap gap-x-phi-1 gap-y-2 text-xs text-muted font-mono">
+          <span class="inline-flex items-center gap-1.5">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+            {t('about.location')}
+          </span>
+          <span class="inline-flex items-center gap-1.5">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20"/></svg>
+            {t('about.interests')}
+          </span>
         </div>
       </div>
 
@@ -64,10 +50,11 @@ const stats = lang === 'zh'
 
       <p class="text-base sm:text-lg leading-relaxed text-muted mb-phi-2" data-scroll-fade data-scroll-fade-y="16px">{t('about.p2')}</p>
 
-      <div class="flex flex-wrap gap-3" data-scroll-fade>
+      <!-- 数据读数：φ 刻度数值（md=1.618 / lg=2.618），三块均分并排 -->
+      <div class="flex flex-wrap gap-phi-1" data-scroll-fade>
         {stats.map((stat) => (
-          <div class="card px-phi-1 py-3 inline-flex items-baseline gap-2 rounded-[4px]" data-tilt>
-            <span class="text-xl sm:text-2xl font-bold tracking-tight font-mono text-[var(--accent)]">{stat.value}</span>
+          <div class="card flex-1 min-w-[8rem] px-phi-1 py-3 inline-flex items-baseline gap-2 rounded-[4px]" data-tilt>
+            <span class="text-phi-md sm:text-phi-lg font-bold tracking-tight font-mono text-[var(--accent)]">{stat.value}</span>
             <span class="text-xs text-muted">{stat.label}</span>
           </div>
         ))}

@@ -17,16 +17,26 @@ for (const post of allPosts) {
   else byYear.set(year, [post]);
 }
 const years = [...byYear.entries()].sort((a, b) => b[0] - a[0]);
+
+const pad = (n: number) => String(n).padStart(2, '0');
+const totalYears = years.length;
 ---
 
 <BaseLayout title={t('archive.title')} description={t('archive.subtitle')}>
+  <!-- Left HUD year rail — 年份叙事进度轨（复用卷宗 .narrative-rail 类） -->
+  {totalYears > 0 && (
+    <aside class="narrative-rail" data-archive-rail aria-hidden="true">
+      <span class="rail-readout" data-archive-readout>YR · 01 / {pad(totalYears)}</span>
+      <div class="rail-track"><span class="rail-fill" data-archive-fill></span></div>
+    </aside>
+  )}
   <div class="container-px container-mx golden-section" data-section-reveal>
-    <div class="flex items-center gap-4 mb-3">
+    <div class="flex items-center gap-4 mb-3" transition:name="qc-page-head" data-vt>
       <span class="section-index">A//</span>
       <p class="section-eyebrow mb-0!" data-scroll-skew data-skew-angle="8deg">{t('archive.eyebrow')}</p>
       <div class="schematic-line flex-1"></div>
     </div>
-    <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight mb-3">{t('archive.title')}</h1>
+    <h1 class="font-display text-phi-lg sm:text-phi-xl font-black tracking-tight mb-phi-1">{t('archive.title')}</h1>
     <p class="text-muted mb-phi-2 readout">
       {t('archive.subtitle')}
       <span class="ml-2 font-mono text-sm text-[var(--accent)]">
@@ -35,21 +45,36 @@ const years = [...byYear.entries()].sort((a, b) => b[0] - a[0]);
     </p>
 
     {years.length > 0 ? (
-      <div class="relative">
+      <div class="relative" data-archive-root>
         {years.map(([year, posts], yi) => (
-          <section class="relative mb-phi-2 last:mb-0" data-section-reveal data-reveal-delay={yi * 0.06}>
-            {/* Year marker */}
-            <div class="flex items-center gap-4 mb-phi-1">
-              <h2 class="text-2xl sm:text-3xl font-extrabold font-mono tracking-tight text-[var(--accent)]">
-                {year}
-              </h2>
-              <span class="tag-chip font-mono">{posts.length} {t('archive.postsUnit')}</span>
-              <div class="flex-1 schematic-line"></div>
+          <section
+            class="relative mb-phi-2 last:mb-0"
+            data-section-reveal
+            data-reveal-delay={yi * 0.06}
+            data-year={year}
+            data-year-section
+          >
+            {/* Sticky year header — 滚动固定：钉在导航栏下，被下一年的头推走 */}
+            <div class="sticky-bar -mx-5 sm:-mx-8 lg:-mx-12 px-5 sm:px-8 lg:px-12" data-sticky-year>
+              <div class="flex items-center gap-phi-1 py-2">
+                <h2 class="text-phi-md sm:text-phi-lg font-extrabold font-mono tracking-tight text-[var(--accent)]">
+                  {year}
+                </h2>
+                <span class="tag-chip font-mono">{posts.length} {t('archive.postsUnit')}</span>
+                <div class="flex-1 schematic-line"></div>
+              </div>
             </div>
 
             {/* Posts list — the accent line sits beside the <ol> (an <ol> may only
                 contain <li> children), positioned against the same left edge. */}
             <div class="relative ml-2">
+              {/* Ghost year numeral — 视差水印 */}
+              <span
+                class="ghost-numeral right-0 top-4 text-[clamp(5rem,14vw,10rem)]"
+                data-parallax
+                data-parallax-speed="0.05"
+                aria-hidden="true"
+              >{year}</span>
               <div class="absolute -left-px top-0 bottom-0 w-px bg-[var(--accent)] origin-top" style="transform: scaleY(0);" data-archive-line></div>
               <ol class="relative border-l border-default space-y-1" data-archive-list>
                 {posts.map((post) => (
@@ -59,7 +84,7 @@ const years = [...byYear.entries()].sort((a, b) => b[0] - a[0]);
 
                     <a
                       href={getLocalizedPath(`blog/${post.id}`, lang)}
-                      class="group flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-4 py-2.5 px-3 -mx-3 rounded-[4px] transition-colors duration-200 hover:bg-[var(--accent-soft)]"
+                      class="group flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-phi-1 py-2.5 px-3 -mx-3 rounded-[4px] transition-colors duration-200 hover:bg-[var(--accent-soft)]"
                     >
                       <time
                         datetime={post.data.pubDate.toISOString()}
@@ -94,6 +119,44 @@ const years = [...byYear.entries()].sort((a, b) => b[0] - a[0]);
 </BaseLayout>
 
 <script>
+  // 年份叙事：左侧 HUD 进度轨跟随当前的 sticky 年份。钉住本身是纯 CSS，
+  // 此脚本只负责年份读数 + 整体进度填充（共享滚动轨引擎，见 @utils/scrollRail）。
+  import { initScrollRail } from '@utils/scrollRail';
+
+  let arAbort: AbortController | null = null;
+
+  function pad2(n: number): string {
+    return String(n).padStart(2, '0');
+  }
+
+  function initArchiveRail() {
+    arAbort?.abort();
+    arAbort = new AbortController();
+    const { signal } = arAbort;
+
+    const sections = Array.from(document.querySelectorAll<HTMLElement>('[data-year-section]'));
+    if (!sections.length) return;
+
+    const rail = document.querySelector<HTMLElement>('[data-archive-rail]');
+    const readout = document.querySelector<HTMLElement>('[data-archive-readout]');
+    const fill = document.querySelector<HTMLElement>('[data-archive-fill]');
+
+    initScrollRail({
+      root: document.querySelector<HTMLElement>('[data-archive-root]') ?? sections[0],
+      items: sections,
+      rail,
+      readout,
+      fill,
+      signal,
+      // 钉线 = 导航栏高度（sticky 年份头实际钉住的位置）；末尾 section 滚过后保持最后一项，不回跳第一个
+      isActive: (rect) => rect.top <= 64,
+      formatReadout: (active) => {
+        const year = sections[active].dataset.year ?? '';
+        return `${year} · ${pad2(active + 1)} / ${pad2(sections.length)}`;
+      },
+    });
+  }
+
   // Draw each year's accent line when the list scrolls into view.
   function initArchiveLines() {
     document.querySelectorAll('[data-archive-line]').forEach((line) => {
@@ -105,7 +168,7 @@ const years = [...byYear.entries()].sort((a, b) => b[0] - a[0]);
           entries.forEach((entry) => {
             if (entry.isIntersecting) {
               (entry.target as HTMLElement).style.transform = 'scaleY(1)';
-              (entry.target as HTMLElement).style.transition = 'transform 1.2s var(--ease-spring)';
+              (entry.target as HTMLElement).style.transition = 'transform 1.2s var(--ease-out)';
               io.disconnect();
             }
           });
@@ -116,6 +179,8 @@ const years = [...byYear.entries()].sort((a, b) => b[0] - a[0]);
     });
   }
 
+  initArchiveRail();
   initArchiveLines();
+  document.addEventListener('astro:after-swap', initArchiveRail);
   document.addEventListener('astro:after-swap', initArchiveLines);
 </script>

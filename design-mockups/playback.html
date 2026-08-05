@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CONCEPT 01 — FULLSCREEN PLAYBACK · QWARA RESEARCH ARCHIVE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=JetBrains+Mono:wght@400;700&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="mock-base.css" />
+<style>
+  :root { --wall: #f6f1e5; }
+  html { overflow-x: clip; }
+  body { background: var(--wall); }
+  .doc-top { background: linear-gradient(var(--wall) 82%, transparent); }
+
+  /* ---------- 全屏墙板拼缝 ---------- */
+  .wall-grid {
+    position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(28,27,24,0.10) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(28,27,24,0.055) 1px, transparent 1px),
+      linear-gradient(rgba(28,27,24,0.055) 1px, transparent 1px);
+    background-size: 100% 480px, 120px 100%, 120px 100%;
+  }
+  .orange-module { position: fixed; z-index: -1; pointer-events: none; background: var(--orange); }
+  .orange-module.m1 { left: 0; top: 22vh; width: 7px; height: 46vh; opacity: 0.85; }
+  .orange-module.m2 { right: 6vw; top: 0; width: 3px; height: 14vh; opacity: 0.5; }
+
+  /* ---------- 平面转场：开场墨屏上卷 + 橙色领边 ---------- */
+  .reveal-panel {
+    position: fixed; inset: 0; z-index: 60; background: var(--ink);
+    clip-path: inset(0 0 0 0);
+    animation: revealUp 0.95s var(--ease-mech) 0.15s forwards;
+    pointer-events: none;
+  }
+  .reveal-edge {
+    position: fixed; left: 0; right: 0; top: 100%; height: 3px; z-index: 61;
+    background: var(--orange);
+    animation: revealEdge 0.95s var(--ease-mech) 0.15s forwards;
+    pointer-events: none;
+  }
+  @keyframes revealUp { to { clip-path: inset(0 0 100% 0); } }
+  @keyframes revealEdge { to { top: 0; } }
+
+  /* ---------- 光学层 ---------- */
+  .scan-full {
+    position: fixed; inset: 0; z-index: 1; pointer-events: none;
+    background: repeating-linear-gradient(180deg, rgba(0,0,0,0.038) 0 1px, transparent 1px 3px);
+  }
+  .sweep {
+    position: fixed; left: 0; right: 0; top: -18%; height: 24vh; z-index: 2; pointer-events: none;
+    background: linear-gradient(180deg, transparent, rgba(232,93,42,0.075), transparent);
+    animation: sweepY 6.5s linear infinite;
+  }
+  @keyframes sweepY { to { top: 116%; } }
+  .glitchbar {
+    position: fixed; left: -4%; right: -4%; height: 6px; z-index: 3; pointer-events: none;
+    background: linear-gradient(90deg, var(--red), var(--yellow), var(--cyan));
+    mix-blend-mode: multiply; opacity: 0;
+  }
+  .glitchbar.fire { animation: gb 0.42s steps(4) 1; }
+  @keyframes gb {
+    0% { opacity: 0; } 20% { opacity: 0.7; transform: translateX(-14px); }
+    45% { opacity: 0.35; transform: translateX(10px); } 70% { opacity: 0.6; transform: translateX(-6px); }
+    100% { opacity: 0; transform: translateX(0); }
+  }
+
+  /* 明日方舟式菱形框架——缓慢旋转的细线方框（fixed，不参与文档滚动） */
+  .diamond-frame {
+    position: fixed; left: 50%; top: 50%; z-index: 0; pointer-events: none;
+    width: min(86vw, 960px); aspect-ratio: 1 / 1;
+    transform: translate(-50%, -50%) rotate(45deg);
+    border: 1px solid rgba(28,27,24,0.16);
+    animation: dspin 34s linear infinite;
+  }
+  .diamond-frame::before {
+    content: ''; position: absolute; inset: 15%;
+    border: 1px solid rgba(232,93,42,0.5);
+  }
+  .diamond-frame i { position: absolute; width: 15px; height: 3px; background: var(--orange); opacity: 0.85; }
+  .diamond-frame i.t { top: -1.5px; left: 50%; transform: translateX(-50%); }
+  .diamond-frame i.b { bottom: -1.5px; left: 50%; transform: translateX(-50%); }
+  .diamond-frame i.l { left: -1.5px; top: 50%; transform: translateY(-50%); }
+  .diamond-frame i.r { right: -1.5px; top: 50%; transform: translateY(-50%); }
+  @keyframes dspin { to { transform: translate(-50%, -50%) rotate(405deg); } }
+
+  /* 视口四角尖角标记 */
+  .cb { position: fixed; width: 22px; height: 22px; z-index: 5; border: 0 solid rgba(28,27,24,0.55); pointer-events: none; }
+  .cb.tl { top: 62px; left: 18px; border-top-width: 1.5px; border-left-width: 1.5px; }
+  .cb.tr { top: 62px; right: 18px; border-top-width: 1.5px; border-right-width: 1.5px; }
+  .cb.bl { bottom: 86px; left: 18px; border-bottom-width: 1.5px; border-left-width: 1.5px; }
+  .cb.br { bottom: 86px; right: 18px; border-bottom-width: 1.5px; border-right-width: 1.5px; }
+
+  /* ---------- 舞台 ---------- */
+  .stage {
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center;
+    padding: 130px 24px 150px;
+    position: relative; z-index: 2;
+  }
+
+  /* 信号条——斜切角块 + 微型预警线 */
+  .signal-line {
+    display: inline-flex; align-items: center; gap: 12px;
+    background: var(--paper-2);
+    border: 1px solid var(--hairline);
+    padding: 9px 16px;
+    margin-bottom: 40px;
+    clip-path: polygon(0 0, calc(100% - 11px) 0, 100% 11px, 100% 100%, 11px 100%, 0 calc(100% - 11px));
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .signal-line .sq { width: 9px; height: 9px; background: var(--orange); }
+  .signal-line .haz {
+    width: 9px; height: 22px; margin-left: 2px;
+    background: repeating-linear-gradient(-45deg, var(--orange) 0 3px, transparent 3px 6px);
+  }
+
+  /* 主名（独占舞台） */
+  .name-wrap { position: relative; z-index: 2; }
+  .name {
+    font-family: var(--font-display);
+    font-size: clamp(4.5rem, 17vw, 14.5rem);
+    line-height: 0.9; letter-spacing: -0.02em;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+  .name .dot { color: var(--orange); }
+  .name.hit { animation: hitPop 0.55s var(--ease-mech); }
+  @keyframes hitPop {
+    0% { transform: scale(1); }
+    38% { transform: scale(1.045); }
+    100% { transform: scale(1); }
+  }
+  /* 成字冲击横线（扫过主名） */
+  .flashbar {
+    position: absolute; left: 0; right: 0; top: 50%; height: 0.16em; z-index: 3;
+    transform: scaleX(0); transform-origin: left center; opacity: 0;
+    background: linear-gradient(90deg, var(--orange), var(--yellow));
+    mix-blend-mode: multiply;
+  }
+  .flashbar.fire { animation: flashSweep 0.55s var(--ease-mech); }
+  @keyframes flashSweep {
+    0% { transform: scaleX(0); opacity: 0.55; }
+    55% { transform: scaleX(1); opacity: 0.55; }
+    100% { transform: scaleX(1); opacity: 0; }
+  }
+
+  /* 侧边竖排标注 */
+  .side-label {
+    position: fixed; top: 50%; transform: translateY(-50%);
+    font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.34em; text-transform: uppercase;
+    color: var(--ink-muted);
+    writing-mode: vertical-rl; z-index: 4; pointer-events: none;
+  }
+  .side-label.l { left: 26px; }
+  .side-label.r { right: 26px; }
+
+  /* 左下档案数据块 */
+  .archive-data {
+    position: fixed; left: 30px; bottom: 104px; z-index: 4; pointer-events: none;
+    font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--ink-muted); line-height: 2;
+    display: flex; flex-direction: column;
+    border-left: 2px solid var(--orange); padding-left: 12px;
+  }
+  .archive-data b { color: var(--ink); font-weight: 700; }
+
+  /* 底部房间号——斜切角块 */
+  .chamber-tag {
+    position: fixed; left: 50%; transform: translateX(-50%); bottom: 100px; z-index: 4; pointer-events: none;
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase;
+    color: var(--ink-muted);
+    background: var(--paper-2); border: 1px solid var(--hairline);
+    padding: 7px 16px;
+    clip-path: polygon(9px 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%, 0 9px);
+  }
+  .chamber-tag b { color: var(--orange); font-weight: 700; font-size: 13px; }
+
+  /* ---------- 黑色编辑台 ---------- */
+  .deck { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: #14120e; color: #e8e0cc; }
+  .deck-vhs { display: flex; height: 6px; }
+  .deck-vhs i { flex: 1; }
+  .deck-vhs i:nth-child(1) { background: var(--red); }
+  .deck-vhs i:nth-child(2) { background: var(--yellow); }
+  .deck-vhs i:nth-child(3) { background: var(--cyan); }
+  .deck-vhs i:nth-child(4) { background: #0c0b08; }
+  .deck-inner {
+    display: flex; align-items: center; justify-content: space-between; gap: 20px;
+    padding: 14px 30px 16px; font-family: var(--font-mono);
+  }
+  .deck-group { display: flex; align-items: center; gap: 12px; }
+  .tbtn {
+    width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;
+    background: transparent; border: 1px solid #4a4232; color: #e8e0cc;
+    font-size: 16px; font-family: var(--font-mono); cursor: pointer; user-select: none;
+    transition: all 0.16s var(--ease-mech);
+  }
+  .tbtn:hover { background: var(--orange); border-color: var(--orange); color: #14120e; transform: translateY(-2px); }
+  .tbtn:active { transform: translateY(0); }
+  .tbtn.primary { background: #e8e0cc; color: #14120e; border-color: #e8e0cc; }
+  .tbtn.primary:hover { background: var(--orange); border-color: var(--orange); color: #14120e; }
+  .deck-status { font-size: 11px; letter-spacing: 0.24em; text-transform: uppercase; color: #b8ae96; text-align: center; flex: 1; }
+  .deck-right { display: flex; align-items: center; gap: 18px; font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: #8f8670; }
+  .deck-right .brand2 { color: #e8e0cc; letter-spacing: 0.3em; }
+  .deck-right .chamber { color: var(--orange); font-weight: 700; }
+  .rec-dot { width: 8px; height: 8px; border-radius: 50%; background: #ff3b30; }
+  .rec-dot.off { background: #5a5140; }
+
+  @media (width < 760px) {
+    .side-label, .archive-data { display: none; }
+    .deck-status, .deck-right .brand2 { display: none; }
+    .deck-inner { padding: 12px 16px 14px; }
+  }
+</style>
+</head>
+<body>
+  <noscript><style>.reveal-panel,.reveal-edge{display:none!important}</style></noscript>
+
+  <div class="wall-grid" aria-hidden="true"></div>
+  <span class="orange-module m1" aria-hidden="true"></span>
+  <span class="orange-module m2" aria-hidden="true"></span>
+  <div class="scan-full" aria-hidden="true"></div>
+  <div class="sweep" aria-hidden="true"></div>
+  <div class="glitchbar" id="glitchbar" aria-hidden="true"></div>
+
+  <!-- 平面转场：墨屏 -->
+  <div class="reveal-panel" aria-hidden="true"></div>
+  <div class="reveal-edge" aria-hidden="true"></div>
+
+  <span class="cb tl" aria-hidden="true"></span><span class="cb tr" aria-hidden="true"></span>
+  <span class="cb bl" aria-hidden="true"></span><span class="cb br" aria-hidden="true"></span>
+
+  <header class="doc-top">
+    <span class="wd">QWARA RESEARCH ARCHIVE</span>
+    <span class="cl"><span class="rec-dot" id="rec" style="margin-right:2px"></span>REC <span id="tc" style="color:var(--ink);letter-spacing:.1em">00:00:00:00</span> · CAM 01</span>
+  </header>
+
+  <main class="stage">
+    <div class="diamond-frame" aria-hidden="true"><i class="t"></i><i class="r"></i><i class="b"></i><i class="l"></i></div>
+
+    <p class="signal-line rise-in" style="animation-delay:.1s">
+      <span class="sq"></span> SIGNAL LOCKED — PLAYBACK 001
+      <span class="haz" aria-hidden="true"></span>
+    </p>
+
+    <div class="name-wrap">
+      <h1 class="name" id="name" aria-label="QWARA.">QWARA<span class="dot">.</span></h1>
+      <div class="flashbar" id="flash" aria-hidden="true"></div>
+    </div>
+  </main>
+
+  <span class="side-label l">TAPE 01 · NTSC · TRACK 2</span>
+  <span class="side-label r">CAM 01 · AUTO-TRACK</span>
+
+  <div class="archive-data">
+    <span>FILE NO. — <b>QR-0001</b></span>
+    <span>SECTOR — <b>07</b> · CLR — <b>E</b></span>
+    <span>ARCHIVED — <b>1987</b></span>
+  </div>
+
+  <div class="chamber-tag">CHAMBER <b>07</b></div>
+
+  <div class="deck">
+    <div class="deck-vhs" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+    <div class="deck-inner">
+      <div class="deck-group">
+        <button class="tbtn" id="btn-rew" aria-label="rewind" title="倒带">◀◀</button>
+        <button class="tbtn" id="btn-stop" aria-label="stop" title="停止">■</button>
+        <button class="tbtn primary" id="btn-play" aria-label="play" title="播放">▶</button>
+        <button class="tbtn" id="btn-ff" aria-label="fast-forward" title="快进">▶▶</button>
+      </div>
+      <div class="deck-status" id="status">STANDBY — INSERT TAPE</div>
+      <div class="deck-right">
+        <span class="brand2">QWARA·ARCHIVE</span>
+        <span>TAPE 01</span>
+        <span class="chamber">CH. 07</span>
+      </div>
+    </div>
+  </div>
+
+<script>
+(function () {
+  var NAME = "QWARA.";
+  var GLYPHS = "█▓▒░<>/\\|+*$#&%?=QWARA0123XYZ@#%";
+
+  var nameEl = document.getElementById('name');
+  var flashEl = document.getElementById('flash');
+  var statusEl = document.getElementById('status');
+  var tcEl = document.getElementById('tc');
+  var recEl = document.getElementById('rec');
+
+  var timers = [];
+  var started = false; var tcActive = false; var tcStart = 0;
+  function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
+  function clearAll() { timers.forEach(clearTimeout); timers = []; }
+
+  function decode(el, target, done) {
+    var chars = target.split('');
+    var total = 24, frame = 0;
+    var iv = setInterval(function () {
+      frame++;
+      var resolved = Math.round(frame / total * chars.length);
+      var out = '';
+      for (var i = 0; i < chars.length; i++) {
+        out += (i < resolved) ? chars[i] : GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
+      }
+      el.innerHTML = out.replace(/(\.)$/, '<span class="dot">$1</span>');
+      if (frame >= total) {
+        clearInterval(iv);
+        el.innerHTML = target.replace(/(\.)$/, '<span class="dot">$1</span>');
+        // 成字重拍：缩放 + 冲击横线
+        el.classList.add('hit');
+        flashEl.classList.remove('fire'); void flashEl.offsetWidth; flashEl.classList.add('fire');
+        setTimeout(function () { el.classList.remove('hit'); }, 600);
+        if (done) done();
+      }
+    }, 42);
+  }
+
+  function startTimecode() { tcStart = Date.now(); tcActive = true; recEl.classList.remove('off'); }
+  function stopTimecode() { tcActive = false; recEl.classList.add('off'); }
+  setInterval(function () {
+    if (!tcActive) return;
+    var t = Date.now() - tcStart;
+    var p = function (n) { return (n < 10 ? '0' : '') + n; };
+    var h = Math.floor(t / 3600000), m = Math.floor(t / 60000) % 60, s = Math.floor(t / 1000) % 60, f = Math.floor((t % 1000) / 1000 * 30);
+    tcEl.textContent = p(h) + ':' + p(m) + ':' + p(s) + ':' + p(f);
+  }, 33);
+
+  var styleEl = document.createElement('style');
+  styleEl.textContent = '@keyframes glitchShift{0%{transform:translate(-3px,1px);text-shadow:4px 0 rgba(224,58,46,.7),-4px 0 rgba(14,143,156,.7)}50%{transform:translate(3px,-1px);text-shadow:-4px 0 rgba(224,58,46,.7),4px 0 rgba(14,143,156,.7)}100%{transform:translate(0,0);text-shadow:none}}';
+  document.head.appendChild(styleEl);
+
+  function glitchOnce() {
+    if (!started) return;
+    nameEl.style.animation = 'none';
+    nameEl.offsetHeight;
+    nameEl.style.animation = 'glitchShift 0.16s steps(2) 3';
+    var r = nameEl.getBoundingClientRect();
+    var top = Math.min(innerHeight - 60, Math.max(0, r.top + r.height * (0.4 + Math.random() * 0.4)));
+    glitchbar.style.top = top + 'px';
+    glitchbar.classList.remove('fire'); void glitchbar.offsetWidth; glitchbar.classList.add('fire');
+    setTimeout(function () { nameEl.style.animation = ''; }, 560);
+  }
+  var glitchbar = document.getElementById('glitchbar');
+  setInterval(glitchOnce, 5600);
+
+  function play() {
+    clearAll();
+    started = true;
+    statusEl.textContent = 'PLAYING · TAPE 01';
+    later(function () {
+      startTimecode();
+      decode(nameEl, NAME, function () { statusEl.textContent = 'PLAYING · AUTO-TRACK DONE'; });
+    }, 320);
+  }
+  function stop() {
+    clearAll();
+    stopTimecode();
+    statusEl.textContent = 'STOPPED — FRAME HOLD';
+  }
+  function rewind() {
+    clearAll();
+    stopTimecode();
+    statusEl.textContent = 'REWINDING…';
+    var rev = 11, frame = 0;
+    var iv = setInterval(function () {
+      frame++;
+      var keep = Math.max(0, NAME.length - Math.round(frame / rev * NAME.length));
+      var out = '';
+      for (var i = 0; i < NAME.length; i++) out += (i < keep) ? NAME[i] : GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
+      nameEl.innerHTML = out.replace(/(\.)$/, '<span class="dot">$1</span>');
+      if (frame >= rev) { clearInterval(iv); play(); }
+    }, 60);
+  }
+  function ff() {
+    clearAll();
+    started = true;
+    nameEl.innerHTML = NAME.replace(/(\.)$/, '<span class="dot">$1</span>');
+    statusEl.textContent = 'PLAYING · FAST';
+    startTimecode();
+  }
+
+  document.getElementById('btn-play').addEventListener('click', play);
+  document.getElementById('btn-stop').addEventListener('click', stop);
+  document.getElementById('btn-rew').addEventListener('click', rewind);
+  document.getElementById('btn-ff').addEventListener('click', ff);
+
+  // 开场：墨屏转场先放完，再解码（用独立定时器，避免被 play() 的 clearAll 误清）
+  setTimeout(function () {
+    var rp = document.querySelector('.reveal-panel');
+    var re = document.querySelector('.reveal-edge');
+    if (rp) rp.remove();
+    if (re) re.remove();
+  }, 1400);
+  later(play, 1250);
+})();
+</script>
+</body>
+</html>

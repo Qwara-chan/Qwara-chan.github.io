@@ -44,6 +44,21 @@ const { class: className = '' } = Astro.props;
       const delay = parseFloat(revealEl.dataset.revealDelay || '0');
       revealEl.style.setProperty('--reveal-delay', `${delay}s`);
 
+      // VT 快路径：转场期间立即显影（根转场 module-in 已提供入场动效）。
+      //  - 含共享元素目标（data-vt）的区块必须进新快照，否则预态 opacity:0
+      //    会让变形目标缺席新快照、破坏变形；
+      //  - 任一正处于视口内的区块也直接显影 —— 否则换页时页头在过渡窗口里
+      //    停留在 opacity:0，表现为「顶部空白 → 迟一拍弹入」的闪烁。
+      // 视口外的区块保留滚动显影，不破坏换页后的逐段 reveal。
+      if (document.documentElement.hasAttribute('data-astro-transition')) {
+        const r = revealEl.getBoundingClientRect();
+        const onScreen = r.top < window.innerHeight && r.bottom > 0;
+        if (revealEl.querySelector('[data-vt]') || onScreen) {
+          revealEl.classList.add('is-revealed');
+          return;
+        }
+      }
+
       const io = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
@@ -245,7 +260,20 @@ const { class: className = '' } = Astro.props;
         bar.style.transform = `scaleX(${progress.toFixed(4)})`;
       }
 
-      window.addEventListener('scroll', update, { passive: true, signal });
+      // Coalesce：每帧至多一次 getBoundingClientRect（布局读），而非每个
+      // scroll 事件都同步读 —— 与 scroll-fade 同一模式，避免滚动时布局抖动。
+      let progTicking = false;
+      const onProgScroll = () => {
+        if (progTicking) return;
+        progTicking = true;
+        requestAnimationFrame(() => {
+          progTicking = false;
+          update();
+        });
+      };
+
+      window.addEventListener('scroll', onProgScroll, { passive: true, signal });
+      window.addEventListener('resize', onProgScroll, { passive: true, signal });
       update();
     });
 
@@ -266,19 +294,39 @@ const { class: className = '' } = Astro.props;
         layer.style.transform = `translate3d(0, ${shift.toFixed(1)}px, 0)`;
       }
 
+      // Coalesce：布局读进 rAF，每帧至多一次；离开视口即移除监听（不再白读）。
+      let parallaxTicking = false;
+      const onParallaxScroll = () => {
+        if (parallaxTicking) return;
+        parallaxTicking = true;
+        requestAnimationFrame(() => {
+          parallaxTicking = false;
+          update();
+        });
+      };
+
       const io = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
             if (entry.isIntersecting) {
               update();
-              window.addEventListener('scroll', update, { passive: true, signal });
+              window.addEventListener('scroll', onParallaxScroll, { passive: true, signal });
+            } else {
+              window.removeEventListener('scroll', onParallaxScroll);
             }
           });
         },
         { rootMargin: '100% 0px 100% 0px' },
       );
       io.observe(layer);
-      signal.addEventListener('abort', () => io.disconnect(), { once: true });
+      signal.addEventListener(
+        'abort',
+        () => {
+          io.disconnect();
+          window.removeEventListener('scroll', onParallaxScroll);
+        },
+        { once: true },
+      );
     });
   }
 

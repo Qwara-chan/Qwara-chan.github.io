@@ -48,6 +48,13 @@ const {
         (item as HTMLElement).style.setProperty('--stagger-delay', `${delay + i * stagger}s`);
       });
 
+      // VT 快路径：转场期间立即显影全部项 —— 带 data-vt 的变形目标必须进入
+      // 新快照，且根转场已提供入场动效，换页时不再逐个错峰。
+      if (document.documentElement.hasAttribute('data-astro-transition')) {
+        items.forEach((item) => item.classList.add('is-revealed'));
+        return;
+      }
+
       const io = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {

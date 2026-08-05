@@ -32,17 +32,17 @@ const projects = (await getProjects(lang)).slice(0, 4);
             <span class="section-index">04 //</span>
             <p class="section-eyebrow mb-0!">{t('blog.eyebrow')}</p>
           </div>
-          <h2 class="section-title" data-scroll-fade data-scroll-fade-y="12px">{t('blog.title')}</h2>
+          <h2 class="section-title plate-heading" data-text={t('blog.title')} data-scroll-fade data-scroll-fade-y="12px">{t('blog.title')}</h2>
         </div>
         <a href={getLocalizedPath('blog', lang)} class="text-sm link-underline whitespace-nowrap font-mono">
-          {t('projects.viewAll')}
+          {t('blog.viewAll')}
           <span class="ml-1">&rarr;</span>
         </a>
       </div>
 
       <StaggerGrid class="grid md:grid-cols-2 lg:grid-cols-3 gap-phi-1">
         {posts.map((post) => (
-          <BlogCard post={post} lang={lang} />
+          <BlogCard post={post} lang={lang} morph={false} />
         ))}
       </StaggerGrid>
     </div>
@@ -58,7 +58,7 @@ const projects = (await getProjects(lang)).slice(0, 4);
             <span class="section-index">05 //</span>
             <p class="section-eyebrow mb-0!">{t('projects.eyebrow')}</p>
           </div>
-          <h2 class="section-title" data-scroll-fade data-scroll-fade-y="12px">{t('projects.title')}</h2>
+          <h2 class="section-title plate-heading" data-text={t('projects.title')} data-scroll-fade data-scroll-fade-y="12px">{t('projects.title')}</h2>
         </div>
         <a href={getLocalizedPath('projects', lang)} class="text-sm link-underline whitespace-nowrap font-mono">
           {t('projects.viewAll')}

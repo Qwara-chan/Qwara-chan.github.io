@@ -32,7 +32,7 @@ const timeline = lang === 'zh'
       <div class="schematic-line flex-1"></div>
     </div>
 
-    <h2 class="section-title mb-phi-3" data-scroll-fade data-scroll-fade-y="12px">{t('timeline.title')}</h2>
+    <h2 class="section-title mb-phi-3 plate-heading" data-text={t('timeline.title')} data-scroll-fade data-scroll-fade-y="12px">{t('timeline.title')}</h2>
 
     <div class="relative max-w-2xl">
       <div class="absolute left-[7px] sm:left-1/2 top-0 bottom-0 w-px bg-[var(--border)] overflow-hidden">
@@ -49,9 +49,15 @@ const timeline = lang === 'zh'
             data-section-reveal
             data-reveal-delay={i * 0.12}
           >
-            <div class="absolute left-0 sm:left-1/2 sm:-translate-x-1/2 w-4 h-4 rounded-full bg-[var(--bg)] border-2 border-[var(--accent)] z-10 mt-1"></div>
+            <div class="absolute left-0 sm:left-1/2 sm:-translate-x-1/2 w-3 h-3 mt-1.5 z-10" aria-hidden="true">
+              <span class="absolute inset-0 rotate-45 border border-[var(--accent)]"></span>
+              <span class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[2px] h-[2px] rounded-full bg-[var(--accent)]"></span>
+            </div>
             <div class:list={['pl-12 sm:pl-0 sm:w-1/2', i % 2 === 0 ? 'sm:pr-12' : 'sm:pl-12']}>
-              <span class="inline-block text-xs font-mono font-bold text-[var(--accent)] mb-2 px-2 py-0.5 border border-[var(--accent)]/40 rounded-[3px]">{item.year}</span>
+              <span class="inline-flex items-center gap-2 font-mono text-xs font-bold text-[var(--accent)] mb-2">
+                <span class="inline-block h-px w-4 bg-[var(--accent)] opacity-50" aria-hidden="true"></span>
+                <span class="border border-[var(--border)] px-2 py-0.5 corner-cut text-[10px] tracking-wider bg-[var(--bg-elev)]" style="--corner-cut: 5px">{item.year}</span>
+              </span>
               <h3 class="text-lg font-semibold mb-2">{item.title}</h3>
               <p class="text-sm text-muted leading-relaxed">{item.desc}</p>
             </div>
@@ -74,7 +80,7 @@ const timeline = lang === 'zh'
           entries.forEach((entry) => {
             if (entry.isIntersecting) {
               (entry.target as HTMLElement).style.transform = 'scaleY(1)';
-              (entry.target as HTMLElement).style.transition = 'transform 1.5s var(--ease-spring)';
+              (entry.target as HTMLElement).style.transition = 'transform 1.5s var(--ease-out)';
               io.disconnect();
             }
           });

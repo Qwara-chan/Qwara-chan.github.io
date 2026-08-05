@@ -40,10 +40,18 @@ const friends: Friend[] = [
       <p class="section-eyebrow mb-0!" data-scroll-skew data-skew-angle="8deg">{t('friends.eyebrow')}</p>
       <div class="schematic-line flex-1"></div>
     </div>
-    <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight mb-3">{t('friends.title')}</h1>
+    <h1 class="font-display text-4xl sm:text-5xl font-black tracking-tight mb-3">{t('friends.title')}</h1>
     <p class="text-muted mb-phi-2 readout">{t('friends.subtitle')}</p>
 
-    <StaggerGrid class="grid sm:grid-cols-2 gap-phi-1 mb-phi-3">
+    <div class="relative">
+      {/* Ghost F — 视差水印 */}
+      <span
+        class="ghost-numeral right-0 top-0 text-[clamp(6rem,16vw,11rem)]"
+        data-parallax
+        data-parallax-speed="0.06"
+        aria-hidden="true"
+      >F</span>
+      <StaggerGrid class="relative grid sm:grid-cols-2 gap-phi-1 mb-phi-3">
       {friends.map((f) => (
         <a
           href={f.url}
@@ -88,9 +96,10 @@ const friends: Friend[] = [
         </a>
       ))}
     </StaggerGrid>
+    </div>
 
     {/* How to apply */}
-    <div class="card p-phi-2 text-center max-w-2xl mx-auto rounded-[4px] relative" data-section-reveal data-reveal-delay="0.15">
+    <div class="card p-phi-2 text-center max-w-2xl mx-auto rounded-[4px] relative" data-scroll-fade>
       <span class="absolute inset-0 halftone opacity-30 pointer-events-none" aria-hidden="true"></span>
       <div class="relative">
         <p class="text-3xl mb-3 select-none" aria-hidden="true">🐾</p>

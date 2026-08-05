@@ -30,21 +30,25 @@ const skillGroups = lang === 'zh'
       <div class="schematic-line flex-1"></div>
     </div>
 
-    <h2 class="section-title mb-3" data-scroll-fade data-scroll-fade-y="12px">{t('skills.title')}</h2>
+    <h2 class="section-title mb-3 plate-heading" data-text={t('skills.title')} data-scroll-fade data-scroll-fade-y="12px">{t('skills.title')}</h2>
 
     <p class="text-muted mb-phi-2 readout" data-scroll-fade data-scroll-fade-y="12px">{t('skills.subtitle')}</p>
 
     <div class="grid md:grid-cols-3 gap-phi-1">
       {skillGroups.map((group, gi) => (
         <div
-          class="card p-phi-1 h-full rounded-[4px] relative halftone"
+          class="card p-phi-1 h-full rounded-[4px] relative halftone corner-marks"
+          style="--corner-opacity: 0.35"
           data-section-reveal
           data-reveal-delay={0.1 + gi * 0.08}
           data-tilt
         >
           <div class="flex items-center justify-between mb-phi-1">
-            <h3 class="text-sm font-mono uppercase tracking-wider text-[var(--accent)]">{group.name}</h3>
-            <span class="text-[10px] font-mono text-muted opacity-50 select-none" aria-hidden="true">{String(gi + 1).padStart(2, '0')}</span>
+            <h3 class="inline-flex items-center gap-2 text-sm font-mono uppercase tracking-wider text-[var(--accent)]">
+              <span class="inline-block w-2 h-2 bg-[var(--accent)]" aria-hidden="true"></span>
+              {group.name}
+            </h3>
+            <span class="text-[10px] font-mono text-muted opacity-50 select-none" aria-hidden="true">CAP.{String(gi + 1).padStart(2, '0')}</span>
           </div>
           <div class="space-y-phi-1">
             {group.skills.map((skill) => (
@@ -59,7 +63,7 @@ const skillGroups = lang === 'zh'
                     class="h-full rounded-[2px]"
                     data-skill-fill
                     data-level={skill.level}
-                    style="width: 0%; background: repeating-linear-gradient(90deg, var(--accent) 0 10px, var(--color-warning-dark) 10px 14px);"
+                    style="width: 0%; background: repeating-linear-gradient(90deg, var(--accent) 0 12px, var(--accent-deep) 12px 14px);"
                   ></div>
                 </div>
               </div>

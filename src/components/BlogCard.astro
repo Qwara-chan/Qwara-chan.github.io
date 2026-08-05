@@ -1,5 +1,5 @@
 ---
-import type { Post } from '@utils/posts';
+import { noteHash, vtTag, type Post } from '@utils/posts';
 import { getLangFromUrl, useTranslations, formatDate, getReadingTime, getWordCount, getLocalizedPath } from '@i18n/utils';
 import type { Lang } from '@i18n/ui';
 
@@ -7,11 +7,14 @@ interface Props {
   post: Post;
   lang?: Lang;
   featured?: boolean;
+  /** 共享元素变形（卡片 ↔ 文章页的 qc-* 过渡）。总览首页不启用：
+      首页小卡 → 文章的大卡变形意义有限且换页成本高，交给根转场即可。 */
+  morph?: boolean;
 }
 
 const lang = Astro.props.lang ?? getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
-const { post, featured = false } = Astro.props;
+const { post, featured = false, morph = true } = Astro.props;
 
 const href = getLocalizedPath(`blog/${post.id}`, lang);
 
@@ -21,12 +24,21 @@ const wordCount = getWordCount(bodyText, lang);
 ---
 
 <article data-stagger-item>
-  <a href={href} class:list={['card card-hover block h-full overflow-hidden group relative', featured ? 'sm:flex sm:items-center' : '']}>
+  <a href={href} data-cursor-label={t('blog.readMore')} class:list={['card card-hover block h-full overflow-hidden group relative', featured ? 'sm:flex sm:items-center' : '']}>
     {/* HUD corner marks on the card frame */}
     <span class="absolute top-2 left-2 w-3 h-3 border-t-[1.5px] border-l-[1.5px] border-[var(--accent)] opacity-0 group-hover:opacity-80 transition-opacity duration-300 z-20 pointer-events-none" aria-hidden="true"></span>
     <span class="absolute bottom-2 right-2 w-3 h-3 border-b-[1.5px] border-r-[1.5px] border-[var(--accent)] opacity-0 group-hover:opacity-80 transition-opacity duration-300 z-20 pointer-events-none" aria-hidden="true"></span>
 
-    <div class:list={['relative overflow-hidden bg-[var(--bg-elev)]', featured ? 'sm:w-1/2 aspect-video sm:aspect-auto' : 'aspect-phi']}>
+    <div
+      class:list={['relative overflow-hidden bg-[var(--bg-elev)]', featured ? 'sm:w-1/2 aspect-video sm:aspect-auto' : 'aspect-phi']}
+      transition:name={morph ? `qc-cover-${post.id}` : undefined}
+      data-vt={morph ? '' : undefined}
+    >
+      {/* 顶缘 VHS 三色条 —— 放进 qc-cover 内部，与文章页封面结构一致。
+          此前它是 cover 的兄弟节点：变形时旧快照没有条纹、新快照才有，
+          卡片→文章的过渡里条纹会「消失/迟到」。并入 cover 后两条快照
+          都带条纹，随封面一起连续变形。 */}
+      <div class="vhsbar thin absolute inset-x-0 top-0 z-10 pointer-events-none" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
       {post.data.cover ? (
         <img src={post.data.cover} alt={post.data.title} class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" />
       ) : (
@@ -36,8 +48,12 @@ const wordCount = getWordCount(bodyText, lang);
           <span class="relative text-5xl font-mono font-black text-[var(--accent)] opacity-40 select-none">{post.data.title.charAt(0)}</span>
         </div>
       )}
-      <span class="absolute top-3 left-3 px-1.5 py-0.5 rounded-[2px] text-[9px] font-mono font-bold uppercase tracking-wider text-[#10100e] z-10" style="background: var(--accent);">
-        #{String(Math.abs((post.data.title.split('').reduce((a, c) => (a * 31 + c.charCodeAt(0)) | 0, 0))) % 100).padStart(2, '0')}
+      <span
+        class="absolute top-4 left-3 px-1.5 py-0.5 text-[9px] font-mono font-bold uppercase tracking-wider text-[var(--on-accent)] z-10 corner-cut"
+        style="background: var(--accent); --corner-cut: 5px"
+        transition:name={morph ? `qc-note-${post.id}` : undefined}
+      >
+        NOTE #{noteHash(post.data.title)}
       </span>
     </div>
 
@@ -50,7 +66,12 @@ const wordCount = getWordCount(bodyText, lang);
         <span>{wordCount.toLocaleString()} {t('common.words')}</span>
       </div>
 
-      <h3 data-search-title class:list={['font-bold tracking-tight mb-2 transition-colors duration-300', featured ? 'text-2xl' : 'text-lg', 'group-hover:text-[var(--accent)]']}>
+      <h3
+        data-search-title
+        transition:name={morph ? `qc-title-${post.id}` : undefined}
+        data-vt={morph ? '' : undefined}
+        class:list={['font-bold tracking-tight mb-2 transition-colors duration-300', featured ? 'text-2xl' : 'text-lg', 'group-hover:text-[var(--accent)]']}
+      >
         {post.data.title}
       </h3>
 
@@ -59,7 +80,7 @@ const wordCount = getWordCount(bodyText, lang);
       {post.data.tags.length > 0 && (
         <div class="flex flex-wrap gap-1.5">
           {post.data.tags.slice(0, 3).map((tag) => (
-            <span class="tag-chip font-mono">#{tag}</span>
+            <span class="tag-chip font-mono" transition:name={morph ? `qc-tag-${post.id}-${vtTag(tag)}` : undefined}>#{tag}</span>
           ))}
         </div>
       )}

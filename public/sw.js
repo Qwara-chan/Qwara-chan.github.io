@@ -1,6 +1,6 @@
 // Qwara service worker - offline-first for static assets, network-first for HTML.
 // Bumps CACHE_VERSION when you need clients to drop old caches.
-const CACHE_VERSION = 'qwara-v1';
+const CACHE_VERSION = 'qwara-v2';
 const CACHE = CACHE_VERSION;
 
 // Core routes to pre-cache on install so the shell works offline.

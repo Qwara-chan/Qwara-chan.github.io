@@ -1,0 +1,207 @@
+/* ============================================================
+   QWARA RESEARCH ARCHIVE — NASA-Punk concept-study base layer
+   共享设计语言：米白档案纸 / NASA 橙 / VHS 三色 / 蓝图纸格
+   ============================================================ */
+
+:root {
+  /* 档案纸 — 泛黄米白的旧档案基底 */
+  --paper:      #f2ecdf;
+  --paper-2:    #eae1cd;
+  --paper-3:    #ded4bb;
+  --paper-deep: #cfc3a4;
+
+  /* 墨色 — 暖近黑正文 */
+  --ink:        #1c1b18;
+  --ink-soft:   #4a463f;
+  --ink-muted:  #8a8374;
+
+  /* 发丝线 — 档案网格/分隔线 */
+  --hairline:   #c9bfa4;
+  --hairline-2: #b3a788;
+
+  /* NASA 安全橙 — 主强调色 */
+  --orange:     #e85d2a;
+  --orange-deep:#c94a1d;
+
+  /* VHS 三原色 — CRT 阴极射线管的三种色光 */
+  --red:        #d0342c;
+  --yellow:     #e9b41e;
+  --cyan:       #0e8f9c;
+
+  /* 字体栈 */
+  --font-display: 'Archivo Black', 'Arial Black', 'Helvetica Neue', sans-serif;
+  --font-cjk:     'Noto Sans SC', 'PingFang SC', 'HarmonyOS Sans SC', 'Microsoft YaHei', sans-serif;
+  --font-mono:    'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  --ease-mech: cubic-bezier(0.2, 0.8, 0.25, 1.1);   /* 机械顿挫：轻微过冲后落定 */
+  --ease-snap: cubic-bezier(0.6, 0.05, 0.28, 0.99); /* 硬切收束 */
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scrollbar-width: thin; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-cjk);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+::selection { background: var(--orange); color: #fff; }
+
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; }
+
+/* ---------- 蓝图纸格背景（全屏） ---------- */
+.grid-bg {
+  position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background-image:
+    linear-gradient(var(--ink) 1px, transparent 1px),
+    linear-gradient(90deg, var(--ink) 1px, transparent 1px);
+  background-size: 72px 72px;
+  opacity: 0.05;
+}
+.grid-bg::after {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(var(--ink) 1px, transparent 1px),
+    linear-gradient(90deg, var(--ink) 1px, transparent 1px);
+  background-size: 9px 9px;
+  opacity: 0.55;
+}
+
+/* ---------- 半调网点 ---------- */
+.halftone {
+  background-image: radial-gradient(var(--ink) 1.3px, transparent 1.4px);
+  background-size: 14px 14px;
+  opacity: 0.07;
+}
+
+/* ---------- VHS 三原色条 ---------- */
+.vhsbar { display: flex; height: 10px; width: 100%; }
+.vhsbar i { flex: 1; }
+.vhsbar i:nth-child(1) { background: var(--red); }
+.vhsbar i:nth-child(2) { background: var(--yellow); }
+.vhsbar i:nth-child(3) { background: var(--cyan); }
+.vhsbar i:nth-child(4) { background: var(--paper-deep); }
+.vhsbar.thin { height: 5px; }
+
+/* ---------- 胶片齿孔条（垂直边缘） ---------- */
+.sprockets {
+  position: absolute; top: 0; bottom: 0; width: 40px;
+  pointer-events: none; z-index: 1;
+  background-image: repeating-linear-gradient(
+    180deg,
+    transparent 0 11px,
+    var(--ink) 11px 16px,
+    transparent 16px 47px
+  );
+  opacity: 0.2;
+}
+
+/* ---------- 印刷套准线 ---------- */
+.regmark {
+  position: absolute; width: 46px; height: 46px; pointer-events: none; z-index: 2;
+  opacity: 0.5;
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+  background: radial-gradient(circle at center, var(--ink) 0 1.6px, transparent 2.2px);
+}
+.regmark::after {
+  content: ''; position: absolute; inset: -6px; border-radius: 50%;
+  background: repeating-conic-gradient(var(--ink) 0 4deg, transparent 4deg 15deg);
+  -webkit-mask: radial-gradient(circle, transparent 0 22px, #000 23px);
+          mask: radial-gradient(circle, transparent 0 22px, #000 23px);
+}
+
+/* ---------- 档案页眉页脚（文档家具） ---------- */
+.doc-top {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 20;
+  display: flex; justify-content: space-between; align-items: baseline;
+  gap: 16px; flex-wrap: wrap;
+  padding: 16px 28px;
+  font-family: var(--font-mono);
+  font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--ink-soft);
+  background: linear-gradient(var(--paper) 82%, transparent);
+}
+.doc-top .wd { font-weight: 700; color: var(--ink); letter-spacing: 0.22em; }
+.doc-top .cl {
+  display: inline-flex; align-items: center; gap: 8px;
+  border: 1px solid var(--hairline); padding: 3px 8px; letter-spacing: 0.2em;
+}
+.doc-top .cl b { color: var(--red); }
+
+.doc-bottom {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 20;
+  display: flex; justify-content: space-between; align-items: center; gap: 16px;
+  padding: 10px 28px;
+  font-family: var(--font-mono);
+  font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--ink-muted);
+  background: linear-gradient(transparent, var(--paper) 62%);
+}
+
+/* ---------- 基础元素 ---------- */
+.hairline { height: 1px; background: var(--hairline); border: 0; width: 100%; }
+
+.mono { font-family: var(--font-mono); }
+.readout {
+  font-family: var(--font-mono);
+  font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+/* 档案级按钮 */
+.btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 13px 22px;
+  font-family: var(--font-mono);
+  font-size: 12px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--paper); background: var(--ink);
+  border: 1px solid var(--ink);
+  transition: background 0.25s, color 0.25s, border-color 0.25s, transform 0.25s var(--ease-mech);
+  cursor: pointer;
+}
+.btn:hover { background: var(--orange); border-color: var(--orange); transform: translateY(-2px); }
+.btn:active { transform: translateY(0); }
+.btn.ghost { background: transparent; color: var(--ink); }
+.btn.ghost:hover { background: var(--orange); color: #fff; }
+.btn.small { padding: 8px 14px; font-size: 10px; }
+
+/* ---------- 入场工具类 ---------- */
+@keyframes fadeIn { to { opacity: 1; } }
+.fade-in { opacity: 0; animation: fadeIn 0.6s var(--ease-snap) forwards; }
+
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.rise-in { opacity: 0; animation: riseIn 0.7s var(--ease-mech) forwards; }
+
+@keyframes blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+.blink { animation: blink 1s steps(1) infinite; }
+
+@keyframes drawLine { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.draw-line { transform-origin: left center; transform: scaleX(0); animation: drawLine 0.9s var(--ease-mech) forwards; }
+
+@keyframes pingPulse {
+  0% { box-shadow: 0 0 0 0 rgba(232, 93, 42, 0.5); }
+  100% { box-shadow: 0 0 0 12px rgba(232, 93, 42, 0); }
+}
+.ping { animation: pingPulse 1.6s var(--ease-snap) infinite; }
+
+/* ---------- 减动效兜底 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

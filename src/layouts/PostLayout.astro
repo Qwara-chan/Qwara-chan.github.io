@@ -4,7 +4,7 @@ import Mermaid from '@components/Mermaid.astro';
 import '@styles/katex.css';
 import { getLangFromUrl, useTranslations, formatDate, getReadingTime, getWordCount, getLocalizedPath } from '@i18n/utils';
 import { render } from 'astro:content';
-import { getPosts, type Post } from '@utils/posts';
+import { getPosts, noteHash, vtTag, type Post } from '@utils/posts';
 import type { Lang } from '@i18n/ui';
 
 interface Props {
@@ -53,9 +53,35 @@ const related = allPosts
       {t('blog.back')}
     </a>
 
+    {/* 封面区：卡片封面的变形落点（qc-cover-*）。无 cover 时渲染与
+        BlogCard 逐字同构的 halftone 首字占位帧，保证变形连续。 */}
+    <div
+      class="corner-cut relative mb-phi-2 aspect-[21/9] max-h-[400px] w-full overflow-hidden bg-[var(--bg-elev)]"
+      transition:name={`qc-cover-${post.id}`}
+      data-vt
+    >
+      {post.data.cover ? (
+        <img src={post.data.cover} alt={post.data.title} class="h-full w-full object-cover" />
+      ) : (
+        <div class="w-full h-full flex items-center justify-center relative overflow-hidden halftone"
+          style="background-color: var(--bg-elev);">
+          <div class="absolute inset-0 opacity-[0.08]" style="background-image: linear-gradient(var(--fg) 1px, transparent 1px), linear-gradient(90deg, var(--fg) 1px, transparent 1px); background-size: 32px 32px;"></div>
+          <span class="relative font-mono text-7xl sm:text-8xl font-black text-[var(--accent)] opacity-40 select-none">{post.data.title.charAt(0)}</span>
+        </div>
+      )}
+      <div class="vhsbar thin absolute inset-x-0 top-0 z-10 pointer-events-none" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+      <span
+        class="absolute top-4 left-3 px-1.5 py-0.5 text-[9px] font-mono font-bold uppercase tracking-wider text-[var(--on-accent)] z-10 corner-cut"
+        style="background: var(--accent); --corner-cut: 5px"
+        transition:name={`qc-note-${post.id}`}
+      >
+        NOTE #{noteHash(post.data.title)}
+      </span>
+    </div>
+
     <div class="grid lg:grid-cols-[1.618fr_1fr] gap-phi-3">
       <div class="min-w-0">
-        <div class="flex items-center gap-4 mb-4">
+        <div class="flex items-center gap-4 mb-4" transition:name="qc-page-head" data-vt>
           <span class="section-index">P//</span>
           <div class="schematic-line flex-1"></div>
         </div>
@@ -75,14 +101,22 @@ const related = allPosts
           <span class="w-1 h-1 rounded-full bg-current opacity-30"></span>
           <span>{wordCount.toLocaleString()} {t('common.words')}</span>
         </div>
-        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight mb-phi-1">
+        <h1
+          class="chroma font-display text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight mb-phi-1"
+          transition:name={`qc-title-${post.id}`}
+          data-vt
+        >
           {post.data.title}
         </h1>
         <p class="text-lg text-muted leading-relaxed mb-phi-1">{post.data.description}</p>
 
         <div class="flex flex-wrap items-center gap-2 mb-phi-2">
           {tags.length > 0 && tags.map((tag) => (
-            <a href={`${getLocalizedPath('tags', lang)}/${encodeURIComponent(tag)}`} class="tag-chip font-mono">#{tag}</a>
+            <a
+              href={`${getLocalizedPath('tags', lang)}/${encodeURIComponent(tag)}`}
+              class="tag-chip font-mono"
+              transition:name={`qc-tag-${post.id}-${vtTag(tag)}`}
+            >#{tag}</a>
           ))}
 
             <!-- Share / copy link -->
@@ -126,7 +160,7 @@ const related = allPosts
           <div class="prose prose-lg max-w-none dark:prose-invert
             prose-headings:scroll-mt-20 prose-headings:tracking-tight
             prose-code:before:hidden prose-code:after:hidden
-            prose-code:rounded prose-code:bg-[var(--color-ink-100)] dark:prose-code:bg-[var(--color-ink-800)]
+            prose-code:rounded prose-code:bg-[var(--paper-2)] dark:prose-code:bg-[var(--paper-3)]
             prose-code:px-1.5 prose-code:py-0.5 prose-code:text-sm prose-code:font-mono
             prose-pre:rounded-phi-md prose-pre:border prose-pre:border-[var(--border)]
             prose-img:rounded-phi-md prose-img:cursor-zoom-in

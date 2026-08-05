@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CONCEPT 03 — MISSION CONSOLE · QWARA RESEARCH ARCHIVE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=JetBrains+Mono:wght@400;700&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="mock-base.css" />
+<style>
+  .stage {
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 120px 24px 110px;
+    position: relative; z-index: 2;
+  }
+
+  /* ---------- 测控台面板 ---------- */
+  .panel {
+    width: min(960px, 94vw);
+    background: linear-gradient(168deg, #ece3cc 0%, #dccfb1 100%);
+    border: 1px solid var(--hairline-2);
+    border-radius: 10px;
+    padding: 20px 24px 22px;
+    position: relative;
+    box-shadow:
+      0 40px 80px -40px rgba(28,27,24,0.5),
+      inset 0 1px 0 rgba(255,255,255,0.7),
+      inset 0 -1px 0 rgba(28,27,24,0.14);
+  }
+  /* 螺丝 */
+  .screw {
+    position: absolute; width: 11px; height: 11px; border-radius: 50%;
+    background: radial-gradient(circle at 38% 34%, #b7ab8d, #6f6753 70%, #8a8170);
+    box-shadow: inset 0 1px 1px rgba(255,255,255,.5), 0 1px 1px rgba(28,27,24,.4);
+  }
+  .screw::after {
+    content: ''; position: absolute; left: 50%; top: 50%;
+    width: 1.5px; height: 9px; background: rgba(28,27,24,.65);
+    transform: translate(-50%,-50%) rotate(45deg);
+  }
+
+  .panel-head {
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--ink-soft);
+    padding-bottom: 14px; border-bottom: 1px solid var(--hairline);
+    margin-bottom: 20px;
+  }
+  .panel-head b { font-weight: 700; color: var(--ink); letter-spacing: 0.26em; }
+  .leds { display: flex; gap: 18px; }
+  .led {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 9px; letter-spacing: 0.16em; color: var(--ink-muted);
+  }
+  .led i { width: 8px; height: 8px; border-radius: 50%; background: #a79a7c; transition: background .3s, box-shadow .3s; }
+  .led.on i { background: var(--orange); box-shadow: 0 0 8px var(--orange); }
+  .led.on { color: var(--ink-soft); }
+
+  /* ---------- 三栏 ---------- */
+  .panel-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.25fr 1fr;
+    gap: 26px;
+    align-items: center;
+  }
+
+  /* ---- 左：表盘 ---- */
+  .gauges { display: flex; flex-direction: column; gap: 16px; }
+  .gauge { display: flex; align-items: center; gap: 14px; }
+  .g-label {
+    writing-mode: vertical-rl;
+    font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase;
+    color: var(--ink-muted);
+    transform: rotate(180deg);
+  }
+  .g-dial {
+    position: relative; width: 118px; height: 118px; flex: none;
+  }
+  .g-dial svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .g-needle {
+    position: absolute; left: 50%; top: 50%;
+    width: 2.5px; height: 40%;
+    transform-origin: 50% 100%;
+    transform: translate(-50%, -100%) rotate(225deg);
+    transition: transform 1.5s var(--ease-mech);
+    z-index: 2;
+  }
+  .g-needle::before {
+    content: ''; position: absolute; left: 50%; bottom: 0; top: 0; width: 2.5px;
+    background: var(--red);
+    box-shadow: 0 0 2px rgba(208,52,44,.5);
+    transform: translateX(-50%);
+  }
+  .g-cap {
+    position: absolute; left: 50%; top: 50%; z-index: 3;
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--ink);
+    transform: translate(-50%,-50%);
+    border: 1px solid var(--paper);
+  }
+  .g-val {
+    position: absolute; left: 50%; bottom: 6px; z-index: 3;
+    transform: translateX(-50%);
+    font-family: var(--font-mono); font-weight: 700; font-size: 11px; letter-spacing: 0.06em;
+    color: var(--ink);
+  }
+
+  /* ---- 中：蚀刻铭牌 ---- */
+  .plate-wrap { text-align: center; }
+  .plate {
+    position: relative;
+    display: inline-block;
+    padding: 30px 44px 26px;
+    background: linear-gradient(180deg, #322b21, #1e1a13);
+    border-radius: 6px;
+    border: 1px solid #0d0b07;
+    box-shadow:
+      inset 0 3px 10px rgba(0,0,0,.65),
+      inset 0 -1px 0 rgba(255,255,255,.08),
+      0 1px 0 rgba(255,255,255,.5);
+  }
+  .plate .name {
+    font-family: var(--font-display);
+    font-size: clamp(2.6rem, 6vw, 4.4rem);
+    letter-spacing: 0.02em; line-height: 1;
+    color: #e8dfc6;
+    text-shadow: 0 1px 1px rgba(255,255,255,0.10), 0 -1px 1px rgba(0,0,0,0.9);
+  }
+  .plate .sub {
+    font-family: var(--font-mono);
+    font-size: 9px; letter-spacing: 0.42em; text-transform: uppercase;
+    color: #8f8670; margin-top: 10px;
+  }
+  .plate .id {
+    font-family: var(--font-mono); font-size: 8px; letter-spacing: 0.3em;
+    color: #5f5745; margin-top: 8px;
+  }
+  .plate .p-screw { position: absolute; width: 9px; height: 9px; border-radius: 50%;
+    background: radial-gradient(circle at 38% 34%, #8f8670, #403a2c);
+    box-shadow: inset 0 1px 1px rgba(255,255,255,.25); }
+  .plate .p-screw.s1 { top: 8px; left: 8px; } .plate .p-screw.s2 { top: 8px; right: 8px; }
+  .plate .p-screw.s3 { bottom: 8px; left: 8px; } .plate .p-screw.s4 { bottom: 8px; right: 8px; }
+
+  /* ---- 右：遥测 ---- */
+  .telemetry {
+    font-family: var(--font-mono);
+    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ink-soft);
+    border: 1px solid var(--hairline);
+    background: rgba(242,236,223,0.5);
+    padding: 14px 16px;
+    display: flex; flex-direction: column; gap: 9px;
+  }
+  .tel { display: flex; justify-content: space-between; gap: 12px; }
+  .tel .k { color: var(--ink-muted); font-size: 9px; letter-spacing: 0.2em; }
+  .tel .v { font-weight: 700; color: var(--ink); }
+  .tel .v.accent { color: var(--orange); }
+  .tel .v.blink { animation: blink 1s steps(1) infinite; }
+
+  /* ---- 面板底：键 + 旋钮 + 预警 ---- */
+  .panel-foot {
+    display: flex; align-items: center; gap: 18px;
+    margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--hairline);
+  }
+  .keys { display: flex; gap: 7px; flex-wrap: wrap; }
+  .key {
+    width: 34px; height: 34px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-mono); font-size: 9px; font-weight: 700;
+    color: var(--ink-soft); background: var(--paper-2);
+    border: 1px solid var(--hairline-2);
+    box-shadow: 0 2px 0 var(--paper-deep);
+    cursor: pointer; user-select: none;
+    transition: all .15s var(--ease-mech);
+  }
+  .key:hover { background: var(--orange); color: #fff; border-color: var(--orange); transform: translateY(-1px); box-shadow: 0 3px 0 var(--orange-deep); }
+  .key:active { transform: translateY(1px); box-shadow: 0 0 0 var(--paper-deep); }
+  .knob {
+    width: 42px; height: 42px; border-radius: 50%; flex: none;
+    background: radial-gradient(circle at 50% 36%, #4a443a, #1e1a13 78%);
+    border: 1px solid #0d0b07;
+    box-shadow: inset 0 2px 5px rgba(0,0,0,.6), 0 1px 0 rgba(255,255,255,.4);
+    position: relative; cursor: pointer;
+  }
+  .knob::after {
+    content: ''; position: absolute; left: 50%; top: 7px; width: 2px; height: 9px;
+    background: var(--orange); transform: translateX(-50%);
+  }
+  .hazard {
+    flex: 1; height: 14px; opacity: 0.6;
+    background: repeating-linear-gradient(-45deg, var(--orange) 0 10px, transparent 10px 20px);
+  }
+
+  /* ---------- 面板外标注 ---------- */
+  .outer-tags {
+    display: flex; justify-content: space-between; align-items: center;
+    width: min(960px, 94vw);
+    margin-top: 22px;
+    font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.26em; text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+  .cta-row { display: flex; gap: 14px; margin-top: 30px; flex-wrap: wrap; justify-content: center; }
+  .vhs-wrap { width: min(960px, 94vw); margin-top: 34px; }
+  .vhs-cap { display: flex; justify-content: space-between;
+    font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--ink-muted); padding: 6px 2px 0; }
+
+  @media (width < 800px) {
+    .panel-grid { grid-template-columns: 1fr; gap: 30px; }
+    .gauges { flex-direction: row; flex-wrap: wrap; justify-content: center; }
+    .panel-foot { flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+  <div class="grid-bg" aria-hidden="true"></div>
+  <div class="sprockets" style="left:0" aria-hidden="true"></div>
+  <div class="sprockets" style="right:0" aria-hidden="true"></div>
+
+  <span class="regmark" style="top:64px;left:24px" aria-hidden="true"></span>
+  <span class="regmark" style="top:64px;right:24px" aria-hidden="true"></span>
+  <span class="regmark" style="bottom:70px;left:24px" aria-hidden="true"></span>
+  <span class="regmark" style="bottom:70px;right:24px" aria-hidden="true"></span>
+
+  <header class="doc-top">
+    <span class="wd">QWARA · SPACE · RESEARCH · ARCHIVE</span>
+    <span class="cl">CONSOLE <b>03</b> · MISSION CONTROL</span>
+  </header>
+
+  <main class="stage">
+    <div class="panel rise-in" id="panel">
+      <span class="screw" style="top:8px;left:8px"></span>
+      <span class="screw" style="top:8px;right:8px"></span>
+      <span class="screw" style="bottom:8px;left:8px"></span>
+      <span class="screw" style="bottom:8px;right:8px"></span>
+
+      <div class="panel-head">
+        <span><b>QWARA·CONSOLE</b> · UNIT 03</span>
+        <span class="leds">
+          <span class="led" data-led="SYS"><i></i>SYS</span>
+          <span class="led" data-led="COM"><i></i>COM</span>
+          <span class="led" data-led="NAV"><i></i>NAV</span>
+        </span>
+      </div>
+
+      <div class="panel-grid">
+        <!-- 表盘 -->
+        <div class="gauges">
+          <div class="gauge">
+            <span class="g-label">TIME</span>
+            <div class="g-dial">
+              <svg data-dial viewBox="0 0 120 120" aria-hidden="true"></svg>
+              <div class="g-needle" data-needle="60"></div>
+              <div class="g-cap"></div>
+              <div class="g-val" data-val>00</div>
+            </div>
+          </div>
+          <div class="gauge">
+            <span class="g-label">DATA</span>
+            <div class="g-dial">
+              <svg data-dial viewBox="0 0 120 120" aria-hidden="true"></svg>
+              <div class="g-needle" data-needle="82"></div>
+              <div class="g-cap"></div>
+              <div class="g-val" data-val>00</div>
+            </div>
+          </div>
+          <div class="gauge">
+            <span class="g-label">ORBIT</span>
+            <div class="g-dial">
+              <svg data-dial viewBox="0 0 120 120" aria-hidden="true"></svg>
+              <div class="g-needle" data-needle="34"></div>
+              <div class="g-cap"></div>
+              <div class="g-val" data-val>00</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 铭牌 -->
+        <div class="plate-wrap">
+          <div class="plate">
+            <span class="p-screw s1"></span><span class="p-screw s2"></span>
+            <span class="p-screw s3"></span><span class="p-screw s4"></span>
+            <div class="name">QWARA</div>
+            <div class="sub">RESEARCH ARCHIVE</div>
+            <div class="id">SN. QR-001 · EST.1987</div>
+          </div>
+        </div>
+
+        <!-- 遥测 -->
+        <div class="telemetry" id="tel">
+          <div class="tel"><span class="k">CLOCK</span><span class="v accent" id="t-clock">00:00:00</span></div>
+          <div class="tel"><span class="k">POSITION</span><span class="v" id="t-pos">31.2304 N · 121.4737 E</span></div>
+          <div class="tel"><span class="k">ALTITUDE</span><span class="v" id="t-alt">00004.2 KM</span></div>
+          <div class="tel"><span class="k">RECORDS</span><span class="v" id="t-rec">00000017</span></div>
+          <div class="tel"><span class="k">CHANNEL</span><span class="v">CH-07</span></div>
+          <div class="tel"><span class="k">BAND</span><span class="v blink">S·ACTIVE</span></div>
+        </div>
+      </div>
+
+      <div class="panel-foot">
+        <div class="keys">
+          <button class="key">F1</button><button class="key">F2</button><button class="key">F3</button>
+          <button class="key">F4</button><button class="key">F5</button><button class="key">F6</button>
+        </div>
+        <div class="knob" title="MODE"></div>
+        <div class="hazard" aria-hidden="true"></div>
+      </div>
+    </div>
+
+    <div class="outer-tags">
+      <span>STANDBY — ALL SYSTEMS</span>
+      <span>MISSION T+ 00:00:00</span>
+    </div>
+
+    <div class="cta-row">
+      <a class="btn" href="#">INITIATE →</a>
+      <a class="btn ghost" href="#">FIELD NOTES</a>
+    </div>
+
+    <div class="vhs-wrap">
+      <div class="vhsbar" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+      <div class="vhs-cap"><span>MISSION CONSOLE · 03</span><span>ALL CLEAR</span></div>
+    </div>
+  </main>
+
+  <footer class="doc-bottom">
+    <span>QWARA RESEARCH ARCHIVE · EST. 1987</span>
+    <span>CONCEPT STUDY — MISSION CONSOLE</span>
+  </footer>
+
+<script>
+(function () {
+  var NS = 'http://www.w3.org/2000/svg';
+  var INK = '#1c1b18';
+
+  // ---------- 表盘生成 ----------
+  document.querySelectorAll('[data-dial]').forEach(function (svg) {
+    var C = 60, R1 = 52, R2 = 44, RL = 31;
+    var g = document.createElementNS(NS, 'g');
+    for (var v = 0; v <= 100; v += 5) {
+      var R = (225 + 2.7 * v) % 360;
+      var rad = R * Math.PI / 180;
+      var dx = Math.sin(rad), dy = -Math.cos(rad);
+      var major = (v % 25 === 0);
+      var rOut = major ? R2 : R2 - 4;
+      var line = document.createElementNS(NS, 'line');
+      line.setAttribute('x1', C + dx * rOut);
+      line.setAttribute('y1', C + dy * rOut);
+      line.setAttribute('x2', C + dx * RL);
+      line.setAttribute('y2', C + dy * RL);
+      line.setAttribute('stroke', INK);
+      line.setAttribute('stroke-width', major ? 1.8 : 1);
+      line.setAttribute('stroke-linecap', 'round');
+      g.appendChild(line);
+      if (major) {
+        var t = document.createElementNS(NS, 'text');
+        t.setAttribute('x', C + dx * 18);
+        t.setAttribute('y', C + dy * 18 + 2.5);
+        t.setAttribute('font-family', "'JetBrains Mono', monospace");
+        t.setAttribute('font-size', '6.5');
+        t.setAttribute('text-anchor', 'middle');
+        t.setAttribute('fill', INK);
+        t.textContent = v === 100 ? '10' : (v === 0 ? '00' : String(v / 10));
+        g.appendChild(t);
+      }
+    }
+    svg.appendChild(g);
+  });
+
+  // ---------- 指针扫描 + 计数 ----------
+  var needles = Array.prototype.slice.call(document.querySelectorAll('[data-needle]'));
+  function sweepNeedle(needle, target, i) {
+    setTimeout(function () {
+      needle.style.transform = 'translate(-50%,-100%) rotate(' + (225 + 2.7 * target) % 360 + 'deg)';
+    }, 400 + i * 260);
+    var valEl = needle.parentNode.querySelector('[data-val]');
+    var t0 = performance.now() + 400 + i * 260;
+    var dur = 1600;
+    (function count() {
+      var dt = performance.now() - t0;
+      if (dt < 0) { requestAnimationFrame(count); return; }
+      var p = Math.min(1, dt / dur);
+      p = 1 - Math.pow(1 - p, 3);
+      valEl.textContent = String(Math.round(target * p)).padStart(2, '0');
+      if (p < 1) requestAnimationFrame(count);
+    })();
+  }
+  needles.forEach(function (n, i) { sweepNeedle(n, parseInt(n.dataset.needle, 10), i); });
+
+  // ---------- 状态灯 ----------
+  var leds = document.querySelectorAll('[data-led]');
+  leds.forEach(function (led, i) {
+    setTimeout(function () { led.classList.add('on'); }, 600 + i * 350);
+  });
+
+  // ---------- 遥测走字 ----------
+  var t0 = Date.now();
+  var clockEl = document.getElementById('t-clock');
+  var posEl = document.getElementById('t-pos');
+  var altEl = document.getElementById('t-alt');
+  var recEl = document.getElementById('t-rec');
+  var rec = 17;
+
+  setInterval(function () {
+    var t = Date.now() - t0;
+    var p = function (n) { return (n < 10 ? '0' : '') + n; };
+    var h = Math.floor(t / 3600000), m = Math.floor(t / 60000) % 60, s = Math.floor(t / 1000) % 60;
+    clockEl.textContent = p(h) + ':' + p(m) + ':' + p(s);
+
+    var sec = t / 1000;
+    var lat = 31.2304 + Math.sin(sec / 9) * 0.02;
+    var lon = 121.4737 + Math.cos(sec / 13) * 0.03;
+    function coord(v) { return v.toFixed(4); }
+    posEl.textContent = coord(Math.abs(lat)) + (lat > 0 ? ' N' : ' S') + ' · ' + coord(Math.abs(lon)) + (lon > 0 ? ' E' : ' W');
+
+    altEl.textContent = '000' + Math.round(4.2 + Math.sin(sec / 7) * 0.6).toFixed(1) + ' KM';
+
+    if (Math.floor(sec) % 3 === 0) rec++;
+    recEl.textContent = String(rec).padStart(8, '0');
+  }, 250);
+})();
+</script>
+</body>
+</html>

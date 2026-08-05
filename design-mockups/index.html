@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HERO CONCEPT STUDIES · QWARA RESEARCH ARCHIVE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=JetBrains+Mono:wght@400;700&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="mock-base.css" />
+<style>
+  .index-wrap {
+    min-height: 100vh;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 120px clamp(28px, 6vw, 84px) 120px;
+    position: relative; z-index: 2;
+  }
+  .kicker {
+    font-family: var(--font-mono);
+    font-size: 11px; letter-spacing: 0.34em; text-transform: uppercase;
+    color: var(--orange);
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 26px;
+  }
+  .kicker::after { content: ''; width: 60px; height: 1px; background: var(--hairline); }
+  .big-title {
+    font-family: var(--font-display);
+    font-size: clamp(2.6rem, 8vw, 6rem);
+    line-height: 0.98; letter-spacing: -0.015em;
+    color: var(--ink);
+    max-width: 14em;
+  }
+  .big-title em { font-style: normal; color: var(--orange); }
+  .desc {
+    margin-top: 22px;
+    font-size: 0.98rem; line-height: 1.8;
+    color: var(--ink-soft);
+    max-width: 42em;
+  }
+  .cards {
+    margin-top: 54px;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    max-width: 64em;
+  }
+  .card {
+    display: block;
+    border: 1px solid var(--hairline);
+    background: var(--paper-2);
+    padding: 26px 24px 22px;
+    position: relative;
+    transition: all 0.25s var(--ease-mech);
+    color: var(--ink);
+  }
+  .card::before, .card::after {
+    content: ''; position: absolute; width: 12px; height: 12px;
+    border: 0 solid var(--orange); opacity: 0;
+    transition: opacity 0.25s;
+  }
+  .card::before { top: 8px; left: 8px; border-top: 2px solid; border-left: 2px solid; }
+  .card::after { bottom: 8px; right: 8px; border-bottom: 2px solid; border-right: 2px solid; }
+  .card:hover { border-color: var(--orange); background: var(--paper); transform: translateY(-4px); box-shadow: 0 24px 48px -30px rgba(28,27,24,.5); }
+  .card:hover::before, .card:hover::after { opacity: 1; }
+
+  .card .no {
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.3em;
+    color: var(--orange); display: block; margin-bottom: 18px;
+  }
+  .card .cn-name { font-size: 1.15rem; font-weight: 900; letter-spacing: 0.04em; }
+  .card .en-name { display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.26em; text-transform: uppercase; color: var(--ink-muted); margin-top: 6px; }
+  .card .mini { display: flex; gap: 5px; margin: 20px 0 16px; }
+  .card .mini i { height: 7px; flex: 1; }
+  .card .mini i:nth-child(1) { background: var(--red); }
+  .card .mini i:nth-child(2) { background: var(--yellow); }
+  .card .mini i:nth-child(3) { background: var(--cyan); }
+  .card p { font-size: 0.84rem; line-height: 1.7; color: var(--ink-soft); }
+  .card .go { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.22em; color: var(--ink); margin-top: 18px; display: inline-block; }
+  .card:hover .go { color: var(--orange); }
+
+  .foot-note {
+    margin-top: 46px;
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--ink-muted);
+    display: flex; align-items: center; gap: 14px;
+  }
+  .foot-note .vhsbar { width: 180px; }
+</style>
+</head>
+<body>
+  <div class="grid-bg" aria-hidden="true"></div>
+  <div class="sprockets" style="left:0" aria-hidden="true"></div>
+
+  <span class="regmark" style="top:64px;left:24px" aria-hidden="true"></span>
+  <span class="regmark" style="top:64px;right:24px" aria-hidden="true"></span>
+  <span class="regmark" style="bottom:70px;left:24px" aria-hidden="true"></span>
+  <span class="regmark" style="bottom:70px;right:24px" aria-hidden="true"></span>
+
+  <header class="doc-top">
+    <span class="wd">QWARA · SPACE · RESEARCH · ARCHIVE</span>
+    <span class="cl">HERO CONCEPT <b>STUDIES</b></span>
+  </header>
+
+  <main class="index-wrap">
+    <p class="kicker rise-in" style="animation-delay:.05s">NASA-PUNK · CASSETTE FUTURISM · SWISS INTERNATIONAL</p>
+    <h1 class="big-title rise-in" style="animation-delay:.15s">三种 Hero 概念<br />对比选择 <em>01 — 03</em></h1>
+    <p class="desc rise-in" style="animation-delay:.3s">
+      在浏览器中直接打开任意一张，即可看到全屏动画：解码打字、重拍式标题砸入、表盘扫描、Glitch 故障、VHS 三色条。
+      三稿共享同一套「QWARA RESEARCH ARCHIVE」档案设计语言，仅 Hero 构图与动效不同。
+      选定后整站将按此方向重构。
+    </p>
+
+    <div class="cards rise-in" style="animation-delay:.45s">
+      <a class="card" href="playback.html">
+        <span class="no">01 // PLAYBACK UNIT</span>
+        <span class="cn-name">全屏播放 · 方舟式平面</span>
+        <span class="en-name">FULLSCREEN PLAYBACK</span>
+        <div class="mini" aria-hidden="true"><i></i><i></i><i></i></div>
+        <p>主名独占舞台：墨屏平面转场上卷开场、旋转菱形框架、斜切信号块、扫描线/Glitch/解码重拍，底部黑色编辑台（可交互）。明日方舟式锐利机械动效。</p>
+        <span class="go">VIEW →</span>
+      </a>
+
+      <a class="card" href="cover.html">
+        <span class="no">02 // COVER SHEET</span>
+        <span class="cn-name">档案封页</span>
+        <span class="en-name">COVER SHEET</span>
+        <div class="mini" aria-hidden="true"><i></i><i></i><i></i></div>
+        <p>超大 Heavy 标题机械顿挫「砸」入，橡皮章「机密/CLASSIFIED」斜拍，发丝线 + 套准线 + 幽灵年份 1987。瑞士国际主义编辑风。</p>
+        <span class="go">VIEW →</span>
+      </a>
+
+      <a class="card" href="console.html">
+        <span class="no">03 // MISSION CONSOLE</span>
+        <span class="cn-name">测控台</span>
+        <span class="en-name">MISSION CONSOLE</span>
+        <div class="mini" aria-hidden="true"><i></i><i></i><i></i></div>
+        <p>三块模拟表盘指针扫描到读数，蚀刻铭牌名字，实时遥测走字（时钟/坐标/高度），橘黑安全色 + 预警斜纹。NASA 测控台一角。</p>
+        <span class="go">VIEW →</span>
+      </a>
+    </div>
+
+    <div class="foot-note">
+      <span>01</span><div class="vhsbar" aria-hidden="true"><i></i><i></i><i></i><i></i></div><span>03</span>
+    </div>
+  </main>
+
+  <footer class="doc-bottom">
+    <span>QWARA RESEARCH ARCHIVE · EST. 1987</span>
+    <span>CONCEPT STUDIES · 01 — 03</span>
+  </footer>
+</body>
+</html>

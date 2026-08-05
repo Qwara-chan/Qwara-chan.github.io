@@ -30,7 +30,7 @@ const en404 = {
     <pre class="font-mono text-[var(--accent)] leading-tight text-xs sm:text-sm mb-6 select-none" aria-hidden="true">{`  /\\_/\\
  ( o.o )  404?  meow…
   > ^ <`}</pre>
-    <p class="text-8xl sm:text-9xl font-extrabold font-mono text-muted opacity-20 mb-4">404</p>
+    <p class="text-8xl sm:text-9xl font-extrabold font-mono text-muted opacity-20 mb-4" data-parallax data-parallax-speed="0.06">404</p>
     <h1 class="text-2xl font-bold tracking-tight mb-3" data-i18n-title>{t('404.title')}</h1>
     <p class="text-muted mb-8" data-i18n-desc>{t('404.desc')}</p>
 
@@ -87,6 +87,6 @@ const en404 = {
     if (form) form.setAttribute('action', '/en/search');
     var home = document.querySelector('[data-i18n-home]');
     if (home) home.setAttribute('href', '/en');
-    document.title = '404 — Qwara';
+    document.title = '404 — QWARA';
   })();
 </script>

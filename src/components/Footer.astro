@@ -23,23 +23,26 @@ const socials = [
 ---
 
 <footer class="border-t border-default mt-phi-4 relative">
-  {/* Caution-stripe hazard band on top */}
-  <div class="hazard-band absolute inset-x-0 top-0 h-[3px]" style="--hazard-color: var(--accent); --hazard-opacity: 0.5;" aria-hidden="true"></div>
+  <!-- 顶缘 VHS 三色条 -->
+  <div class="vhsbar thin absolute inset-x-0 top-0" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
 
   <div class="container-px container-mx py-phi-2">
     <div class="flex flex-col sm:flex-row items-center justify-between gap-6">
       <div class="flex items-center gap-3">
-        <img
-          src="/avatar.png"
-          alt=""
-          class="w-7 h-7 rounded-[4px] border border-default"
-          width="28"
-          height="28"
-        />
-        <div class="text-sm">
-          <span class="font-semibold font-mono">QWARA</span>
-          <span class="text-muted ml-2">&copy; {year} {t('footer.rights')}</span>
-          <span class="text-muted ml-2 font-mono" style="opacity: 0.35;">v{version}</span>
+        <span class="relative inline-flex w-9 h-9 items-center justify-center shrink-0">
+          <span class="absolute inset-0 bg-[var(--accent)] corner-cut"></span>
+          <img
+            src="/avatar.png"
+            alt=""
+            class="relative w-5 h-5 rounded-[1px]"
+            width="20"
+            height="20"
+          />
+        </span>
+        <div class="text-sm leading-tight">
+          <span class="font-display text-base tracking-tight">QWARA</span>
+          <span class="text-muted ml-2 text-xs">&copy; {year} {t('footer.rights')}</span>
+          <span class="text-muted ml-2 font-mono text-xs">v{version}</span>
         </div>
       </div>
 
@@ -51,6 +54,7 @@ const socials = [
             rel={s.icon === 'rss' ? undefined : 'noopener noreferrer'}
             class="flex items-center justify-center w-9 h-9 rounded-[4px] border border-default text-muted hover:text-[var(--accent)] hover:border-[var(--accent)] transition-all duration-300 hover:-translate-y-0.5"
             aria-label={s.label}
+            {...(s.icon === 'rss' ? { 'data-astro-reload': '' } : {})}
           >
             {s.icon === 'github' && (
               <GithubIcon class="w-4 h-4" />
@@ -65,13 +69,6 @@ const socials = [
 
     <div class="mt-phi-1 pt-phi-1 border-t border-default text-center text-xs text-muted readout">
       <span>{t('footer.builtWith')}</span>
-      <button
-        type="button"
-        class="footer-meow inline-flex items-center align-middle ml-1"
-        data-footer-meow
-        aria-label="meow~"
-        title="meow~"
-      >🐾</button>
       {totalPosts > 0 && (
         <>
           <span class="mx-2 opacity-30">|</span>
@@ -79,5 +76,51 @@ const socials = [
         </>
       )}
     </div>
+
+    <div class="mt-4 flex flex-wrap items-center justify-between gap-2 font-mono text-[9px] tracking-[0.2em] uppercase text-muted">
+      <span class="inline-flex items-center gap-2">
+        <span class="inline-block w-1.5 h-1.5 bg-[var(--accent)]"></span>
+        QWARA RESEARCH ARCHIVE · EST. 1987
+      </span>
+      <span class="inline-flex items-center gap-4">
+        <span class="inline-flex items-center gap-1.5 text-[var(--accent)] phosphor" data-sys-chip>
+          <span class="inline-block w-1 h-1 rounded-full bg-current" style="animation: sys-blink 1.6s steps(1) infinite"></span>
+          SYS · ONLINE
+        </span>
+        <span data-utc-clock>00:00:00 UTC</span>
+        <span>PAGE ∞ · {year}</span>
+      </span>
+    </div>
   </div>
 </footer>
+
+<style>
+  @keyframes sys-blink {
+    0%, 70% { opacity: 1; }
+    71%, 100% { opacity: 0.2; }
+  }
+</style>
+
+<script>
+  // 页脚 UTC 实时钟（标准 init + after-swap + AbortController 模式）。
+  let sysAbort: AbortController | null = null;
+
+  function initSysStatus() {
+    sysAbort?.abort();
+    sysAbort = new AbortController();
+    const { signal } = sysAbort;
+    const clock = document.querySelector<HTMLElement>('[data-utc-clock]');
+    if (!clock) return;
+    const pad = (n: number) => (n < 10 ? '0' : '') + n;
+    const tick = () => {
+      const d = new Date();
+      clock.textContent = `${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())} UTC`;
+    };
+    tick();
+    const t = window.setInterval(tick, 1000);
+    signal.addEventListener('abort', () => window.clearInterval(t));
+  }
+
+  initSysStatus();
+  document.addEventListener('astro:after-swap', initSysStatus);
+</script>

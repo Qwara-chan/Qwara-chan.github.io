@@ -39,7 +39,6 @@ const githubUrl = 'https://github.com/Qwara-chan';
   <!-- Cinematic header -->
   <header class="relative flex min-h-[72svh] flex-col justify-end overflow-hidden border-b border-default" data-section-reveal>
     <div class="schematic-grid pointer-events-none absolute inset-0"></div>
-    <div class="halftone pointer-events-none absolute inset-0 opacity-40"></div>
     <div class="noise-overlay pointer-events-none absolute inset-0 opacity-50"></div>
 
     <div class="container-px container-mx relative w-full pb-phi-3 pt-24">
@@ -113,6 +112,11 @@ const githubUrl = 'https://github.com/Qwara-chan';
   // in sync, and follows the standard init + astro:after-swap + AbortController
   // pattern (see CLAUDE.md). Sticky pinning is pure CSS and needs no JS; this
   // script only layers the scroll-linked readout/reveal on top.
+  //
+  // Scroll choreography lives in the shared engine (see @utils/scrollRail);
+  // this page contributes only the per-panel CSS-var writes + the rail readout.
+  import { initScrollRail } from '@utils/scrollRail';
+
   let narAbort: AbortController | null = null;
 
   function initNarrative() {
@@ -120,82 +124,38 @@ const githubUrl = 'https://github.com/Qwara-chan';
     narAbort = new AbortController();
     const { signal } = narAbort;
 
-    const narrative = document.querySelector('[data-narrative]');
+    const narrative = document.querySelector<HTMLElement>('[data-narrative]');
     if (!narrative) return;
 
     const rail = document.querySelector<HTMLElement>('[data-narrative-rail]');
-    const readout = document.querySelector('[data-rail-readout]');
+    const readout = document.querySelector<HTMLElement>('[data-rail-readout]');
     const fill = document.querySelector<HTMLElement>('[data-rail-fill]');
     const panels = Array.from(narrative.querySelectorAll<HTMLElement>('[data-panel]'));
-    const total = panels.length;
-    if (!total) return;
 
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    let ticking = false;
-
-    function compute() {
-      ticking = false;
-      let active = -1;
-      let overall = 0;
-      let overallMax = 0;
-
-      panels.forEach((wrap, i) => {
-        const rect = wrap.getBoundingClientRect();
-        const vh = window.innerHeight;
-        const runway = rect.height + vh;
-        const passed = Math.min(Math.max(vh - rect.top, 0), runway);
+    initScrollRail({
+      root: narrative,
+      items: panels,
+      rail,
+      readout,
+      fill,
+      signal,
+      onItem: (wrap, passed, runway) => {
         const p = runway > 0 ? passed / runway : 0;
-
         wrap.style.setProperty('--panel-progress', p.toFixed(4));
         // Reveal finishes ~40% into the runway so the wipe completes early.
         wrap.style.setProperty('--panel-reveal', String(Math.min(1, Math.max(0, p * 2.5))).slice(0, 6));
-
-        overall += passed;
-        overallMax += runway;
-        // The pinned panel is the last one whose runway still overlaps the viewport.
-        if (rect.top <= 0 && rect.bottom > 0) active = i;
-      });
-
-      if (readout) {
-        const cur = active >= 0 ? active + 1 : 1;
-        readout.textContent = `${String(cur).padStart(2, '0')} / ${String(total).padStart(2, '0')}`;
-      }
-      if (fill && overallMax > 0) {
-        fill.style.transform = `scaleY(${(overall / overallMax).toFixed(4)})`;
-      }
-    }
-
-    const onScroll = () => {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(compute);
-    };
-
-    if (reduceMotion) {
-      // Reduced motion: show everything, no scroll-linked choreography.
-      panels.forEach((wrap) => {
-        wrap.style.setProperty('--panel-progress', '1');
-        wrap.style.setProperty('--panel-reveal', '1');
-      });
-      if (readout) readout.textContent = `${String(total).padStart(2, '0')} / ${String(total).padStart(2, '0')}`;
-      if (fill) fill.style.transform = 'scaleY(1)';
-    } else {
-      window.addEventListener('scroll', onScroll, { passive: true, signal });
-      window.addEventListener('resize', onScroll, { passive: true, signal });
-      compute();
-    }
-
-    // Toggle the rail while the narrative is in view
-    if (rail) {
-      const io = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((e) => rail.classList.toggle('is-active', e.isIntersecting));
-        },
-        { threshold: 0.05 },
-      );
-      io.observe(narrative);
-      signal.addEventListener('abort', () => io.disconnect());
-    }
+      },
+      formatReadout: (active) => {
+        const total = panels.length;
+        return `${String(active + 1).padStart(2, '0')} / ${String(total).padStart(2, '0')}`;
+      },
+      reducedMotionState: () => {
+        panels.forEach((wrap) => {
+          wrap.style.setProperty('--panel-progress', '1');
+          wrap.style.setProperty('--panel-reveal', '1');
+        });
+      },
+    });
   }
 
   initNarrative();
