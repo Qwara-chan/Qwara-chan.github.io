@@ -15,8 +15,6 @@ const pageSize = 9;
 const pages = paginate(allPosts, pageSize);
 const totalPages = pages.length;
 
-// Guard against `?page=abc` / `?page=0` / `?page=999`: fall back to a sane page.
-// Only accept a strictly numeric string — parseInt alone would let `2abc` / `1e3` through.
 const pageParam = Astro.url.searchParams.get('page') ?? '1';
 const urlPage = /^\d+$/.test(pageParam) ? Number(pageParam) : NaN;
 const currentPage = Number.isFinite(urlPage) ? Math.min(Math.max(1, urlPage), totalPages) : 1;
@@ -28,10 +26,10 @@ const tagsBase = getLocalizedPath('tags', lang);
 
 <BaseLayout title={t('blog.title')} description={t('blog.subtitle')}>
   <div class="container-px container-mx golden-section">
-    <div data-section-reveal>
+    <div>
       <div class="flex items-center gap-4 mb-3" transition:name="qc-page-head" data-vt>
         <span class="section-index">B//</span>
-        <p class="section-eyebrow mb-0!" data-scroll-skew data-skew-angle="8deg">{t('blog.eyebrow')}</p>
+        <p class="section-eyebrow mb-0!">{t('blog.eyebrow')}</p>
         <div class="schematic-line flex-1"></div>
       </div>
       <h1 class="font-display text-4xl sm:text-5xl font-black tracking-tight mb-3">{t('blog.title')}</h1>
@@ -39,28 +37,26 @@ const tagsBase = getLocalizedPath('tags', lang);
     </div>
 
     {allTags.length > 0 && (
-      <div class="sticky-bar -mx-5 sm:-mx-8 lg:-mx-12 px-5 sm:px-8 lg:px-12" data-sticky-bar>
-        <div class="flex flex-wrap gap-2 items-center py-2">
-          <a href={blogBase} class="tag-chip tag-chip-active font-mono">
-            {t('blog.allTags')}
+      <div class="flex flex-wrap gap-2 items-center py-2 mb-phi-1">
+        <a href={blogBase} class="tag-chip tag-chip-active font-mono">
+          {t('blog.allTags')}
+        </a>
+        {allTags.map(({ tag, count }) => (
+          <a
+            href={`${tagsBase}/${encodeURIComponent(tag)}`}
+            class="tag-chip font-mono"
+            transition:name={`qc-tagword-${vtTag(tag)}`}
+          >
+            #{tag} <span class="opacity-50 ml-1">{count}</span>
           </a>
-          {allTags.map(({ tag, count }) => (
-            <a
-              href={`${tagsBase}/${encodeURIComponent(tag)}`}
-              class="tag-chip font-mono"
-              transition:name={`qc-tagword-${vtTag(tag)}`}
-            >
-              #{tag} <span class="opacity-50 ml-1">{count}</span>
-            </a>
-          ))}
-          <a href={tagsBase} class="tag-chip ml-auto whitespace-nowrap font-mono">
-            ☁ {t('tagsCloud.title')}
-          </a>
-        </div>
+        ))}
+        <a href={tagsBase} class="tag-chip ml-auto whitespace-nowrap font-mono">
+          ☁ {t('tagsCloud.title')}
+        </a>
       </div>
     )}
 
-    <div data-section-reveal data-reveal-delay="0.05" class="pt-phi-1">
+    <div class="pt-phi-1">
       {posts.length > 0 ? (
         <StaggerGrid class="grid md:grid-cols-2 lg:grid-cols-3 gap-phi-1">
           {posts.map((post) => (

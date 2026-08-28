@@ -23,9 +23,6 @@ const socials = [
 ---
 
 <footer class="border-t border-default mt-phi-4 relative">
-  <!-- 顶缘 VHS 三色条 -->
-  <div class="vhsbar thin absolute inset-x-0 top-0" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
-
   <div class="container-px container-mx py-phi-2">
     <div class="flex flex-col sm:flex-row items-center justify-between gap-6">
       <div class="flex items-center gap-3">
@@ -76,51 +73,5 @@ const socials = [
         </>
       )}
     </div>
-
-    <div class="mt-4 flex flex-wrap items-center justify-between gap-2 font-mono text-[9px] tracking-[0.2em] uppercase text-muted">
-      <span class="inline-flex items-center gap-2">
-        <span class="inline-block w-1.5 h-1.5 bg-[var(--accent)]"></span>
-        QWARA RESEARCH ARCHIVE · EST. 1987
-      </span>
-      <span class="inline-flex items-center gap-4">
-        <span class="inline-flex items-center gap-1.5 text-[var(--accent)] phosphor" data-sys-chip>
-          <span class="inline-block w-1 h-1 rounded-full bg-current" style="animation: sys-blink 1.6s steps(1) infinite"></span>
-          SYS · ONLINE
-        </span>
-        <span data-utc-clock>00:00:00 UTC</span>
-        <span>PAGE ∞ · {year}</span>
-      </span>
-    </div>
   </div>
 </footer>
-
-<style>
-  @keyframes sys-blink {
-    0%, 70% { opacity: 1; }
-    71%, 100% { opacity: 0.2; }
-  }
-</style>
-
-<script>
-  // 页脚 UTC 实时钟（标准 init + after-swap + AbortController 模式）。
-  let sysAbort: AbortController | null = null;
-
-  function initSysStatus() {
-    sysAbort?.abort();
-    sysAbort = new AbortController();
-    const { signal } = sysAbort;
-    const clock = document.querySelector<HTMLElement>('[data-utc-clock]');
-    if (!clock) return;
-    const pad = (n: number) => (n < 10 ? '0' : '') + n;
-    const tick = () => {
-      const d = new Date();
-      clock.textContent = `${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())} UTC`;
-    };
-    tick();
-    const t = window.setInterval(tick, 1000);
-    signal.addEventListener('abort', () => window.clearInterval(t));
-  }
-
-  initSysStatus();
-  document.addEventListener('astro:after-swap', initSysStatus);
-</script>

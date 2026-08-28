@@ -25,14 +25,14 @@ function tagOpacity(count: number): number {
 ---
 
 <BaseLayout title={t('tagsCloud.title')} description={t('tagsCloud.subtitle')}>
-  <div class="container-px container-mx golden-section" data-section-reveal>
+  <div class="container-px container-mx golden-section">
     <a href={blogBase} class="inline-flex items-center gap-1.5 text-sm text-muted hover:text-[var(--fg)] transition-colors duration-300 mb-6 font-mono">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7M19 12H5" /></svg>
       {t('blog.back')}
     </a>
     <div class="flex items-center gap-4 mb-3" transition:name="qc-page-head" data-vt>
       <span class="section-index">T//</span>
-      <p class="section-eyebrow mb-0!" data-scroll-skew data-skew-angle="8deg">{t('tagsCloud.eyebrow')}</p>
+      <p class="section-eyebrow mb-0!" >{t('tagsCloud.eyebrow')}</p>
       <div class="schematic-line flex-1"></div>
     </div>
     <h1 class="font-display text-4xl sm:text-5xl font-black tracking-tight mb-3">{t('tagsCloud.title')}</h1>
@@ -48,11 +48,9 @@ function tagOpacity(count: number): number {
         {/* Ghost T — 视差水印 */}
         <span
           class="ghost-numeral right-0 top-6 text-[clamp(6rem,18vw,13rem)]"
-          data-parallax
-          data-parallax-speed="0.06"
           aria-hidden="true"
         >T</span>
-        <div class="relative flex flex-wrap items-center gap-x-4 gap-y-3 justify-center py-phi-2" data-scroll-fade>
+        <div class="relative flex flex-wrap items-center gap-x-4 gap-y-3 justify-center py-phi-2">
           {tags.map(({ tag, count }) => (
             <a
               href={`${tagsBase}/${encodeURIComponent(tag)}`}

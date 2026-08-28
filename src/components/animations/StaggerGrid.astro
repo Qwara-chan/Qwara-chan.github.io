@@ -1,76 +1,11 @@
 ---
 interface Props {
   class?: string;
-  stagger?: number;
-  delay?: number;
-  itemSelector?: string;
 }
 
-const {
-  class: className = '',
-  stagger = 0.1,
-  delay = 0,
-  itemSelector = '[data-stagger-item]',
-} = Astro.props;
+const { class: className = '' } = Astro.props;
 ---
 
-<div
-  class={className}
-  data-stagger-grid
-  data-stagger={stagger}
-  data-delay={delay}
-  data-item-selector={itemSelector}
->
+<div class={className}>
   <slot />
 </div>
-
-<script>
-  // Staggered reveal via IntersectionObserver + CSS transitions (global.css
-  // holds the hidden pre-state and the .is-revealed transition).
-  let sgAbort: AbortController | null = null;
-
-  function initStaggerGrid() {
-    sgAbort?.abort();
-    sgAbort = new AbortController();
-    const { signal } = sgAbort;
-
-    document.querySelectorAll('[data-stagger-grid]').forEach((grid) => {
-      if ((grid as HTMLElement).dataset.initialized) return;
-      (grid as HTMLElement).dataset.initialized = 'true';
-
-      const stagger = parseFloat((grid as HTMLElement).dataset.stagger || '0.1');
-      const delay = parseFloat((grid as HTMLElement).dataset.delay || '0');
-      const selector = (grid as HTMLElement).dataset.itemSelector || '[data-stagger-item]';
-      const items = grid.querySelectorAll(selector);
-      if (!items.length) return;
-
-      items.forEach((item, i) => {
-        (item as HTMLElement).style.setProperty('--stagger-delay', `${delay + i * stagger}s`);
-      });
-
-      // VT 快路径：转场期间立即显影全部项 —— 带 data-vt 的变形目标必须进入
-      // 新快照，且根转场已提供入场动效，换页时不再逐个错峰。
-      if (document.documentElement.hasAttribute('data-astro-transition')) {
-        items.forEach((item) => item.classList.add('is-revealed'));
-        return;
-      }
-
-      const io = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              items.forEach((item) => item.classList.add('is-revealed'));
-              io.disconnect();
-            }
-          });
-        },
-        { rootMargin: '0px 0px -20% 0px' },
-      );
-      io.observe(grid);
-      signal.addEventListener('abort', () => io.disconnect(), { once: true });
-    });
-  }
-
-  initStaggerGrid();
-  document.addEventListener('astro:after-swap', initStaggerGrid);
-</script>

@@ -24,7 +24,7 @@ const wordCount = getWordCount(bodyText, lang);
 ---
 
 <article data-stagger-item>
-  <a href={href} data-cursor-label={t('blog.readMore')} class:list={['card card-hover block h-full overflow-hidden group relative', featured ? 'sm:flex sm:items-center' : '']}>
+  <a href={href} class:list={['card card-hover block h-full overflow-hidden group relative', featured ? 'sm:flex sm:items-center' : '']}>
     {/* HUD corner marks on the card frame */}
     <span class="absolute top-2 left-2 w-3 h-3 border-t-[1.5px] border-l-[1.5px] border-[var(--accent)] opacity-0 group-hover:opacity-80 transition-opacity duration-300 z-20 pointer-events-none" aria-hidden="true"></span>
     <span class="absolute bottom-2 right-2 w-3 h-3 border-b-[1.5px] border-r-[1.5px] border-[var(--accent)] opacity-0 group-hover:opacity-80 transition-opacity duration-300 z-20 pointer-events-none" aria-hidden="true"></span>

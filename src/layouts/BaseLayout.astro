@@ -4,11 +4,6 @@ import Navbar from '@components/Navbar.astro';
 import Footer from '@components/Footer.astro';
 import MeowEasterEgg from '@components/MeowEasterEgg.astro';
 import BackToTop from '@components/BackToTop.astro';
-import KeyboardShortcuts from '@components/KeyboardShortcuts.astro';
-import ScrollFX from '@components/animations/ScrollFX.astro';
-import MotionBus from '@components/animations/MotionBus.astro';
-import CursorLayer from '@components/animations/CursorLayer.astro';
-import CrtLayer from '@components/animations/CrtLayer.astro';
 import { getLangFromUrl, getSwitchHref, getWordCount } from '@i18n/utils';
 import { getPosts } from '@utils/posts';
 import '../styles/global.css';
@@ -24,55 +19,24 @@ const lang = getLangFromUrl(Astro.url);
 const {
   title,
   description = lang === 'zh'
-    ? 'QWARA RESEARCH ARCHIVE — 全栈开发者的数字档案。实地笔记、项目卷宗与人员档案。'
-    : 'QWARA RESEARCH ARCHIVE — a digital archive by a full-stack developer. Field notes, project dossiers and a personnel file.',
+    ? 'QWARA — 全栈开发者的数字档案。实地笔记、项目卷宗与人员档案。'
+    : 'QWARA — a digital archive by a full-stack developer. Field notes, project dossiers and a personnel file.',
   image = '/og/default.png',
 } = Astro.props;
 
 const siteName = 'QWARA';
 const pageTitle = title ? `${title} — ${siteName}` : `${siteName} — ${lang === 'zh' ? '科研档案' : 'Research Archive'}`;
-// trailingSlash: 'ignore' 下 /blog 与 /blog/ 都被服务：canonical 统一收敛到无尾斜杠
-// 形式（与 getLocalizedPath / sitemap 的规范一致），否则同一内容有两个 canonical。
 const canonical = new URL(Astro.url.pathname.replace(/\/+$/, '') || '/', Astro.site).toString();
 const ogImage = new URL(image, Astro.site).toString();
-
-// Module name for the transition status readout (archive fiction: every page
-// is a film/tape being loaded). Shown only while a navigation is running.
-const moduleName = (() => {
-  const seg = Astro.url.pathname.replace(/^\/en(?=\/|$)/, '').split('/').filter(Boolean)[0] || 'home';
-  const map: Record<string, string> = {
-    home: 'HOME',
-    blog: 'BLOG',
-    projects: 'PROJECTS',
-    search: 'SEARCH',
-    archive: 'ARCHIVE',
-    now: 'NOW',
-    friends: 'FRIENDS',
-    tags: 'TAGS',
-    'secret-cat': 'CAT',
-    '404': 'SYS',
-  };
-  return map[seg] ?? 'SYS';
-})();
 
 const zhHref = getSwitchHref(Astro.url, 'zh');
 const enHref = getSwitchHref(Astro.url, 'en');
 
-// Site-wide stats for the footer (getCollection is cached by Astro, so this
-// is cheap even though BaseLayout renders on every page).
+// Site-wide stats for the footer.
 const allPosts = await getPosts(lang);
 const totalPosts = allPosts.length;
 const totalWords = allPosts.reduce((sum, p) => sum + getWordCount(p.body ?? '', lang), 0);
 ---
-
-<!--
-   /\_____/\
-  /  o   o  \    meow~
- ( ==  ^  == )
-  )         (
- ( (  )   (  )
-(__(__)___(__)__)
--->
 
 <!doctype html>
 <html lang={lang === 'zh' ? 'zh-CN' : 'en'} class="scroll-smooth">
@@ -115,82 +79,18 @@ const totalWords = allPosts.reduce((sum, p) => sum + getWordCount(p.body ?? '', 
 
     <ClientRouter />
 
-    <noscript>
-      <style>
-        /* Content hidden by animation pre-states must be visible without JS. */
-        [data-stagger-grid] [data-stagger-item],
-        [data-section-reveal],
-        [data-scroll-fade],
-        [data-scroll-skew],
-        .hero-fade {
-          opacity: 1 !important;
-          transform: none !important;
-          animation: none !important;
-        }
-        [data-skill-fill] {
-          width: 100% !important;
-        }
-        /* JS-only chrome must never show without JS. */
-        [data-boot-overlay],
-        [data-module-readout],
-        [data-cursor-layer] {
-          display: none !important;
-        }
-      </style>
-    </noscript>
-
-    <link rel="preload" href="/fonts/HarmonyOS_Sans_SC_Regular_Latin.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="/fonts/HarmonyOS_Sans_SC_Bold_Latin.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="/fonts/JetBrainsMono_Latin.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="/fonts/ArchivoBlack_Latin.woff2" as="font" type="font/woff2" crossorigin />
-    {lang === 'zh' && (
-      <link rel="preload" href="/fonts/HarmonyOS_Sans_SC_Regular_CJK.woff2" as="font" type="font/woff2" crossorigin />
-      <link rel="preload" href="/fonts/HarmonyOS_Sans_SC_Bold_CJK.woff2" as="font" type="font/woff2" crossorigin />
-      <link rel="preload" href="/fonts/NotoSansSC_Heavy_CJK.woff2" as="font" type="font/woff2" crossorigin />
-    )}
-
     <script is:inline>
       (function () {
         try {
-          // Firefox 平台标记（pre-paint 加上）：不做降级（Firefox 保留完整毛玻璃
-          // 与 CRT 动态），仅供 CSS 施加 Firefox 独有的渲染增强（更浓的胶片质感、
-          // 页脚系统读数标注平台）。
-          if (navigator.userAgent.indexOf('Firefox') !== -1) {
-            document.documentElement.classList.add('browser-fx');
-          }
-          // 浅色为默认（档案纸）。暗色 = 「胶片负片」，仅显式选择后进入。
           var theme = localStorage.getItem('theme');
           if (theme === 'dark') {
             document.documentElement.classList.add('dark');
           }
-          // Boot gate: on the first home load, freeze the hero entrance behind
-          // the boot overlay. Skipped for reduced-motion, repeat visits, and
-          // non-home pages. Runs pre-paint so no hero flash slips through.
-          // `?boot` 在 URL 上强制播放：绕过「已访问」与「减弱动效」两道门，并给 <html>
-          // 加 `boot-forced`（其作用域内的 CSS 会恢复被减动效杀掉的动画）—— 纯测试辅助。
-          var p = location.pathname.replace(/\/$/, '');
-          var isHome = (p === '' || p === '/en');
-          var forceBoot = /[?&]boot([&=]|$)/.test(location.search);
-          var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-          if (isHome && (forceBoot || (!reduceMotion && !sessionStorage.getItem('qwara:booted')))) {
-            document.documentElement.classList.add('hero-booting');
-            if (forceBoot) document.documentElement.classList.add('boot-forced');
-          }
-          // Failsafe: never leave the hero stuck hidden if the main bundle dies.
-          // 开机序列 ~3.4s + 0.9s 退场，兜底留 7s 余量。
-          setTimeout(function () {
-            document.documentElement.classList.remove('hero-booting');
-          }, 7000);
         } catch (e) {}
       })();
     </script>
 
     <script>
-      // Re-apply theme after Astro View Transitions swap. We do this once
-      // on `after-swap` only — running on `before-swap` mutates the *outgoing*
-      // document and is discarded. The inline boot script already painted the
-      // first page correctly, so the only thing to keep in sync is the
-      // newly-swapped document.
       function reapplyTheme() {
         try {
           const theme = localStorage.getItem('theme');
@@ -201,26 +101,15 @@ const totalWords = allPosts.reduce((sum, p) => sum + getWordCount(p.body ?? '', 
     </script>
   </head>
   <body>
-    <div data-module-readout aria-hidden="true" class="phosphor">FILM: {moduleName} // LOADING</div>
     <Navbar lang={lang} />
-    <!-- MotionBus 必须早于 slot 内容挂载：其 astro:after-swap 监听先注册、先执行，
-         换页返回时 Hero/Cursor 等消费方读到的 window.__motionBus 才是新装的总线，
-         而不是「将被销毁的旧页总线」——否则驱动注册到旧总线上，时间码/光标静默失效。 -->
-    <MotionBus />
     <main>
       <slot />
     </main>
     <Footer lang={lang} totalPosts={totalPosts} totalWords={totalWords} />
     <BackToTop lang={lang} />
-    <KeyboardShortcuts lang={lang} />
     <MeowEasterEgg />
-    <CursorLayer />
-    <ScrollFX />
-    <CrtLayer />
 
     <script>
-      // Register the service worker for offline support. Wrapped in try/catch
-      // and gated on 'load' so it never blocks first paint.
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('/sw.js').catch(() => {});

@@ -17,12 +17,10 @@ const { tag, posts } = Astro.props;
 ---
 
 <BaseLayout title={`#${tag}`} description={t('blog.subtitle')}>
-  <div class="container-px container-mx golden-section relative" data-section-reveal>
+  <div class="container-px container-mx golden-section relative">
     <!-- Ghost # — 视差水印 -->
     <span
       class="ghost-numeral right-0 top-10 text-[clamp(5rem,16vw,11rem)]"
-      data-parallax
-      data-parallax-speed="0.06"
       aria-hidden="true"
     >#</span>
     <a href={getLocalizedPath('blog', lang)} class="inline-flex items-center gap-1.5 text-sm text-muted hover:text-[var(--fg)] transition-colors duration-300 mb-6 font-mono">

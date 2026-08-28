@@ -34,24 +34,16 @@ const friends: Friend[] = [
 ---
 
 <BaseLayout title={t('friends.title')} description={t('friends.subtitle')}>
-  <div class="container-px container-mx golden-section" data-section-reveal>
+  <div class="container-px container-mx golden-section">
     <div class="flex items-center gap-4 mb-3">
       <span class="section-index">F//</span>
-      <p class="section-eyebrow mb-0!" data-scroll-skew data-skew-angle="8deg">{t('friends.eyebrow')}</p>
+      <p class="section-eyebrow mb-0!">{t('friends.eyebrow')}</p>
       <div class="schematic-line flex-1"></div>
     </div>
     <h1 class="font-display text-4xl sm:text-5xl font-black tracking-tight mb-3">{t('friends.title')}</h1>
     <p class="text-muted mb-phi-2 readout">{t('friends.subtitle')}</p>
 
-    <div class="relative">
-      {/* Ghost F — 视差水印 */}
-      <span
-        class="ghost-numeral right-0 top-0 text-[clamp(6rem,16vw,11rem)]"
-        data-parallax
-        data-parallax-speed="0.06"
-        aria-hidden="true"
-      >F</span>
-      <StaggerGrid class="relative grid sm:grid-cols-2 gap-phi-1 mb-phi-3">
+    <StaggerGrid class="relative grid sm:grid-cols-2 gap-phi-1 mb-phi-3">
       {friends.map((f) => (
         <a
           href={f.url}
@@ -59,10 +51,8 @@ const friends: Friend[] = [
           rel="noopener noreferrer"
           class="card card-hover group flex items-center gap-4 p-phi-1 rounded-[4px] relative"
           style={`--friend-color: ${f.color}`}
-          data-tilt
         >
           <div class="relative shrink-0 w-14 h-14">
-            {/* First-letter fallback: shown if the remote avatar fails to load */}
             <span
               class="absolute inset-0 rounded-[6px] flex items-center justify-center text-xl font-bold text-white select-none"
               style={`background: ${f.color}`}
@@ -79,10 +69,6 @@ const friends: Friend[] = [
               width="56"
               height="56"
             />
-            <span
-              class="absolute -inset-1 rounded-[6px] opacity-0 group-hover:opacity-40 blur-lg transition-opacity duration-300 -z-10"
-              style={`background: ${f.color}`}
-            ></span>
           </div>
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-1.5 mb-1">
@@ -96,11 +82,9 @@ const friends: Friend[] = [
         </a>
       ))}
     </StaggerGrid>
-    </div>
 
     {/* How to apply */}
-    <div class="card p-phi-2 text-center max-w-2xl mx-auto rounded-[4px] relative" data-scroll-fade>
-      <span class="absolute inset-0 halftone opacity-30 pointer-events-none" aria-hidden="true"></span>
+    <div class="card p-phi-2 text-center max-w-2xl mx-auto rounded-[4px] relative">
       <div class="relative">
         <p class="text-3xl mb-3 select-none" aria-hidden="true">🐾</p>
         <h2 class="text-xl font-bold tracking-tight mb-2">{t('friends.applyTitle')}</h2>
@@ -120,11 +104,6 @@ const friends: Friend[] = [
 </BaseLayout>
 
 <script>
-  // Remote avatars can 404 or be hotlink-protected. When that happens we hide
-  // the broken <img> so the first-letter placeholder underneath shows through
-  // instead of the browser's broken-image glyph. The `complete && naturalWidth
-  // === 0` check covers the race where the image already failed before this
-  // (hoisted) script ran; the error listener covers the normal case.
   function initFriendAvatars() {
     document.querySelectorAll<HTMLImageElement>('img[data-friend-avatar]').forEach((img) => {
       if (img.dataset.fallbackApplied) return;

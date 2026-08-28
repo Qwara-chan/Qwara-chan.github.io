@@ -36,8 +36,8 @@ const hasSeparateVisit = !!data.url && data.url !== data.repo;
     <!-- Background: coordinate grid + scanline + watermark + reticle (halftone
          removed — max 2 texture layers per surface rule) -->
     <div class="panel-bg" aria-hidden="true">
-      <div class="panel-bg-grid schematic-grid" data-parallax data-parallax-speed="0.05"></div>
-      <span class="panel-watermark" data-parallax data-parallax-speed="0.03">{num}</span>
+
+
       <span class="panel-crosshair absolute right-[7%] top-[24%]"></span>
       <span class="panel-crosshair absolute left-[4%] bottom-[16%] opacity-60"></span>
       <div class="panel-scanline"></div>
@@ -107,12 +107,12 @@ const hasSeparateVisit = !!data.url && data.url !== data.repo;
 
         <!-- CTA row -->
         <div class="flex flex-wrap items-center gap-3">
-          <a href={primaryHref} target="_blank" rel="noopener noreferrer" class="btn btn-primary pointer-events-auto" data-cursor-label={langLabel.source}>
+          <a href={primaryHref} target="_blank" rel="noopener noreferrer" class="btn btn-primary pointer-events-auto">
             <GithubIcon class="h-4 w-4" />
             {langLabel.source}
           </a>
           {hasSeparateVisit && data.url && (
-            <a href={data.url} target="_blank" rel="noopener noreferrer" class="btn btn-ghost pointer-events-auto" data-cursor-label={langLabel.visit}>
+            <a href={data.url} target="_blank" rel="noopener noreferrer" class="btn btn-ghost pointer-events-auto">
               {langLabel.visit}
             </a>
           )}

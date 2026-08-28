@@ -12,7 +12,7 @@ const allPosts = await getPosts(lang);
 
 <BaseLayout title={t('nav.search')} description={t('blog.search')}>
   <div class="container-px container-mx golden-section">
-    <div data-section-reveal>
+    <div>
       <div class="flex items-center gap-4 mb-3" transition:name="qc-page-head" data-vt>
         <span class="section-index">S//</span>
         <p class="section-eyebrow mb-0!">{t('nav.search')}</p>
@@ -36,7 +36,7 @@ const allPosts = await getPosts(lang);
       </div>
     </div>
 
-    <div data-section-reveal data-reveal-delay="0.05" class="pt-phi-1">
+    <div class="pt-phi-1">
       <div id="search-status" class="text-sm text-muted mb-6 hidden" data-results-suffix={t('blog.resultsCount')}></div>
 
       <div id="search-results" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
