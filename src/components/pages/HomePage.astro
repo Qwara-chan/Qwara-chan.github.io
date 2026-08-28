@@ -1,9 +1,7 @@
 ---
 import BaseLayout from '@layouts/BaseLayout.astro';
-import Hero from '@components/Hero.astro';
 import About from '@components/About.astro';
 import Skills from '@components/Skills.astro';
-import Timeline from '@components/Timeline.astro';
 import StaggerGrid from '@components/animations/StaggerGrid.astro';
 import BlogCard from '@components/BlogCard.astro';
 import ProjectCard from '@components/ProjectCard.astro';
@@ -18,21 +16,19 @@ const projects = (await getProjects(lang)).slice(0, 4);
 ---
 
 <BaseLayout>
-  <Hero lang={lang} />
   <About lang={lang} />
   <Skills lang={lang} />
-  <Timeline lang={lang} />
 
 {posts.length > 0 && (
-  <section class="golden-section border-t border-default relative" data-section-reveal>
+  <section class="golden-section border-t border-default relative">
     <div class="container-px container-mx">
       <div class="flex items-end justify-between mb-phi-2">
         <div>
           <div class="flex items-center gap-4 mb-2">
-            <span class="section-index">04 //</span>
+            <span class="section-index">03 //</span>
             <p class="section-eyebrow mb-0!">{t('blog.eyebrow')}</p>
           </div>
-          <h2 class="section-title plate-heading" data-text={t('blog.title')} data-scroll-fade data-scroll-fade-y="12px">{t('blog.title')}</h2>
+          <h2 class="section-title plate-heading">{t('blog.title')}</h2>
         </div>
         <a href={getLocalizedPath('blog', lang)} class="text-sm link-underline whitespace-nowrap font-mono">
           {t('blog.viewAll')}
@@ -50,15 +46,15 @@ const projects = (await getProjects(lang)).slice(0, 4);
 )}
 
 {projects.length > 0 && (
-  <section class="golden-section border-t border-default relative" data-section-reveal>
+  <section class="golden-section border-t border-default relative">
     <div class="container-px container-mx">
       <div class="flex items-end justify-between mb-phi-2">
         <div>
           <div class="flex items-center gap-4 mb-2">
-            <span class="section-index">05 //</span>
+            <span class="section-index">04 //</span>
             <p class="section-eyebrow mb-0!">{t('projects.eyebrow')}</p>
           </div>
-          <h2 class="section-title plate-heading" data-text={t('projects.title')} data-scroll-fade data-scroll-fade-y="12px">{t('projects.title')}</h2>
+          <h2 class="section-title plate-heading">{t('projects.title')}</h2>
         </div>
         <a href={getLocalizedPath('projects', lang)} class="text-sm link-underline whitespace-nowrap font-mono">
           {t('projects.viewAll')}

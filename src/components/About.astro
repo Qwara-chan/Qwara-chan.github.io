@@ -8,57 +8,22 @@ interface Props {
 
 const lang = Astro.props.lang ?? getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
-
-const stats = lang === 'zh'
-  ? [
-      { value: '0', label: '真正会写的代码' },
-      { value: '100%', label: '靠 vibe coding' },
-      { value: '3+', label: '折腾中的项目' },
-    ]
-  : [
-      { value: '0', label: 'Real coding skill' },
-      { value: '100%', label: 'Vibe coded' },
-      { value: '3+', label: 'WIP projects' },
-    ];
 ---
 
-<section id="about" class="golden-section relative" data-section-reveal>
+<section id="about" class="golden-section relative">
   <div class="container-px container-mx">
     <div class="flex items-center gap-4 mb-phi-1">
       <span class="section-index">01 //</span>
-      <p class="section-eyebrow mb-0!" data-scroll-skew data-skew-angle="8deg">{t('about.eyebrow')}</p>
+      <p class="section-eyebrow mb-0!">{t('about.eyebrow')}</p>
       <div class="schematic-line flex-1"></div>
     </div>
 
     <div class="max-w-3xl">
-      <!-- 头像框/人员档案卡已移除（2026-08）：区块回归标题 + 元信息 + 正文 + 数据读数 -->
-      <div class="mb-phi-1" data-scroll-fade data-scroll-fade-y="12px">
-        <h2 class="section-title mb-3 plate-heading" data-text={t('about.title')}>{t('about.title')}</h2>
-        <div class="flex flex-wrap gap-x-phi-1 gap-y-2 text-xs text-muted font-mono">
-          <span class="inline-flex items-center gap-1.5">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-            {t('about.location')}
-          </span>
-          <span class="inline-flex items-center gap-1.5">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20"/></svg>
-            {t('about.interests')}
-          </span>
-        </div>
-      </div>
+      <h2 class="section-title mb-3 plate-heading">{t('about.title')}</h2>
 
-      <p class="text-base sm:text-lg leading-relaxed text-muted mb-4" data-scroll-fade data-scroll-fade-y="16px">{t('about.p1')}</p>
+      <p class="text-base sm:text-lg leading-relaxed text-muted mb-4">{t('about.p1')}</p>
 
-      <p class="text-base sm:text-lg leading-relaxed text-muted mb-phi-2" data-scroll-fade data-scroll-fade-y="16px">{t('about.p2')}</p>
-
-      <!-- 数据读数：φ 刻度数值（md=1.618 / lg=2.618），三块均分并排 -->
-      <div class="flex flex-wrap gap-phi-1" data-scroll-fade>
-        {stats.map((stat) => (
-          <div class="card flex-1 min-w-[8rem] px-phi-1 py-3 inline-flex items-baseline gap-2 rounded-[4px]" data-tilt>
-            <span class="text-phi-md sm:text-phi-lg font-bold tracking-tight font-mono text-[var(--accent)]">{stat.value}</span>
-            <span class="text-xs text-muted">{stat.label}</span>
-          </div>
-        ))}
-      </div>
+      <p class="text-base sm:text-lg leading-relaxed text-muted mb-phi-2">{t('about.p2')}</p>
     </div>
   </div>
 </section>

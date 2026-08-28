@@ -22,49 +22,40 @@ const skillGroups = lang === 'zh'
     ];
 ---
 
-<section id="skills" class="golden-section border-t border-default relative" data-section-reveal data-reveal-delay="0.05">
+<section id="skills" class="golden-section border-t border-default relative">
   <div class="container-px container-mx">
     <div class="flex items-center gap-4 mb-phi-1">
       <span class="section-index">02 //</span>
-      <p class="section-eyebrow mb-0!" data-scroll-skew data-skew-angle="8deg">{t('skills.eyebrow')}</p>
+      <p class="section-eyebrow mb-0!">{t('skills.eyebrow')}</p>
       <div class="schematic-line flex-1"></div>
     </div>
 
-    <h2 class="section-title mb-3 plate-heading" data-text={t('skills.title')} data-scroll-fade data-scroll-fade-y="12px">{t('skills.title')}</h2>
+    <h2 class="section-title mb-3 plate-heading">{t('skills.title')}</h2>
 
-    <p class="text-muted mb-phi-2 readout" data-scroll-fade data-scroll-fade-y="12px">{t('skills.subtitle')}</p>
+    <p class="text-muted mb-phi-2 readout">{t('skills.subtitle')}</p>
 
     <div class="grid md:grid-cols-3 gap-phi-1">
       {skillGroups.map((group, gi) => (
         <div
-          class="card p-phi-1 h-full rounded-[4px] relative halftone corner-marks"
-          style="--corner-opacity: 0.35"
-          data-section-reveal
-          data-reveal-delay={0.1 + gi * 0.08}
-          data-tilt
+          class="card p-phi-1 h-full rounded-[4px] relative"
         >
           <div class="flex items-center justify-between mb-phi-1">
             <h3 class="inline-flex items-center gap-2 text-sm font-mono uppercase tracking-wider text-[var(--accent)]">
               <span class="inline-block w-2 h-2 bg-[var(--accent)]" aria-hidden="true"></span>
               {group.name}
             </h3>
-            <span class="text-[10px] font-mono text-muted opacity-50 select-none" aria-hidden="true">CAP.{String(gi + 1).padStart(2, '0')}</span>
+            <span class="font-mono text-[10px] text-muted opacity-60" aria-hidden="true">0{gi + 1}</span>
           </div>
-          <div class="space-y-phi-1">
+
+          <div class="space-y-3">
             {group.skills.map((skill) => (
-              <div data-skill-bar>
-                <div class="flex items-center justify-between mb-2">
-                  <span class="text-sm">{skill.name}</span>
-                  <span class="text-xs font-mono text-muted">{skill.level}%</span>
+              <div>
+                <div class="flex items-center justify-between text-xs mb-1.5">
+                  <span class="text-muted">{skill.name}</span>
+                  <span class="font-mono text-muted opacity-70">{skill.level}%</span>
                 </div>
-                <div class="h-[7px] rounded-[2px] bg-[var(--border)] overflow-hidden relative"
-                  style="background-image: repeating-linear-gradient(90deg, transparent 0 9px, var(--bg) 9px 10px);">
-                  <div
-                    class="h-full rounded-[2px]"
-                    data-skill-fill
-                    data-level={skill.level}
-                    style="width: 0%; background: repeating-linear-gradient(90deg, var(--accent) 0 12px, var(--accent-deep) 12px 14px);"
-                  ></div>
+                <div class="h-1.5 rounded-full bg-[var(--border)] overflow-hidden">
+                  <div class="h-full bg-[var(--accent)]" style={{ width: `${skill.level}%` }}></div>
                 </div>
               </div>
             ))}
@@ -74,34 +65,3 @@ const skillGroups = lang === 'zh'
     </div>
   </div>
 </section>
-
-<script>
-  // Skill bars fill on scroll via IntersectionObserver; the width transition
-  // itself lives in global.css ([data-skill-fill]).
-  function initSkillBars() {
-    document.querySelectorAll('[data-skill-bar]').forEach((bar) => {
-      if ((bar as HTMLElement).dataset.initialized) return;
-      (bar as HTMLElement).dataset.initialized = 'true';
-
-      const fill = bar.querySelector<HTMLElement>('[data-skill-fill]');
-      if (!fill) return;
-      const level = parseInt(fill.getAttribute('data-level') || '0', 10);
-
-      const io = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              fill.style.width = `${level}%`;
-              io.disconnect();
-            }
-          });
-        },
-        { rootMargin: '0px 0px -15% 0px' },
-      );
-      io.observe(bar);
-    });
-  }
-
-  initSkillBars();
-  document.addEventListener('astro:after-swap', initSkillBars);
-</script>
